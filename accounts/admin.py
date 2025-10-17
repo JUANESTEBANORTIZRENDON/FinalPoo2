@@ -12,6 +12,24 @@ from django.db import transaction
 from .models import PerfilUsuario
 
 
+# ===== CONSTANTES PARA STRINGS DUPLICADOS =====
+# Estilos CSS reutilizables
+MUTED_TEXT_STYLE = "color: #999;"
+MUTED_SMALL_TEXT_STYLE = "color: #999; font-size: 0.8em;"
+
+# Mensajes de estado reutilizables
+MSG_SIN_PERFIL = f'<em style="{MUTED_TEXT_STYLE}">Sin perfil</em>'
+MSG_SIN_DOCUMENTO = f'<em style="{MUTED_TEXT_STYLE}">Sin documento</em>'
+MSG_SIN_TELEFONO = f'<em style="{MUTED_TEXT_STYLE}">Sin teléfono</em>'
+MSG_SIN_UBICACION = f'<em style="{MUTED_TEXT_STYLE}">Sin ubicación</em>'
+MSG_PROTEGIDO = f'<span style="{MUTED_SMALL_TEXT_STYLE}">🔒 Protegido</span>'
+
+# Estilos para enlaces y botones
+LINK_STYLE = "color: #007cba;"
+BUTTON_DELETE_STYLE = "background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 0.8em;"
+WARNING_TEXT_STYLE = "color: #dc3545; font-size: 0.7em;"
+
+
 class PerfilUsuarioInline(admin.StackedInline):
     """Inline para mostrar el perfil en la página de usuario"""
     model = PerfilUsuario
@@ -102,9 +120,9 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
                     obj.perfil.documento_completo,
                     obj.perfil.numero_documento
                 )
-            return format_html('<em style="color: #999;">Sin documento</em>')
+            return format_html(MSG_SIN_DOCUMENTO)
         except (AttributeError, PerfilUsuario.DoesNotExist):
-            return format_html('<em style="color: #999;">Sin perfil</em>')
+            return format_html(MSG_SIN_PERFIL)
     get_documento.short_description = "🆔 Documento"
     get_documento.admin_order_field = 'perfil__numero_documento'
     
@@ -113,13 +131,14 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
         try:
             if hasattr(obj, 'perfil') and obj.perfil.telefono:
                 return format_html(
-                    '<a href="tel:{}" style="color: #007cba;">{}</a>',
+                    '<a href="tel:{}" style="{}">{}</a>',
                     obj.perfil.telefono,
+                    LINK_STYLE,
                     obj.perfil.telefono
                 )
-            return format_html('<em style="color: #999;">Sin teléfono</em>')
+            return format_html(MSG_SIN_TELEFONO)
         except (AttributeError, PerfilUsuario.DoesNotExist):
-            return format_html('<em style="color: #999;">Sin perfil</em>')
+            return format_html(MSG_SIN_PERFIL)
     get_telefono.short_description = "📱 Teléfono"
     get_telefono.admin_order_field = 'perfil__telefono'
     
@@ -133,9 +152,9 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
                     obj.perfil.departamento or 'Colombia',
                     obj.perfil.ciudad
                 )
-            return format_html('<em style="color: #999;">Sin ubicación</em>')
+            return format_html(MSG_SIN_UBICACION)
         except (AttributeError, PerfilUsuario.DoesNotExist):
-            return format_html('<em style="color: #999;">Sin perfil</em>')
+            return format_html(MSG_SIN_PERFIL)
     get_ciudad.short_description = "📍 Ciudad"
     get_ciudad.admin_order_field = 'perfil__ciudad'
     
@@ -163,9 +182,7 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
         """Mostrar botones de acción"""
         if obj.is_superuser and User.objects.filter(is_superuser=True).count() <= 1:
             # No permitir eliminar el último superusuario
-            return format_html(
-                '<span style="color: #999; font-size: 0.8em;">🔒 Protegido</span>'
-            )
+            return format_html(MSG_PROTEGIDO)
         
         # Verificar relaciones
         tiene_relaciones = False
@@ -184,22 +201,23 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
         if tiene_relaciones:
             return format_html(
                 '<a href="#" onclick="eliminarUsuarioConRelaciones({}, \'{}\', [{}]); return false;" '
-                'style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; '
-                'text-decoration: none; font-size: 0.8em; margin-right: 5px;">'
+                'style="{} margin-right: 5px;">'
                 '🗑️ Eliminar</a>'
-                '<span style="color: #dc3545; font-size: 0.7em;">⚠️ Tiene relaciones</span>',
+                '<span style="{}">⚠️ Tiene relaciones</span>',
                 obj.id,
                 obj.username,
-                ', '.join([f'"{r}"' for r in relaciones_info])
+                ', '.join([f'"{r}"' for r in relaciones_info]),
+                BUTTON_DELETE_STYLE,
+                WARNING_TEXT_STYLE
             )
         else:
             return format_html(
                 '<a href="#" onclick="eliminarUsuarioSimple({}, \'{}\'); return false;" '
-                'style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; '
-                'text-decoration: none; font-size: 0.8em;">'
+                'style="{}">'
                 '🗑️ Eliminar</a>',
                 obj.id,
-                obj.username
+                obj.username,
+                BUTTON_DELETE_STYLE
             )
     get_acciones.short_description = "🔧 Acciones"
     
