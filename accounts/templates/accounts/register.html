@@ -1,0 +1,236 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Registro - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-6 col-lg-5">
+            <div class="auth-card p-5">
+                <div class="brand-logo">
+                    <i class="fas fa-calculator"></i> S_CONTABLE
+                </div>
+                <h3 class="text-center mb-4 text-dark">Crear Cuenta</h3>
+                
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Información Básica -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-2"></i>Nombres *
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="{{ form.first_name.id_for_label }}" 
+                                   name="{{ form.first_name.name }}" 
+                                   value="{{ form.first_name.value|default:'' }}"
+                                   required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-2"></i>Apellidos *
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="{{ form.last_name.id_for_label }}" 
+                                   name="{{ form.last_name.name }}" 
+                                   value="{{ form.last_name.value|default:'' }}"
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="fas fa-at me-2"></i>Nombre de Usuario *
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="{{ form.username.id_for_label }}" 
+                               name="{{ form.username.name }}" 
+                               value="{{ form.username.value|default:'' }}"
+                               placeholder="Ejemplo: juan_perez"
+                               required>
+                        <div class="form-text">Solo letras, números y guiones bajos</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            <i class="fas fa-envelope me-2"></i>Correo Electrónico *
+                        </label>
+                        <input type="email" 
+                               class="form-control" 
+                               id="{{ form.email.id_for_label }}" 
+                               name="{{ form.email.name }}" 
+                               value="{{ form.email.value|default:'' }}"
+                               placeholder="ejemplo@correo.com"
+                               required>
+                        <div class="form-text">Necesario para activar tu cuenta</div>
+                    </div>
+                    
+                    <!-- Documento de Identidad -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="{{ form.tipo_documento.id_for_label }}" class="form-label">
+                                <i class="fas fa-id-card me-2"></i>Tipo Documento *
+                            </label>
+                            <select class="form-select" 
+                                    id="{{ form.tipo_documento.id_for_label }}" 
+                                    name="{{ form.tipo_documento.name }}" 
+                                    required>
+                                <option value="CC" {% if form.tipo_documento.value == 'CC' %}selected{% endif %}>Cédula de Ciudadanía</option>
+                                <option value="CE" {% if form.tipo_documento.value == 'CE' %}selected{% endif %}>Cédula de Extranjería</option>
+                                <option value="TI" {% if form.tipo_documento.value == 'TI' %}selected{% endif %}>Tarjeta de Identidad</option>
+                                <option value="PP" {% if form.tipo_documento.value == 'PP' %}selected{% endif %}>Pasaporte</option>
+                                <option value="NIT" {% if form.tipo_documento.value == 'NIT' %}selected{% endif %}>NIT</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="{{ form.numero_documento.id_for_label }}" class="form-label">
+                                <i class="fas fa-hashtag me-2"></i>Número de Documento *
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="{{ form.numero_documento.id_for_label }}" 
+                                   name="{{ form.numero_documento.name }}" 
+                                   value="{{ form.numero_documento.value|default:'' }}"
+                                   placeholder="1234567890"
+                                   pattern="[0-9]{6,20}"
+                                   required>
+                            <div class="form-text">Solo números, sin puntos ni espacios</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.telefono.id_for_label }}" class="form-label">
+                            <i class="fas fa-phone me-2"></i>Teléfono Celular *
+                        </label>
+                        <input type="tel" 
+                               class="form-control" 
+                               id="{{ form.telefono.id_for_label }}" 
+                               name="{{ form.telefono.name }}" 
+                               value="{{ form.telefono.value|default:'' }}"
+                               placeholder="+573001234567 o 3001234567"
+                               pattern="(\+57)?[0-9]{10,12}"
+                               required>
+                        <div class="form-text">Número celular colombiano</div>
+                    </div>
+                    
+                    <!-- Ubicación -->
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="{{ form.ciudad.id_for_label }}" class="form-label">
+                                <i class="fas fa-map-marker-alt me-2"></i>Ciudad
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="{{ form.ciudad.id_for_label }}" 
+                                   name="{{ form.ciudad.name }}" 
+                                   value="{{ form.ciudad.value|default:'' }}"
+                                   placeholder="Bogotá">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.departamento.id_for_label }}" class="form-label">
+                                <i class="fas fa-map me-2"></i>Departamento
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="{{ form.departamento.id_for_label }}" 
+                                   name="{{ form.departamento.name }}" 
+                                   value="{{ form.departamento.value|default:'Cundinamarca' }}"
+                                   placeholder="Cundinamarca">
+                        </div>
+                    </div>
+                    
+                    <!-- Contraseñas -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Contraseña *
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="{{ form.password1.id_for_label }}" 
+                                   name="{{ form.password1.name }}" 
+                                   required>
+                            <div class="form-text">Mínimo 8 caracteres</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Confirmar Contraseña *
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="{{ form.password2.id_for_label }}" 
+                                   name="{{ form.password2.name }}" 
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <!-- Términos y Condiciones -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="{{ form.acepta_terminos.id_for_label }}" 
+                                   name="{{ form.acepta_terminos.name }}" 
+                                   required>
+                            <label class="form-check-label" for="{{ form.acepta_terminos.id_for_label }}">
+                                Acepto los <a href="#" class="text-decoration-none">Términos y Condiciones</a> *
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="{{ form.acepta_politica_privacidad.id_for_label }}" 
+                                   name="{{ form.acepta_politica_privacidad.name }}" 
+                                   required>
+                            <label class="form-check-label" for="{{ form.acepta_politica_privacidad.id_for_label }}">
+                                Acepto la <a href="#" class="text-decoration-none">Política de Privacidad</a> *
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="{{ form.recibir_notificaciones.id_for_label }}" 
+                                   name="{{ form.recibir_notificaciones.name }}" 
+                                   checked>
+                            <label class="form-check-label" for="{{ form.recibir_notificaciones.id_for_label }}">
+                                Deseo recibir notificaciones por correo electrónico
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mb-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Crear Cuenta
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center">
+                    <p class="mb-0">
+                        ¿Ya tienes cuenta? 
+                        <a href="{% url 'accounts:login' %}" class="text-decoration-none fw-bold">
+                            Inicia sesión aquí
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

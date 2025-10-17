@@ -1,0 +1,261 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .delete-confirmation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: none;
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .delete-modal {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .delete-modal h3 {
+        color: #dc3545;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .delete-modal .warning {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 15px 0;
+        color: #856404;
+    }
+    
+    .delete-modal .relations {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 15px 0;
+        color: #721c24;
+    }
+    
+    .delete-modal .buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+    
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    .btn-cancel {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .btn-delete:hover {
+        background: #c82333;
+    }
+    
+    .btn-cancel:hover {
+        background: #5a6268;
+    }
+    
+    .loading {
+        display: none;
+        text-align: center;
+        margin: 10px 0;
+    }
+    
+    .success-message {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 15px 0;
+    }
+    
+    .error-message {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 15px 0;
+    }
+</style>
+
+<script>
+function eliminarUsuarioSimple(userId, username) {
+    const modal = document.getElementById('deleteModal');
+    const content = document.getElementById('deleteContent');
+    
+    content.innerHTML = `
+        <h3>🗑️ Confirmar Eliminación</h3>
+        <p>¿Estás seguro de que deseas eliminar el usuario <strong>"${username}"</strong>?</p>
+        <div class="warning">
+            ⚠️ <strong>Advertencia:</strong> Esta acción no se puede deshacer.
+        </div>
+        <div class="loading" id="loading">
+            🔄 Eliminando usuario...
+        </div>
+        <div class="buttons">
+            <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn-delete" onclick="confirmarEliminacion(${userId}, '${username}')">
+                🗑️ Eliminar Usuario
+            </button>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function eliminarUsuarioConRelaciones(userId, username, relaciones) {
+    const modal = document.getElementById('deleteModal');
+    const content = document.getElementById('deleteContent');
+    
+    const relacionesText = relaciones.join(', ');
+    
+    content.innerHTML = `
+        <h3>🗑️ Confirmar Eliminación con Relaciones</h3>
+        <p>¿Estás seguro de que deseas eliminar el usuario <strong>"${username}"</strong>?</p>
+        <div class="relations">
+            <strong>⚠️ ATENCIÓN:</strong> Este usuario tiene datos relacionados que también serán eliminados:
+            <ul>
+                ${relaciones.map(rel => `<li>${rel}</li>`).join('')}
+            </ul>
+        </div>
+        <div class="warning">
+            🚨 <strong>Advertencia Crítica:</strong> Esta acción eliminará permanentemente el usuario y TODOS sus datos relacionados. No se puede deshacer.
+        </div>
+        <div class="loading" id="loading">
+            🔄 Eliminando usuario y datos relacionados...
+        </div>
+        <div class="buttons">
+            <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn-delete" onclick="confirmarEliminacion(${userId}, '${username}')">
+                🗑️ Eliminar Todo
+            </button>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function confirmarEliminacion(userId, username) {
+    const loading = document.getElementById('loading');
+    const buttons = document.querySelector('.buttons');
+    
+    loading.style.display = 'block';
+    buttons.style.display = 'none';
+    
+    // Obtener CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch(`/admin/auth/user/eliminar-usuario/${userId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        const content = document.getElementById('deleteContent');
+        
+        if (data.success) {
+            content.innerHTML = `
+                <h3 style="color: #28a745;">✅ Eliminación Exitosa</h3>
+                <div class="success-message">
+                    <strong>Usuario eliminado:</strong> ${data.message}
+                    ${data.relaciones_eliminadas && data.relaciones_eliminadas.length > 0 ? 
+                        `<br><strong>Datos relacionados eliminados:</strong> ${data.relaciones_eliminadas.join(', ')}` : ''}
+                </div>
+                <div class="buttons">
+                    <button class="btn-cancel" onclick="cerrarModalYRecargar()">Cerrar</button>
+                </div>
+            `;
+        } else {
+            content.innerHTML = `
+                <h3 style="color: #dc3545;">❌ Error en la Eliminación</h3>
+                <div class="error-message">
+                    <strong>Error:</strong> ${data.error}
+                </div>
+                <div class="buttons">
+                    <button class="btn-cancel" onclick="cerrarModal()">Cerrar</button>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        const content = document.getElementById('deleteContent');
+        content.innerHTML = `
+            <h3 style="color: #dc3545;">❌ Error de Conexión</h3>
+            <div class="error-message">
+                <strong>Error:</strong> No se pudo conectar con el servidor. Inténtalo nuevamente.
+            </div>
+            <div class="buttons">
+                <button class="btn-cancel" onclick="cerrarModal()">Cerrar</button>
+            </div>
+        `;
+    });
+}
+
+function cerrarModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+function cerrarModalYRecargar() {
+    cerrarModal();
+    location.reload();
+}
+
+// Cerrar modal al hacer clic fuera
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        cerrarModal();
+    }
+});
+</script>
+{% endblock %}
+
+{% block content %}
+{{ block.super }}
+
+<!-- Modal de confirmación de eliminación -->
+<div id="deleteModal" class="delete-confirmation">
+    <div class="delete-modal">
+        <div id="deleteContent">
+            <!-- El contenido se carga dinámicamente -->
+        </div>
+    </div>
+</div>
+{% endblock %}
