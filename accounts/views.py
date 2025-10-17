@@ -14,6 +14,8 @@ from .forms import RegistroCompletoForm
 
 # Constantes para URLs reutilizables
 LOGIN_URL_NAME = 'accounts:login'
+ADMIN_URL_PATH = '/admin/'
+DASHBOARD_URL_NAME = 'accounts:dashboard'
 
 class RegisterView(CreateView):
     """Vista para el registro completo de usuarios colombianos"""
@@ -115,10 +117,10 @@ Tu aliado en gestión financiera y contable
         if request.user.is_authenticated:
             if request.user.is_superuser or request.user.is_staff:
                 # Administradores van al panel admin
-                return redirect('/admin/')
+                return redirect(ADMIN_URL_PATH)
             else:
                 # Usuarios normales van al dashboard
-                return redirect('accounts:dashboard')
+                return redirect(DASHBOARD_URL_NAME)
         return super().dispatch(request, *args, **kwargs)
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -141,18 +143,18 @@ class CustomLoginView(LoginView):
         
         if user.is_superuser or user.is_staff:
             # Administradores van al panel admin
-            return '/admin/'
+            return ADMIN_URL_PATH
         else:
             # Usuarios normales van al dashboard
-            return reverse_lazy('accounts:dashboard')
+            return reverse_lazy(DASHBOARD_URL_NAME)
     
     def dispatch(self, request, *args, **kwargs):
         # Si ya está autenticado, redirigir según su tipo
         if request.user.is_authenticated:
             if request.user.is_superuser or request.user.is_staff:
-                return redirect('/admin/')
+                return redirect(ADMIN_URL_PATH)
             else:
-                return redirect('accounts:dashboard')
+                return redirect(DASHBOARD_URL_NAME)
         return super().dispatch(request, *args, **kwargs)
 
 
