@@ -182,6 +182,6 @@ def activar_cuenta(request):
         
         return redirect(LOGIN_URL_NAME)
         
-    except Exception as e:
+    except Exception:
         messages.error(request, 'Token de activación inválido o expirado.')
         return redirect(LOGIN_URL_NAME)
