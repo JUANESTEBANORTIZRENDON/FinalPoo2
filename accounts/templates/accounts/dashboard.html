@@ -30,6 +30,27 @@
         font-size: 24px;
         color: white;
     }
+    /* Estilos para botón dropdown que actúa como enlace */
+    .nav-link.btn.btn-link {
+        border: none;
+        background: none !important;
+        color: rgba(255, 255, 255, 0.75) !important;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0;
+    }
+    .nav-link.btn.btn-link:hover,
+    .nav-link.btn.btn-link:focus {
+        color: rgba(255, 255, 255, 1) !important;
+        background: none !important;
+        box-shadow: none;
+        border: none;
+    }
+    .nav-link.btn.btn-link:active {
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
 </style>
 
 <!-- Navbar -->
@@ -85,18 +106,17 @@
             </ul>
             <ul class="navbar-nav">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" 
-                       href="#" 
-                       id="navbarDropdown" 
-                       role="button" 
-                       data-bs-toggle="dropdown"
-                       aria-expanded="false"
-                       aria-label="Menú de usuario {{ user.username }}"
-                       tabindex="0"
-                       onKeyDown="handleKeyPress(event, this)"
-                       onKeyUp="handleKeyPress(event, this)">
+                    <button class="nav-link dropdown-toggle btn btn-link" 
+                            type="button"
+                            id="navbarDropdown" 
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                            aria-label="Menú de usuario {{ user.username }}"
+                            tabindex="0"
+                            onKeyDown="handleKeyPress(event, this)"
+                            onKeyUp="handleKeyPress(event, this)">
                         <i class="fas fa-user me-1" aria-hidden="true"></i>{{ user.username }}
-                    </a>
+                    </button>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <li>
                             <a class="dropdown-item" 
