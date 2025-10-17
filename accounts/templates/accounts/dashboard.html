@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Mejorar navegación con Tab
     const interactiveElements = document.querySelectorAll('button, a, [tabindex="0"]');
-    interactiveElements.forEach(function(element, index) {
+    for (const element of interactiveElements) {
         element.addEventListener('keydown', function(event) {
             handleKeyPress(event, this);
         });
@@ -373,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
-    });
+    }
     
     // Anunciar cambios para lectores de pantalla
     const announcer = document.createElement('div');

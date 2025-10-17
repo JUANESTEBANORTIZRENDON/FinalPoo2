@@ -12,11 +12,14 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.models import User
 from .forms import RegistroCompletoForm
 
+# Constantes para URLs reutilizables
+LOGIN_URL_NAME = 'accounts:login'
+
 class RegisterView(CreateView):
     """Vista para el registro completo de usuarios colombianos"""
     form_class = RegistroCompletoForm
     template_name = 'accounts/register.html'
-    success_url = reverse_lazy('accounts:login')
+    success_url = reverse_lazy(LOGIN_URL_NAME)
     
     def form_valid(self, form):
         """Procesar registro y enviar email de activación"""
@@ -159,7 +162,7 @@ def activar_cuenta(request):
     
     if not token:
         messages.error(request, 'Token de activación no válido.')
-        return redirect('accounts:login')
+        return redirect(LOGIN_URL_NAME)
     
     try:
         signer = Signer()
@@ -175,8 +178,8 @@ def activar_cuenta(request):
             user.save()
             messages.success(request, '¡Cuenta activada exitosamente! Ya puedes iniciar sesión.')
         
-        return redirect('accounts:login')
+        return redirect(LOGIN_URL_NAME)
         
     except Exception as e:
         messages.error(request, 'Token de activación inválido o expirado.')
-        return redirect('accounts:login')
+        return redirect(LOGIN_URL_NAME)
