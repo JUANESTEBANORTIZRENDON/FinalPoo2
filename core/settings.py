@@ -28,7 +28,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-rc*ay)v)t(t9fxzait3el=$=sz_-bmm^hdvcgqs#-54lwre2=h')
+SECRET_KEY = os.getenv('SECRET_KEY')
+
+if not SECRET_KEY:
+    raise ValueError(
+        "SECRET_KEY no está configurada. "
+        "Agrega SECRET_KEY=tu-clave-secreta al archivo .env"
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
@@ -164,20 +170,20 @@ LOGIN_URL = 'accounts:login'
 # LOGIN_REDIRECT_URL manejado por CustomLoginView según tipo de usuario
 LOGOUT_REDIRECT_URL = 'accounts:login'
 
-# Email configuration - Gmail SMTP con contraseña de aplicación
-# IMPORTANTE: Para generar contraseña de aplicación de Gmail:
+# Email configuration - Gmail SMTP con clave de aplicación
+# IMPORTANTE: Para generar clave de aplicación de Gmail:
 # 1. Ir a https://myaccount.google.com/security
 # 2. Habilitar verificación en 2 pasos
-# 3. Crear contraseña de aplicación para "S_CONTABLE Django"
-# 4. Usar esa contraseña de 16 caracteres en GOOGLE_APP_PASSWORD
-# NUNCA subir la contraseña de aplicación al repositorio
+# 3. Crear clave de aplicación para "S_CONTABLE Django"
+# 4. Usar esa clave de 16 caracteres en GOOGLE_APP_PASSWORD
+# NUNCA subir la clave de aplicación al repositorio
 
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')  # Tu email de Gmail
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')  # Contraseña de aplicación
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')  # Clave de aplicación
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER', '')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 

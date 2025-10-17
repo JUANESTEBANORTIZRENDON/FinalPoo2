@@ -1,6 +1,6 @@
 """
 Serializers para API REST con JWT
-Maneja registro completo, activación y reset de contraseña
+Maneja registro completo, activación y reset de clave de acceso
 Sistema en español para Colombia
 """
 from rest_framework import serializers
@@ -19,11 +19,11 @@ class RegistroCompletoSerializer(serializers.ModelSerializer):
     password1 = serializers.CharField(
         write_only=True,
         min_length=8,
-        help_text="Contraseña (mínimo 8 caracteres)"
+        help_text="Clave de acceso (mínimo 8 caracteres)"
     )
     password2 = serializers.CharField(
         write_only=True,
-        help_text="Confirmar contraseña"
+        help_text="Confirmar clave de acceso"
     )
     
     # Campos del perfil extendido
@@ -150,13 +150,13 @@ class RegistroCompletoSerializer(serializers.ModelSerializer):
     
     def validate(self, attrs):
         """Validaciones generales"""
-        # Validar contraseñas
+        # Validar claves de acceso
         if attrs['password1'] != attrs['password2']:
             raise serializers.ValidationError({
-                'password2': 'Las contraseñas no coinciden.'
+                'password2': 'Las claves de acceso no coinciden.'
             })
         
-        # Validar fortaleza de contraseña
+        # Validar fortaleza de clave de acceso
         try:
             validate_password(attrs['password1'])
         except ValidationError as e:
@@ -286,7 +286,7 @@ class MeSerializer(serializers.ModelSerializer):
 
 class PasswordResetSerializer(serializers.Serializer):
     """
-    Serializer para solicitar reset de contraseña
+    Serializer para solicitar reset de clave de acceso
     Solo requiere email
     """
     email = serializers.EmailField(
@@ -304,27 +304,27 @@ class PasswordResetSerializer(serializers.Serializer):
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
     """
-    Serializer para confirmar reset de contraseña con token
+    Serializer para confirmar reset de clave de acceso con token
     """
     token = serializers.CharField(
         help_text="Token de recuperación recibido por email"
     )
     password1 = serializers.CharField(
         min_length=8,
-        help_text="Nueva contraseña (mínimo 8 caracteres)"
+        help_text="Nueva clave de acceso (mínimo 8 caracteres)"
     )
     password2 = serializers.CharField(
-        help_text="Confirmar nueva contraseña"
+        help_text="Confirmar nueva clave de acceso"
     )
     
     def validate(self, attrs):
-        """Validar que las contraseñas coincidan"""
+        """Validar que las claves de acceso coincidan"""
         if attrs['password1'] != attrs['password2']:
             raise serializers.ValidationError({
-                'password2': 'Las contraseñas no coinciden.'
+                'password2': 'Las claves de acceso no coinciden.'
             })
         
-        # Validar fortaleza de contraseña
+        # Validar fortaleza de clave de acceso
         try:
             validate_password(attrs['password1'])
         except ValidationError as e:

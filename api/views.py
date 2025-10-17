@@ -310,14 +310,14 @@ def activar_cuenta_view(request):
     }, status=status.HTTP_400_BAD_REQUEST)
 
 
-# ===== RECUPERACIÓN DE CONTRASEÑA =====
+# ===== RECUPERACIÓN DE CLAVE DE ACCESO =====
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def password_reset_view(request):
     """
     POST /api/password/reset/
-    Inicia recuperación de contraseña por email
+    Inicia recuperación de clave de acceso por email
     Body: {"email": "..."}
     """
     serializer = PasswordResetSerializer(data=request.data)
@@ -333,16 +333,16 @@ def password_reset_view(request):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             
             # Enviar email
-            subject = 'Recuperar contraseña - S_CONTABLE'
+            subject = 'Recuperar clave de acceso - S_CONTABLE'
             message = f"""
 ¡Hola {user.username}!
 
-Recibimos una solicitud para restablecer tu contraseña en S_CONTABLE.
+Recibimos una solicitud para restablecer tu clave de acceso en S_CONTABLE.
 
 Token de recuperación: {token}
 ID de usuario: {uid}
 
-Para restablecer tu contraseña, usa estos datos en la aplicación.
+Para restablecer tu clave de acceso, usa estos datos en la aplicación.
 
 Si no solicitaste este cambio, ignora este email.
 
@@ -373,7 +373,7 @@ El equipo de S_CONTABLE
         # Siempre retornamos éxito por seguridad
         return Response({
             'success': True,
-            'message': 'Si el email existe, recibirás instrucciones para restablecer tu contraseña.'
+            'message': 'Si el email existe, recibirás instrucciones para restablecer tu clave de acceso.'
         })
     
     return Response({
@@ -387,7 +387,7 @@ El equipo de S_CONTABLE
 def password_reset_confirm_view(request):
     """
     POST /api/password/reset/confirm/
-    Confirma cambio de contraseña con token
+    Confirma cambio de clave de acceso con token
     Body: {"token": "...", "uid": "...", "password1": "...", "password2": "..."}
     """
     serializer = PasswordResetConfirmSerializer(data=request.data)
@@ -404,13 +404,13 @@ def password_reset_confirm_view(request):
             
             # Verificar token
             if default_token_generator.check_token(user, token):
-                # Cambiar contraseña
+                # Cambiar clave de acceso
                 user.set_password(new_password)
                 user.save()
                 
                 return Response({
                     'success': True,
-                    'message': 'Contraseña restablecida exitosamente.'
+                    'message': 'Clave de acceso restablecida exitosamente.'
                 })
             else:
                 return Response({

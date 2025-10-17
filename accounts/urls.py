@@ -20,7 +20,7 @@ urlpatterns = [
     # Admin personalizado
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     
-    # Reset de contraseña
+    # Reset de clave de acceso
     path('password_reset/', 
          auth_views.PasswordResetView.as_view(
              template_name='accounts/password_reset.html',

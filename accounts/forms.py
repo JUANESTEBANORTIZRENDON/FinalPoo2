@@ -205,14 +205,14 @@ class RegistroCompletoForm(UserCreationForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Personalizar widgets de contraseñas
+        # Personalizar widgets de claves de acceso
         self.fields['password1'].widget.attrs.update({
             'class': 'form-control',
             'placeholder': 'Mínimo 8 caracteres'
         })
         self.fields['password2'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': 'Confirmar contraseña'
+            'placeholder': 'Confirmar clave de acceso'
         })
     
     def clean_email(self):
@@ -274,8 +274,8 @@ class RegistroCompletoForm(UserCreationForm):
 
 class CustomSetPasswordForm(SetPasswordForm):
     """
-    Formulario personalizado para cambio de contraseña
-    Incluye validación para no permitir la misma contraseña actual
+    Formulario personalizado para cambio de clave de acceso
+    Incluye validación para no permitir la misma clave actual
     """
     
     def __init__(self, *args, **kwargs):
@@ -283,23 +283,23 @@ class CustomSetPasswordForm(SetPasswordForm):
         # Personalizar widgets
         self.fields['new_password1'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': 'Nueva contraseña (mínimo 8 caracteres)'
+            'placeholder': 'Nueva clave de acceso (mínimo 8 caracteres)'
         })
         self.fields['new_password2'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': 'Confirmar nueva contraseña'
+            'placeholder': 'Confirmar nueva clave de acceso'
         })
     
     def clean_new_password1(self):
-        """Validar que la nueva contraseña no sea igual a la actual"""
+        """Validar que la nueva clave de acceso no sea igual a la actual"""
         new_password1 = self.cleaned_data.get('new_password1')
         
         if new_password1:
-            # Verificar si la nueva contraseña es igual a la actual
+            # Verificar si la nueva clave de acceso es igual a la actual
             if self.user.check_password(new_password1):
                 raise forms.ValidationError(
-                    "❌ La nueva contraseña no puede ser igual a la contraseña actual. "
-                    "Por favor, elige una contraseña diferente."
+                    "❌ La nueva clave de acceso no puede ser igual a la clave actual. "
+                    "Por favor, elige una clave diferente."
                 )
         
         return new_password1
@@ -310,11 +310,11 @@ class CustomSetPasswordForm(SetPasswordForm):
         new_password1 = cleaned_data.get('new_password1')
         new_password2 = cleaned_data.get('new_password2')
         
-        # Validar que las contraseñas coincidan
+        # Validar que las claves de acceso coincidan
         if new_password1 and new_password2:
             if new_password1 != new_password2:
                 raise forms.ValidationError(
-                    "❌ Las contraseñas no coinciden. Por favor, verifica que ambas sean iguales."
+                    "❌ Las claves de acceso no coinciden. Por favor, verifica que ambas sean iguales."
                 )
         
         return cleaned_data

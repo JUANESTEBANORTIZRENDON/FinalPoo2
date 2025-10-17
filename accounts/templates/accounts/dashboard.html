@@ -38,41 +38,98 @@
         <a class="navbar-brand fw-bold" href="#">
             <i class="fas fa-calculator me-2"></i>S_CONTABLE
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Alternar navegación"
+                tabindex="0"
+                onKeyDown="handleKeyPress(event, this)"
+                onKeyUp="handleKeyPress(event, this)">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'accounts:dashboard' %}">
-                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    <a class="nav-link active" 
+                       href="{% url 'accounts:dashboard' %}"
+                       aria-current="page"
+                       tabindex="0"
+                       onKeyDown="handleKeyPress(event, this)"
+                       onKeyUp="handleKeyPress(event, this)">
+                        <i class="fas fa-tachometer-alt me-1" aria-hidden="true"></i>Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-book me-1"></i>Contabilidad
+                    <a class="nav-link" 
+                       href="#"
+                       tabindex="0"
+                       aria-label="Ir a sección de contabilidad"
+                       onKeyDown="handleKeyPress(event, this)"
+                       onKeyUp="handleKeyPress(event, this)">
+                        <i class="fas fa-book me-1" aria-hidden="true"></i>Contabilidad
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-chart-bar me-1"></i>Reportes
+                    <a class="nav-link" 
+                       href="#"
+                       tabindex="0"
+                       aria-label="Ver reportes del sistema"
+                       onKeyDown="handleKeyPress(event, this)"
+                       onKeyUp="handleKeyPress(event, this)">
+                        <i class="fas fa-chart-bar me-1" aria-hidden="true"></i>Reportes
                     </a>
                 </li>
             </ul>
             <ul class="navbar-nav">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user me-1"></i>{{ user.username }}
+                    <a class="nav-link dropdown-toggle" 
+                       href="#" 
+                       id="navbarDropdown" 
+                       role="button" 
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false"
+                       aria-label="Menú de usuario {{ user.username }}"
+                       tabindex="0"
+                       onKeyDown="handleKeyPress(event, this)"
+                       onKeyUp="handleKeyPress(event, this)">
+                        <i class="fas fa-user me-1" aria-hidden="true"></i>{{ user.username }}
                     </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-user-cog me-2"></i>Perfil</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li>
+                            <a class="dropdown-item" 
+                               href="#"
+                               tabindex="0"
+                               aria-label="Ver perfil de usuario"
+                               onKeyDown="handleKeyPress(event, this)"
+                               onKeyUp="handleKeyPress(event, this)">
+                                <i class="fas fa-user-cog me-2" aria-hidden="true"></i>Perfil
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" 
+                               href="#"
+                               tabindex="0"
+                               aria-label="Configuración del sistema"
+                               onKeyDown="handleKeyPress(event, this)"
+                               onKeyUp="handleKeyPress(event, this)">
+                                <i class="fas fa-cog me-2" aria-hidden="true"></i>Configuración
+                            </a>
+                        </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
                                 {% csrf_token %}
-                                <button type="submit" class="dropdown-item" style="border: none; background: none; width: 100%; text-align: left;">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                                <button type="submit" 
+                                        class="dropdown-item" 
+                                        style="border: none; background: none; width: 100%; text-align: left;"
+                                        aria-label="Cerrar sesión y salir del sistema"
+                                        tabindex="0"
+                                        onKeyDown="handleKeyPress(event, this)"
+                                        onKeyUp="handleKeyPress(event, this)">
+                                    <i class="fas fa-sign-out-alt me-2" aria-hidden="true"></i>Cerrar Sesión
                                 </button>
                             </form>
                         </li>
@@ -152,23 +209,47 @@
                 </h5>
                 <div class="row">
                     <div class="col-md-3 mb-2">
-                        <button class="btn btn-outline-primary w-100">
-                            <i class="fas fa-plus me-2"></i>Nueva Factura
+                        <button class="btn btn-outline-primary w-100" 
+                                type="button"
+                                tabindex="0"
+                                role="button"
+                                aria-label="Crear nueva factura"
+                                onKeyDown="handleKeyPress(event, this)"
+                                onKeyUp="handleKeyPress(event, this)">
+                            <i class="fas fa-plus me-2" aria-hidden="true"></i>Nueva Factura
                         </button>
                     </div>
                     <div class="col-md-3 mb-2">
-                        <button class="btn btn-outline-success w-100">
-                            <i class="fas fa-user-plus me-2"></i>Nuevo Cliente
+                        <button class="btn btn-outline-success w-100"
+                                type="button"
+                                tabindex="0"
+                                role="button"
+                                aria-label="Agregar nuevo cliente"
+                                onKeyDown="handleKeyPress(event, this)"
+                                onKeyUp="handleKeyPress(event, this)">
+                            <i class="fas fa-user-plus me-2" aria-hidden="true"></i>Nuevo Cliente
                         </button>
                     </div>
                     <div class="col-md-3 mb-2">
-                        <button class="btn btn-outline-info w-100">
-                            <i class="fas fa-chart-bar me-2"></i>Ver Reportes
+                        <button class="btn btn-outline-info w-100"
+                                type="button"
+                                tabindex="0"
+                                role="button"
+                                aria-label="Ver reportes financieros"
+                                onKeyDown="handleKeyPress(event, this)"
+                                onKeyUp="handleKeyPress(event, this)">
+                            <i class="fas fa-chart-bar me-2" aria-hidden="true"></i>Ver Reportes
                         </button>
                     </div>
                     <div class="col-md-3 mb-2">
-                        <button class="btn btn-outline-warning w-100">
-                            <i class="fas fa-cog me-2"></i>Configuración
+                        <button class="btn btn-outline-warning w-100"
+                                type="button"
+                                tabindex="0"
+                                role="button"
+                                aria-label="Abrir configuración del sistema"
+                                onKeyDown="handleKeyPress(event, this)"
+                                onKeyUp="handleKeyPress(event, this)">
+                            <i class="fas fa-cog me-2" aria-hidden="true"></i>Configuración
                         </button>
                     </div>
                 </div>
@@ -192,4 +273,126 @@
         </div>
     </div>
 </div>
+
+<script>
+/**
+ * Manejador de eventos de teclado para accesibilidad
+ * Permite activar elementos interactivos con Enter y Espacio
+ */
+function handleKeyPress(event, element) {
+    // Solo manejar eventos de keydown para evitar duplicados
+    if (event.type !== 'keydown') return;
+    
+    const key = event.key || event.which || event.keyCode;
+    
+    // Enter (13) o Espacio (32)
+    if (key === 'Enter' || key === ' ' || key === 13 || key === 32) {
+        event.preventDefault();
+        
+        // Si es un botón, hacer click
+        if (element.tagName === 'BUTTON') {
+            element.click();
+        }
+        // Si es un enlace, navegar
+        else if (element.tagName === 'A') {
+            if (element.href && element.href !== '#') {
+                window.location.href = element.href;
+            } else {
+                element.click();
+            }
+        }
+        // Para otros elementos, simular click
+        else {
+            element.click();
+        }
+    }
+}
+
+/**
+ * Mejorar navegación con teclado
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar indicadores visuales para elementos enfocados
+    const style = document.createElement('style');
+    style.textContent = `
+        .btn:focus,
+        .nav-link:focus,
+        .dropdown-item:focus,
+        .navbar-toggler:focus {
+            outline: 2px solid #667eea !important;
+            outline-offset: 2px !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3) !important;
+        }
+        
+        .btn:focus-visible,
+        .nav-link:focus-visible,
+        .dropdown-item:focus-visible {
+            outline: 2px solid #667eea !important;
+            outline-offset: 2px !important;
+        }
+        
+        /* Mejorar contraste para usuarios con discapacidades visuales */
+        @media (prefers-contrast: high) {
+            .btn, .nav-link, .dropdown-item {
+                border: 2px solid currentColor !important;
+            }
+        }
+        
+        /* Respetar preferencias de movimiento reducido */
+        @media (prefers-reduced-motion: reduce) {
+            .btn, .dashboard-card, * {
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Mejorar navegación con Tab
+    const interactiveElements = document.querySelectorAll('button, a, [tabindex="0"]');
+    interactiveElements.forEach(function(element, index) {
+        element.addEventListener('keydown', function(event) {
+            handleKeyPress(event, this);
+        });
+        
+        // Agregar soporte para navegación con flechas en grupos
+        if (element.closest('.row')) {
+            element.addEventListener('keydown', function(event) {
+                const key = event.key;
+                if (key === 'ArrowRight' || key === 'ArrowLeft') {
+                    const siblings = Array.from(element.closest('.row').querySelectorAll('button, a'));
+                    const currentIndex = siblings.indexOf(element);
+                    
+                    let nextIndex;
+                    if (key === 'ArrowRight') {
+                        nextIndex = (currentIndex + 1) % siblings.length;
+                    } else {
+                        nextIndex = currentIndex === 0 ? siblings.length - 1 : currentIndex - 1;
+                    }
+                    
+                    if (siblings[nextIndex]) {
+                        event.preventDefault();
+                        siblings[nextIndex].focus();
+                    }
+                }
+            });
+        }
+    });
+    
+    // Anunciar cambios para lectores de pantalla
+    const announcer = document.createElement('div');
+    announcer.setAttribute('aria-live', 'polite');
+    announcer.setAttribute('aria-atomic', 'true');
+    announcer.className = 'sr-only';
+    document.body.appendChild(announcer);
+    
+    // Función para anunciar mensajes
+    window.announceToScreenReader = function(message) {
+        announcer.textContent = message;
+        setTimeout(() => {
+            announcer.textContent = '';
+        }, 1000);
+    };
+});
+</script>
 {% endblock %}
