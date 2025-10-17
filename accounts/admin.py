@@ -342,7 +342,7 @@ admin.site.site_title = "S_CONTABLE Admin"
 admin.site.index_title = "🇨🇴 Sistema Contable Colombiano - Panel de Control"
 
 # Contexto personalizado para el admin
-def admin_context(request):
+def admin_context():
     """Agregar estadísticas al contexto del admin"""
     context = {}
     try:
@@ -352,8 +352,8 @@ def admin_context(request):
             'total_profiles': PerfilUsuario.objects.count(),
             'admin_users': User.objects.filter(is_superuser=True).count(),
         })
-    except (AttributeError, ImportError, Exception) as e:
-        # Log del error para debugging si es necesario
+    except (AttributeError, ImportError):
+        # Manejo específico de errores de atributos e importación
         context.update({
             'total_users': 0,
             'active_users': 0,
@@ -369,5 +369,5 @@ register = Library()
 @register.inclusion_tag('admin/index.html', takes_context=True)
 def admin_stats(context):
     """Template tag para mostrar estadísticas"""
-    request = context['request']
-    return admin_context(request)
+    # El contexto se puede usar para futuras extensiones si es necesario
+    return admin_context()
