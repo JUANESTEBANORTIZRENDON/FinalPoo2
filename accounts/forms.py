@@ -253,7 +253,7 @@ class RegistroCompletoForm(UserCreationForm):
             user.save()
             
             # Crear o actualizar perfil
-            perfil, created = PerfilUsuario.objects.get_or_create(usuario=user)
+            perfil, _ = PerfilUsuario.objects.get_or_create(usuario=user)
             
             # Campos del perfil
             campos_perfil = [

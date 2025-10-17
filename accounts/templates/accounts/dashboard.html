@@ -292,7 +292,7 @@ function handleKeyPress(event, element) {
         // Si es un enlace, navegar
         else if (element.tagName === 'A') {
             if (element.href && element.href !== '#') {
-                window.location.href = element.href;
+                globalThis.location.href = element.href;
             } else {
                 element.click();
             }
@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(announcer);
     
     // Función para anunciar mensajes
-    window.announceToScreenReader = function(message) {
+    globalThis.announceToScreenReader = function(message) {
         announcer.textContent = message;
         setTimeout(() => {
             announcer.textContent = '';
