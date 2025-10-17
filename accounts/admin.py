@@ -103,7 +103,7 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
                     obj.perfil.numero_documento
                 )
             return format_html('<em style="color: #999;">Sin documento</em>')
-        except:
+        except (AttributeError, PerfilUsuario.DoesNotExist):
             return format_html('<em style="color: #999;">Sin perfil</em>')
     get_documento.short_description = "🆔 Documento"
     get_documento.admin_order_field = 'perfil__numero_documento'
@@ -118,7 +118,7 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
                     obj.perfil.telefono
                 )
             return format_html('<em style="color: #999;">Sin teléfono</em>')
-        except:
+        except (AttributeError, PerfilUsuario.DoesNotExist):
             return format_html('<em style="color: #999;">Sin perfil</em>')
     get_telefono.short_description = "📱 Teléfono"
     get_telefono.admin_order_field = 'perfil__telefono'
@@ -134,7 +134,7 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
                     obj.perfil.ciudad
                 )
             return format_html('<em style="color: #999;">Sin ubicación</em>')
-        except:
+        except (AttributeError, PerfilUsuario.DoesNotExist):
             return format_html('<em style="color: #999;">Sin perfil</em>')
     get_ciudad.short_description = "📍 Ciudad"
     get_ciudad.admin_order_field = 'perfil__ciudad'
@@ -175,7 +175,7 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
             if hasattr(obj, 'perfil'):
                 relaciones_info.append("Perfil")
                 tiene_relaciones = True
-        except:
+        except (AttributeError, PerfilUsuario.DoesNotExist):
             pass
         
         # Contar otros objetos relacionados si existen
@@ -241,7 +241,7 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
                     if hasattr(user, 'perfil'):
                         user.perfil.delete()
                         relaciones.append('Perfil de usuario')
-                except:
+                except (AttributeError, PerfilUsuario.DoesNotExist):
                     pass
                 
                 # Aquí puedes agregar más eliminaciones de objetos relacionados
@@ -334,7 +334,8 @@ def admin_context(request):
             'total_profiles': PerfilUsuario.objects.count(),
             'admin_users': User.objects.filter(is_superuser=True).count(),
         })
-    except:
+    except (AttributeError, ImportError, Exception) as e:
+        # Log del error para debugging si es necesario
         context.update({
             'total_users': 0,
             'active_users': 0,
