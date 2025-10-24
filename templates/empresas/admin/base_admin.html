@@ -423,6 +423,37 @@
         .nav-link:hover .fa-external-link-alt {
             transform: translateX(2px);
         }
+
+        /* Botón de logout especial */
+        .logout-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+            color: white !important;
+            margin-top: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%) !important;
+            color: white !important;
+            transform: translateX(5px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .logout-btn i {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .admin-sidebar.collapsed .logout-btn {
+            justify-content: center;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -503,19 +534,13 @@
                 </a>
             </div>
             
-            <div class="nav-item">
-                <a href="/admin/" target="_blank" class="nav-link">
-                    <i class="fas fa-cogs"></i>
-                    <span>Admin Django</span>
-                    <i class="fas fa-external-link-alt" style="margin-left: auto; font-size: 0.8rem; opacity: 0.7;"></i>
-                </a>
+            <!-- SESIÓN -->
+            <div class="nav-section-header">
+                <span>🚪 SESIÓN</span>
             </div>
             
-            <!-- SESIÓN -->
-            <hr style="margin: 20px 15px; border-color: rgba(0,0,0,0.1);">
-            
             <div class="nav-item">
-                <a href="{% url 'accounts:logout' %}" class="nav-link">
+                <a href="{% url 'accounts:logout' %}" class="nav-link logout-btn" onclick="return confirmLogout()">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Cerrar Sesión</span>
                 </a>
@@ -600,6 +625,38 @@
                     card.classList.add('animate-slide-up');
                 }, index * 100);
             });
+        });
+
+        // Función para confirmar logout
+        function confirmLogout() {
+            const result = confirm('🚪 ¿Estás seguro de que deseas cerrar sesión?\n\nSe perderá cualquier trabajo no guardado.');
+            
+            if (result) {
+                // Mostrar mensaje de despedida
+                const logoutBtn = document.querySelector('.logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Cerrando sesión...</span>';
+                    logoutBtn.style.pointerEvents = 'none';
+                }
+                
+                // Limpiar localStorage y sessionStorage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                return true; // Permitir que el enlace continúe
+            }
+            
+            return false; // Cancelar el logout
+        }
+
+        // Prevenir navegación hacia atrás después del logout
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                // Si la página se carga desde caché (botón atrás), recargar
+                if (window.location.pathname.includes('/admin/') && !document.querySelector('body').classList.contains('logged-in')) {
+                    window.location.reload();
+                }
+            }
         });
     </script>
     

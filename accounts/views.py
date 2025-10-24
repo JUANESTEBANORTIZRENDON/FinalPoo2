@@ -320,22 +320,44 @@ def activar_cuenta(request):
 
 
 class CustomLogoutView(LogoutView):
-    """Vista de logout personalizada"""
+    """Vista de logout personalizada con limpieza completa"""
     next_page = LOGIN_URL_NAME
     
     def dispatch(self, request, *args, **kwargs):
-        """Limpiar sesión completamente"""
+        """Limpiar sesión completamente y forzar logout"""
         if request.user.is_authenticated:
-            # Limpiar empresa activa de la sesión
-            if 'empresa_activa_id' in request.session:
-                del request.session['empresa_activa_id']
+            # Limpiar todas las variables de sesión específicas
+            session_keys_to_clear = [
+                'empresa_activa_id',
+                'dev_authenticated', 
+                'dev_auth_time',
+                '_auth_user_id',
+                '_auth_user_backend',
+                '_auth_user_hash'
+            ]
             
-            # Limpiar cualquier otra información de sesión
+            for key in session_keys_to_clear:
+                if key in request.session:
+                    del request.session[key]
+            
+            # Limpiar completamente la sesión
             request.session.flush()
             
-            # Hacer logout
+            # Hacer logout explícito
             logout(request)
             
-            messages.success(request, 'Has cerrado sesión exitosamente.')
+            messages.success(request, '✅ Has cerrado sesión exitosamente. ¡Hasta pronto!')
         
-        return redirect(self.next_page)
+        # Crear respuesta de redirección
+        response = redirect(self.next_page)
+        
+        # Limpiar cookies de sesión explícitamente
+        response.delete_cookie('sessionid')
+        response.delete_cookie('csrftoken')
+        
+        # Agregar headers para prevenir caché
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+        
+        return response
