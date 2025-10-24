@@ -1,0 +1,197 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}{{ object.razon_social }} - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'empresas:empresa_list' %}">Empresas</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ object.razon_social }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-building"></i>
+                        Información de la Empresa
+                    </h4>
+                    <div class="btn-group">
+                        <a href="{% url 'empresas:empresa_update' object.pk %}" class="btn btn-warning">
+                            <i class="bi bi-pencil"></i>
+                            Editar
+                        </a>
+                        <a href="{% url 'empresas:perfil_list' object.pk %}" class="btn btn-info">
+                            <i class="bi bi-people"></i>
+                            Usuarios
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Información Legal</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>NIT:</strong></td>
+                                    <td><code>{{ object.nit_formateado }}</code></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Razón Social:</strong></td>
+                                    <td>{{ object.razon_social }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tipo:</strong></td>
+                                    <td>
+                                        {% if object.tipo_empresa %}
+                                            <span class="badge bg-secondary">{{ object.get_tipo_empresa_display }}</span>
+                                        {% else %}
+                                            <span class="text-muted">No especificado</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estado:</strong></td>
+                                    <td>
+                                        {% if object.activa %}
+                                            <span class="badge bg-success">Activa</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactiva</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Información de Contacto</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Dirección:</strong></td>
+                                    <td>{{ object.direccion }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ciudad:</strong></td>
+                                    <td>{{ object.ciudad }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Teléfono:</strong></td>
+                                    <td>{{ object.telefono }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>
+                                        {% if object.email %}
+                                            <a href="mailto:{{ object.email }}">{{ object.email }}</a>
+                                        {% else %}
+                                            <span class="text-muted">No especificado</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Propietario</h6>
+                            <p>
+                                <i class="bi bi-person"></i>
+                                {{ object.propietario.get_full_name|default:object.propietario.username }}
+                                <br>
+                                <small class="text-muted">{{ object.propietario.email }}</small>
+                            </p>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Fechas</h6>
+                            <p>
+                                <strong>Creada:</strong> {{ object.fecha_creacion|date:"d/m/Y H:i" }}<br>
+                                <strong>Actualizada:</strong> {{ object.fecha_actualizacion|date:"d/m/Y H:i" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up"></i>
+                        Estadísticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Usuarios Activos</span>
+                        <span class="badge bg-primary">{{ object.perfiles.filter.activo=True.count }}</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Facturas del Mes</span>
+                        <span class="badge bg-info">0</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Asientos Contables</span>
+                        <span class="badge bg-success">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-gear"></i>
+                        Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'catalogos:tercero_list' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-people"></i>
+                            Gestionar Terceros
+                        </a>
+                        
+                        <a href="{% url 'facturacion:factura_list' %}" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-receipt"></i>
+                            Ver Facturas
+                        </a>
+                        
+                        <a href="{% url 'contabilidad:cuenta_list' %}" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-list-ol"></i>
+                            Plan de Cuentas
+                        </a>
+                        
+                        <a href="{% url 'reportes:diario' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-file-earmark-text"></i>
+                            Reportes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-12">
+            <a href="{% url 'empresas:empresa_list' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Volver a Empresas
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

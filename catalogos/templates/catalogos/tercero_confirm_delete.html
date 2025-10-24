@@ -1,0 +1,79 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Eliminar Tercero - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'catalogos:tercero_list' %}">Terceros</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Eliminar</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Confirmar Eliminación
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                    </div>
+                    
+                    <p>¿Estás seguro de que deseas eliminar el siguiente tercero?</p>
+                    
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6><strong>{{ object.razon_social }}</strong></h6>
+                            <p class="mb-1">
+                                <strong>Documento:</strong> {{ object.get_tipo_documento_display }} {{ object.numero_documento }}
+                            </p>
+                            <p class="mb-1">
+                                <strong>Tipo:</strong> {{ object.get_tipo_tercero_display }}
+                            </p>
+                            <p class="mb-0">
+                                <strong>Ciudad:</strong> {{ object.ciudad }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h6>Consecuencias de la eliminación:</h6>
+                        <ul class="text-muted">
+                            <li>Se eliminará toda la información del tercero</li>
+                            <li>Las facturas asociadas mantendrán la referencia pero sin datos del tercero</li>
+                            <li>Los movimientos contables no se verán afectados</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'catalogos:tercero_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i>
+                                Cancelar
+                            </a>
+                            
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i>
+                                Sí, Eliminar Tercero
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

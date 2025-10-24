@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}S_CONTABLE{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --sidebar-width: 280px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-header h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .empresa-info {
+            background: rgba(255,255,255,0.1);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .empresa-info small {
+            opacity: 0.8;
+        }
+        
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+        
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-section-title {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--secondary-color);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.15);
+            border-left-color: var(--secondary-color);
+        }
+        
+        .nav-link i {
+            margin-right: 0.75rem;
+            width: 1.25rem;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+        
+        .top-navbar {
+            background: white;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .content-area {
+            padding: 2rem 1.5rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .breadcrumb {
+            background: none;
+            padding: 0;
+            margin: 0.5rem 0 0 0;
+        }
+        
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 0.5rem;
+        }
+        
+        .card-header {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 0.5rem;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-calculator"></i> S_CONTABLE</h4>
+            {% if request.empresa_activa %}
+            <div class="empresa-info">
+                <div><strong>{{ request.empresa_activa.razon_social }}</strong></div>
+                <small>{{ request.empresa_activa.nit }}</small>
+                {% if request.rol_empresa %}
+                <div class="mt-1">
+                    <span class="badge bg-light text-dark">{{ request.perfil_empresa.get_rol_display }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <nav class="sidebar-nav">
+            <!-- Dashboard -->
+            <div class="nav-section">
+                <a href="{% url 'accounts:dashboard' %}" class="nav-link">
+                    <i class="bi bi-house"></i>
+                    Resumen
+                </a>
+            </div>
+            
+            <!-- Empresas -->
+            {% if request.rol_empresa == 'admin' or user.is_superuser %}
+            <div class="nav-section">
+                <div class="nav-section-title">Administración</div>
+                <a href="{% url 'empresas:empresa_list' %}" class="nav-link">
+                    <i class="bi bi-building"></i>
+                    Empresas
+                </a>
+                <a href="{% url 'empresas:cambiar_empresa' %}" class="nav-link">
+                    <i class="bi bi-arrow-repeat"></i>
+                    Cambiar Empresa
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- Catálogos -->
+            <div class="nav-section">
+                <div class="nav-section-title">Catálogos</div>
+                <a href="{% url 'catalogos:tercero_list' %}" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    Terceros
+                </a>
+                <a href="{% url 'catalogos:producto_list' %}" class="nav-link">
+                    <i class="bi bi-box"></i>
+                    Productos
+                </a>
+                <a href="{% url 'catalogos:impuestos_lista' %}" class="nav-link">
+                    <i class="bi bi-percent"></i>
+                    Impuestos
+                </a>
+                <a href="{% url 'catalogos:metodos_pago_lista' %}" class="nav-link">
+                    <i class="bi bi-credit-card"></i>
+                    Métodos de Pago
+                </a>
+            </div>
+            
+            <!-- Facturación -->
+            <div class="nav-section">
+                <div class="nav-section-title">Facturación</div>
+                <a href="{% url 'facturacion:factura_list' %}" class="nav-link">
+                    <i class="bi bi-receipt"></i>
+                    Facturas
+                </a>
+                <a href="{% url 'facturacion:factura_create' %}" class="nav-link">
+                    <i class="bi bi-plus-circle"></i>
+                    Nueva Factura
+                </a>
+            </div>
+            
+            <!-- Tesorería -->
+            <div class="nav-section">
+                <div class="nav-section-title">Tesorería</div>
+                <a href="{% url 'tesoreria:cobros_lista' %}" class="nav-link">
+                    <i class="bi bi-arrow-down-circle"></i>
+                    Cobros
+                </a>
+                <a href="{% url 'tesoreria:egresos_lista' %}" class="nav-link">
+                    <i class="bi bi-arrow-up-circle"></i>
+                    Egresos
+                </a>
+                <a href="{% url 'tesoreria:cuentas_lista' %}" class="nav-link">
+                    <i class="bi bi-bank"></i>
+                    Cuentas Bancarias
+                </a>
+            </div>
+            
+            <!-- Contabilidad -->
+            {% if request.rol_empresa in 'admin,contador' or user.is_superuser %}
+            <div class="nav-section">
+                <div class="nav-section-title">Contabilidad</div>
+                <a href="{% url 'contabilidad:cuentas_lista' %}" class="nav-link">
+                    <i class="bi bi-list-ol"></i>
+                    Plan de Cuentas
+                </a>
+                <a href="{% url 'contabilidad:asientos_lista' %}" class="nav-link">
+                    <i class="bi bi-journal-text"></i>
+                    Asientos
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- Reportes -->
+            <div class="nav-section">
+                <div class="nav-section-title">Reportes</div>
+                <a href="{% url 'reportes:diario' %}" class="nav-link">
+                    <i class="bi bi-journal"></i>
+                    Libro Diario
+                </a>
+                <a href="{% url 'reportes:mayor' %}" class="nav-link">
+                    <i class="bi bi-book"></i>
+                    Libro Mayor
+                </a>
+                <a href="{% url 'reportes:balance_comprobacion' %}" class="nav-link">
+                    <i class="bi bi-clipboard-data"></i>
+                    Balance de Comprobación
+                </a>
+                {% if request.rol_empresa in 'admin,contador' or user.is_superuser %}
+                <a href="{% url 'reportes:estado_resultados' %}" class="nav-link">
+                    <i class="bi bi-graph-up"></i>
+                    Estado de Resultados
+                </a>
+                <a href="{% url 'reportes:balance_general' %}" class="nav-link">
+                    <i class="bi bi-pie-chart"></i>
+                    Balance General
+                </a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navbar -->
+        <div class="top-navbar">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-link d-md-none me-2" id="sidebarToggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            {% block breadcrumbs %}
+                            <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Inicio</a></li>
+                            {% endblock %}
+                        </ol>
+                    </nav>
+                    {% if request.empresa_activa %}
+                    <div class="ms-3 d-none d-md-block">
+                        <small class="text-muted">Empresa Actual:</small><br>
+                        <strong class="text-primary">{{ request.empresa_activa.razon_social }}</strong>
+                        <small class="text-muted ms-2">{{ request.empresa_activa.nit_formateado }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'accounts:dashboard' %}">
+                            <i class="bi bi-person"></i> Mi Perfil
+                        </a></li>
+                        {% if request.empresa_activa %}
+                        <li><a class="dropdown-item" href="{% url 'empresas:cambiar_empresa' %}">
+                            <i class="bi bi-building"></i> Cambiar Empresa
+                        </a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+                {% block page_description %}{% endblock %}
+            </div>
+            
+            <!-- Messages -->
+            {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {% if message.tags == 'error' %}
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    {% elif message.tags == 'success' %}
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    {% elif message.tags == 'warning' %}
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    {% else %}
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    {% endif %}
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Main Content -->
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Sidebar toggle for mobile
+        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('sidebarToggle');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(event.target) && 
+                !toggle?.contains(event.target)) {
+                sidebar.classList.remove('show');
+            }
+        });
+        
+        // Active nav link
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,414 +1,490 @@
-{% extends 'accounts/base.html' %}
+{% extends 'base_contable.html' %}
 
-{% block title %}Dashboard - S_CONTABLE{% endblock %}
+{% block title %}Resumen - S_CONTABLE{% endblock %}
+
+{% block page_title %}Resumen{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active">Resumen</li>
+{% endblock %}
 
 {% block content %}
-<style>
-    body {
-        background: #f8f9fa;
-    }
-    .navbar {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .dashboard-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        transition: transform 0.3s ease;
-    }
-    .dashboard-card:hover {
-        transform: translateY(-5px);
-    }
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        color: white;
-    }
-    /* Estilos para botón dropdown que actúa como enlace */
-    .nav-link.btn.btn-link {
-        border: none;
-        background: none !important;
-        color: rgba(255, 255, 255, 0.75) !important;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-        border-radius: 0;
-    }
-    .nav-link.btn.btn-link:hover,
-    .nav-link.btn.btn-link:focus {
-        color: rgba(255, 255, 255, 1) !important;
-        background: none !important;
-        box-shadow: none;
-        border: none;
-    }
-    .nav-link.btn.btn-link:active {
-        background: none !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-</style>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="#">
-            <i class="fas fa-calculator me-2"></i>S_CONTABLE
-        </a>
-        <button class="navbar-toggler" 
-                type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav"
-                aria-controls="navbarNav"
-                aria-expanded="false"
-                aria-label="Alternar navegación"
-                tabindex="0"
-                onKeyDown="handleKeyPress(event, this)"
-                onKeyUp="handleKeyPress(event, this)">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" 
-                       href="{% url 'accounts:dashboard' %}"
-                       aria-current="page"
-                       tabindex="0"
-                       onKeyDown="handleKeyPress(event, this)"
-                       onKeyUp="handleKeyPress(event, this)">
-                        <i class="fas fa-tachometer-alt me-1" aria-hidden="true"></i>Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" 
-                       href="#"
-                       tabindex="0"
-                       aria-label="Ir a sección de contabilidad"
-                       onKeyDown="handleKeyPress(event, this)"
-                       onKeyUp="handleKeyPress(event, this)">
-                        <i class="fas fa-book me-1" aria-hidden="true"></i>Contabilidad
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" 
-                       href="#"
-                       tabindex="0"
-                       aria-label="Ver reportes del sistema"
-                       onKeyDown="handleKeyPress(event, this)"
-                       onKeyUp="handleKeyPress(event, this)">
-                        <i class="fas fa-chart-bar me-1" aria-hidden="true"></i>Reportes
-                    </a>
-                </li>
-            </ul>
-            <ul class="navbar-nav">
-                <li class="nav-item dropdown">
-                    <button class="nav-link dropdown-toggle btn btn-link" 
-                            type="button"
-                            id="navbarDropdown" 
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                            aria-label="Menú de usuario {{ user.username }}"
-                            tabindex="0"
-                            onKeyDown="handleKeyPress(event, this)"
-                            onKeyUp="handleKeyPress(event, this)">
-                        <i class="fas fa-user me-1" aria-hidden="true"></i>{{ user.username }}
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li>
-                            <a class="dropdown-item" 
-                               href="#"
-                               tabindex="0"
-                               aria-label="Ver perfil de usuario"
-                               onKeyDown="handleKeyPress(event, this)"
-                               onKeyUp="handleKeyPress(event, this)">
-                                <i class="fas fa-user-cog me-2" aria-hidden="true"></i>Perfil
+<!-- Debug Info (temporal) -->
+{% if debug_empresas_count is not None %}
+<div class="alert alert-info">
+    <strong>Debug Info:</strong><br>
+    - Empresas disponibles: {{ debug_empresas_count }}<br>
+    - Tiene empresa activa: {{ debug_tiene_empresa_activa }}<br>
+    {% if not empresa_activa %}
+    - Perfiles del usuario: {{ debug_perfiles_count }}<br>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Verificar si hay empresa activa -->
+{% if not empresa_activa %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <h5><i class="bi bi-exclamation-triangle"></i> Empresa Requerida</h5>
+            <p>Para acceder a las funcionalidades del sistema contable, necesitas seleccionar una empresa.</p>
+            <div class="d-flex gap-2">
+                <a href="{% url 'empresas:cambiar_empresa' %}" class="btn btn-primary">
+                    <i class="bi bi-building"></i> Seleccionar Empresa
+                </a>
+                <a href="{% url 'empresas:empresa_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Crear Nueva Empresa
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+
+<!-- Información de Empresa Actual -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-primary shadow-sm">
+            <div class="card-body p-4">
+                <!-- Nombre de la empresa en grande -->
+                <div class="text-center mb-4">
+                    <h1 class="display-4 text-primary mb-2">
+                        <i class="bi bi-building-fill me-3"></i>
+                        {{ empresa_activa.razon_social }}
+                    </h1>
+                    {% if empresa_activa.nombre_comercial %}
+                        <h4 class="text-muted mb-3">{{ empresa_activa.nombre_comercial }}</h4>
+                    {% endif %}
+                    <h3 class="text-secondary">{{ empresa_activa.nit_formateado }}</h3>
+                </div>
+                
+                <!-- Información básica en tarjetas -->
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="card bg-light h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-geo-alt-fill text-primary fs-2 mb-2"></i>
+                                <h6 class="card-title text-muted">Ubicación</h6>
+                                <p class="card-text fw-bold">{{ empresa_activa.ciudad }}</p>
+                                <small class="text-muted">{{ empresa_activa.direccion|truncatechars:30 }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card bg-light h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-briefcase-fill text-info fs-2 mb-2"></i>
+                                <h6 class="card-title text-muted">Tipo de Empresa</h6>
+                                <p class="card-text fw-bold">{{ empresa_activa.get_tipo_empresa_display|default:"No especificado" }}</p>
+                                {% if empresa_activa.regimen_tributario %}
+                                    <small class="text-muted">{{ empresa_activa.get_regimen_tributario_display }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card bg-light h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-person-badge-fill text-success fs-2 mb-2"></i>
+                                <h6 class="card-title text-muted">Tu Rol</h6>
+                                <p class="card-text">
+                                    <span class="badge bg-success fs-6 px-3 py-2">{{ rol_empresa|capfirst }}</span>
+                                </p>
+                                <small class="text-muted">Permisos de {{ rol_empresa }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card bg-light h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-check-circle-fill text-success fs-2 mb-2"></i>
+                                <h6 class="card-title text-muted">Estado</h6>
+                                <p class="card-text">
+                                    {% if empresa_activa.activa %}
+                                        <span class="badge bg-success fs-6 px-3 py-2">
+                                            <i class="bi bi-check-lg me-1"></i>Activa
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger fs-6 px-3 py-2">
+                                            <i class="bi bi-x-lg me-1"></i>Inactiva
+                                        </span>
+                                    {% endif %}
+                                </p>
+                                <small class="text-muted">Desde {{ empresa_activa.fecha_creacion|date:"M Y" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Información de contacto -->
+                {% if empresa_activa.telefono or empresa_activa.email %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card bg-primary bg-opacity-10 border-primary">
+                            <div class="card-body py-2">
+                                <div class="d-flex justify-content-center align-items-center flex-wrap gap-4">
+                                    {% if empresa_activa.telefono %}
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-telephone-fill text-primary me-2"></i>
+                                            <strong>{{ empresa_activa.telefono }}</strong>
+                                        </div>
+                                    {% endif %}
+                                    {% if empresa_activa.email %}
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-envelope-fill text-primary me-2"></i>
+                                            <strong>{{ empresa_activa.email }}</strong>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Botones de acción rápida -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                            {% if rol_empresa == 'admin' %}
+                                <a href="{% url 'empresas:empresa_detail' empresa_activa.pk %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-gear"></i> Gestionar Empresa
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'empresas:cambiar_empresa' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-repeat"></i> Cambiar Empresa
                             </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" 
-                               href="#"
-                               tabindex="0"
-                               aria-label="Configuración del sistema"
-                               onKeyDown="handleKeyPress(event, this)"
-                               onKeyUp="handleKeyPress(event, this)">
-                                <i class="fas fa-cog me-2" aria-hidden="true"></i>Configuración
+                            <a href="{% url 'catalogos:tercero_list' %}" class="btn btn-outline-info">
+                                <i class="bi bi-people"></i> Ver Terceros
                             </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit" 
-                                        class="dropdown-item" 
-                                        style="border: none; background: none; width: 100%; text-align: left;"
-                                        aria-label="Cerrar sesión y salir del sistema"
-                                        tabindex="0"
-                                        onKeyDown="handleKeyPress(event, this)"
-                                        onKeyUp="handleKeyPress(event, this)">
-                                    <i class="fas fa-sign-out-alt me-2" aria-hidden="true"></i>Cerrar Sesión
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<!-- Main Content -->
-<div class="container mt-4">
-    <!-- Welcome Section -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="dashboard-card p-4">
-                <h2 class="text-primary mb-3">
-                    <i class="fas fa-home me-2"></i>Bienvenido, {{ user.username }}!
-                </h2>
-                <p class="text-muted mb-0">
-                    Bienvenido a tu sistema contable. Desde aquí puedes gestionar todas tus operaciones financieras.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="dashboard-card p-4 text-center">
-                <div class="stat-icon mx-auto mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <i class="fas fa-users"></i>
-                </div>
-                <h5 class="mb-1">Clientes</h5>
-                <h3 class="text-primary mb-0">0</h3>
-                <small class="text-muted">Total registrados</small>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="dashboard-card p-4 text-center">
-                <div class="stat-icon mx-auto mb-3" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                </div>
-                <h5 class="mb-1">Facturas</h5>
-                <h3 class="text-success mb-0">0</h3>
-                <small class="text-muted">Este mes</small>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="dashboard-card p-4 text-center">
-                <div class="stat-icon mx-auto mb-3" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <h5 class="mb-1">Ingresos</h5>
-                <h3 class="text-warning mb-0">$0</h3>
-                <small class="text-muted">Este mes</small>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="dashboard-card p-4 text-center">
-                <div class="stat-icon mx-auto mb-3" style="background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <h5 class="mb-1">Pendientes</h5>
-                <h3 class="text-danger mb-0">0</h3>
-                <small class="text-muted">Por revisar</small>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="dashboard-card p-4">
-                <h5 class="mb-3">
-                    <i class="fas fa-bolt me-2"></i>Acciones Rápidas
-                </h5>
-                <div class="row">
-                    <div class="col-md-3 mb-2">
-                        <button class="btn btn-outline-primary w-100" 
-                                type="button"
-                                tabindex="0"
-                                aria-label="Crear nueva factura"
-                                onKeyDown="handleKeyPress(event, this)"
-                                onKeyUp="handleKeyPress(event, this)">
-                            <i class="fas fa-plus me-2" aria-hidden="true"></i>Nueva Factura
-                        </button>
+                        </div>
                     </div>
-                    <div class="col-md-3 mb-2">
-                        <button class="btn btn-outline-success w-100"
-                                type="button"
-                                tabindex="0"
-                                aria-label="Agregar nuevo cliente"
-                                onKeyDown="handleKeyPress(event, this)"
-                                onKeyUp="handleKeyPress(event, this)">
-                            <i class="fas fa-user-plus me-2" aria-hidden="true"></i>Nuevo Cliente
-                        </button>
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <button class="btn btn-outline-info w-100"
-                                type="button"
-                                tabindex="0"
-                                aria-label="Ver reportes financieros"
-                                onKeyDown="handleKeyPress(event, this)"
-                                onKeyUp="handleKeyPress(event, this)">
-                            <i class="fas fa-chart-bar me-2" aria-hidden="true"></i>Ver Reportes
-                        </button>
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <button class="btn btn-outline-warning w-100"
-                                type="button"
-                                tabindex="0"
-                                aria-label="Abrir configuración del sistema"
-                                onKeyDown="handleKeyPress(event, this)"
-                                onKeyUp="handleKeyPress(event, this)">
-                            <i class="fas fa-cog me-2" aria-hidden="true"></i>Configuración
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="row">
-        <div class="col-12">
-            <div class="dashboard-card p-4">
-                <h5 class="mb-3">
-                    <i class="fas fa-clock me-2"></i>Actividad Reciente
-                </h5>
-                <div class="text-center py-5">
-                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">No hay actividad reciente para mostrar.</p>
-                    <p class="text-muted">Comienza creando tu primera factura o cliente.</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-/**
- * Manejador de eventos de teclado para accesibilidad
- * Permite activar elementos interactivos con Enter y Espacio
- */
-function handleKeyPress(event, element) {
-    // Solo manejar eventos de keydown para evitar duplicados
-    if (event.type !== 'keydown') return;
+<!-- Resumen Ejecutivo -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Clientes</h6>
+                        <h3 class="mb-0">{{ total_clientes }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-people fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
-    const key = event.key || event.which || event.keyCode;
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Ventas del Mes</h6>
+                        <h3 class="mb-0">${{ ventas_mes|floatformat:0 }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-graph-up fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
-    // Enter (13) o Espacio (32)
-    if (key === 'Enter' || key === ' ' || key === 13 || key === 32) {
-        event.preventDefault();
-        
-        // Si es un botón, hacer click
-        if (element.tagName === 'BUTTON') {
-            element.click();
-        }
-        // Si es un enlace, navegar
-        else if (element.tagName === 'A') {
-            if (element.href && element.href !== '#') {
-                globalThis.location.href = element.href;
-            } else {
-                element.click();
-            }
-        }
-        // Para otros elementos, simular click
-        else {
-            element.click();
-        }
-    }
-}
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Facturas del Mes</h6>
+                        <h3 class="mb-0">{{ facturas_mes }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-receipt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Pendientes</h6>
+                        <h3 class="mb-0">{{ facturas_pendientes }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-/**
- * Mejorar navegación con teclado
- */
-document.addEventListener('DOMContentLoaded', function() {
-    // Agregar indicadores visuales para elementos enfocados
-    const style = document.createElement('style');
-    style.textContent = `
-        .btn:focus,
-        .nav-link:focus,
-        .dropdown-item:focus,
-        .navbar-toggler:focus {
-            outline: 2px solid #667eea !important;
-            outline-offset: 2px !important;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3) !important;
-        }
-        
-        .btn:focus-visible,
-        .nav-link:focus-visible,
-        .dropdown-item:focus-visible {
-            outline: 2px solid #667eea !important;
-            outline-offset: 2px !important;
-        }
-        
-        /* Mejorar contraste para usuarios con discapacidades visuales */
-        @media (prefers-contrast: high) {
-            .btn, .nav-link, .dropdown-item {
-                border: 2px solid currentColor !important;
-            }
-        }
-        
-        /* Respetar preferencias de movimiento reducido */
-        @media (prefers-reduced-motion: reduce) {
-            .btn, .dashboard-card, * {
-                transition: none !important;
-                animation: none !important;
-            }
-        }
-    `;
-    document.head.appendChild(style);
+<!-- Acciones Rápidas -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-lightning"></i> Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                        <a href="{% url 'facturacion:factura_create' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-plus-circle d-block mb-2"></i>
+                            Nueva Factura
+                        </a>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                        <a href="{% url 'tesoreria:cobros_crear' %}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-arrow-down-circle d-block mb-2"></i>
+                            Registrar Cobro
+                        </a>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                        <a href="{% url 'catalogos:tercero_create' %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-person-plus d-block mb-2"></i>
+                            Nuevo Cliente
+                        </a>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                        <a href="{% url 'catalogos:producto_create' %}" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-box d-block mb-2"></i>
+                            Nuevo Producto
+                        </a>
+                    </div>
+                    {% if rol_empresa in 'admin,contador' %}
+                    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                        <a href="{% url 'contabilidad:asientos_crear' %}" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-journal-plus d-block mb-2"></i>
+                            Nuevo Asiento
+                        </a>
+                    </div>
+                    {% endif %}
+                    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                        <a href="{% url 'reportes:index' %}" class="btn btn-outline-dark w-100">
+                            <i class="bi bi-file-earmark-bar-graph d-block mb-2"></i>
+                            Ver Reportes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actividad Reciente -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-receipt"></i> Últimas Facturas
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if ultimas_facturas %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Cliente</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for factura in ultimas_facturas %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'facturacion:factura_detail' factura.pk %}">
+                                        {{ factura.numero_factura }}
+                                    </a>
+                                </td>
+                                <td>{{ factura.cliente.razon_social|truncatechars:30 }}</td>
+                                <td>${{ factura.total|floatformat:0 }}</td>
+                                <td>
+                                    {% if factura.estado == 'confirmada' %}
+                                    <span class="badge bg-success">{{ factura.get_estado_display }}</span>
+                                    {% elif factura.estado == 'borrador' %}
+                                    <span class="badge bg-warning">{{ factura.get_estado_display }}</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">{{ factura.get_estado_display }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'facturacion:factura_list' %}" class="btn btn-sm btn-outline-primary">
+                        Ver Todas las Facturas
+                    </a>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-receipt display-4 d-block mb-3"></i>
+                    <p>No hay facturas registradas</p>
+                    <a href="{% url 'facturacion:factura_create' %}" class="btn btn-primary">
+                        Crear Primera Factura
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
     
-    // Mejorar navegación con Tab
-    const interactiveElements = document.querySelectorAll('button, a, [tabindex="0"]');
-    for (const element of interactiveElements) {
-        element.addEventListener('keydown', function(event) {
-            handleKeyPress(event, this);
-        });
-        
-        // Agregar soporte para navegación con flechas en grupos
-        if (element.closest('.row')) {
-            element.addEventListener('keydown', function(event) {
-                const key = event.key;
-                if (key === 'ArrowRight' || key === 'ArrowLeft') {
-                    const siblings = Array.from(element.closest('.row').querySelectorAll('button, a'));
-                    const currentIndex = siblings.indexOf(element);
-                    
-                    let nextIndex;
-                    if (key === 'ArrowRight') {
-                        nextIndex = (currentIndex + 1) % siblings.length;
-                    } else {
-                        nextIndex = currentIndex === 0 ? siblings.length - 1 : currentIndex - 1;
-                    }
-                    
-                    if (siblings[nextIndex]) {
-                        event.preventDefault();
-                        siblings[nextIndex].focus();
-                    }
-                }
-            });
-        }
-    }
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-arrow-down-circle"></i> Últimos Cobros
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if ultimos_pagos %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Cliente</th>
+                                <th>Valor</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pago in ultimos_pagos %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'tesoreria:pagos_detalle' pago.pk %}">
+                                        {{ pago.numero_pago }}
+                                    </a>
+                                </td>
+                                <td>{{ pago.tercero.razon_social|truncatechars:30 }}</td>
+                                <td>${{ pago.valor|floatformat:0 }}</td>
+                                <td>{{ pago.fecha_pago|date:"d/m/Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'tesoreria:cobros_lista' %}" class="btn btn-sm btn-outline-success">
+                        Ver Todos los Cobros
+                    </a>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-arrow-down-circle display-4 d-block mb-3"></i>
+                    <p>No hay cobros registrados</p>
+                    <a href="{% url 'tesoreria:cobros_crear' %}" class="btn btn-success">
+                        Registrar Primer Cobro
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información Adicional -->
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-info-circle"></i> Información de la Empresa
+                </h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Razón Social:</strong><br>{{ empresa_activa.razon_social }}</p>
+                <p><strong>NIT:</strong><br>{{ empresa_activa.nit_formateado }}</p>
+                <p><strong>Tu Rol:</strong><br>
+                    <span class="badge bg-primary">{{ rol_empresa|capfirst }}</span>
+                </p>
+                {% if rol_empresa == 'admin' %}
+                <div class="mt-3">
+                    <a href="{% url 'empresas:empresa_detail' empresa_activa.pk %}" class="btn btn-sm btn-outline-primary">
+                        Gestionar Empresa
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
     
-    // Anunciar cambios para lectores de pantalla
-    const announcer = document.createElement('div');
-    announcer.setAttribute('aria-live', 'polite');
-    announcer.setAttribute('aria-atomic', 'true');
-    announcer.className = 'sr-only';
-    document.body.appendChild(announcer);
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-graph-up"></i> Estadísticas del Mes
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ facturas_mes }}</h4>
+                        <small class="text-muted">Facturas</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">${{ cobros_mes|floatformat:0 }}</h4>
+                        <small class="text-muted">Cobros</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h5 class="text-info">{{ total_productos }}</h5>
+                        <small class="text-muted">Productos</small>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-warning">{{ total_cuentas }}</h5>
+                        <small class="text-muted">Cuentas</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
-    // Función para anunciar mensajes
-    globalThis.announceToScreenReader = function(message) {
-        announcer.textContent = message;
-        setTimeout(() => {
-            announcer.textContent = '';
-        }, 1000);
-    };
-});
-</script>
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-person-circle"></i> Mi Perfil
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if user_profile %}
+                <p><strong>Nombre:</strong><br>{{ user.get_full_name|default:user.username }}</p>
+                <p><strong>Email:</strong><br>{{ user.email }}</p>
+                <p><strong>Documento:</strong><br>{{ user_profile.documento_completo }}</p>
+                <p><strong>Teléfono:</strong><br>{{ user_profile.telefono|default:"No especificado" }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
 {% endblock %}

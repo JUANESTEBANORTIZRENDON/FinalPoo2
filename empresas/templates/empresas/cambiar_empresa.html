@@ -1,0 +1,90 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Cambiar Empresa - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Cambiar Empresa</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-building"></i>
+                        Seleccionar Empresa
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    {% if empresas %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            Selecciona la empresa con la que deseas trabajar. Esta será tu empresa activa durante la sesión.
+                        </div>
+                        
+                        <div class="row">
+                            {% for empresa in empresas %}
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card h-100 {% if empresa == empresa_activa %}border-primary{% endif %}">
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                {{ empresa.razon_social }}
+                                                {% if empresa == empresa_activa %}
+                                                    <span class="badge bg-primary ms-2">Activa</span>
+                                                {% endif %}
+                                            </h5>
+                                            <p class="card-text">
+                                                <strong>NIT:</strong> {{ empresa.nit_formateado }}<br>
+                                                <strong>Ciudad:</strong> {{ empresa.ciudad }}<br>
+                                                <strong>Teléfono:</strong> {{ empresa.telefono }}
+                                            </p>
+                                            
+                                            {% if empresa != empresa_activa %}
+                                                <form method="post" action="{% url 'empresas:seleccionar_empresa' %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="empresa_id" value="{{ empresa.id }}">
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="bi bi-check-circle"></i>
+                                                        Seleccionar
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <button class="btn btn-success" disabled>
+                                                    <i class="bi bi-check-circle-fill"></i>
+                                                    Empresa Activa
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>No tienes acceso a ninguna empresa.</strong>
+                            <p class="mb-0 mt-2">Contacta al administrador para que te asigne permisos a una empresa.</p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i>
+                            Volver al Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Empresas - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Empresas</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-building"></i>
+                        Gestión de Empresas
+                    </h4>
+                    <a href="{% url 'empresas:empresa_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Nueva Empresa
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    {% if object_list %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>NIT</th>
+                                        <th>Razón Social</th>
+                                        <th>Ciudad</th>
+                                        <th>Teléfono</th>
+                                        <th>Estado</th>
+                                        <th>Propietario</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for empresa in object_list %}
+                                        <tr>
+                                            <td>
+                                                <code>{{ empresa.nit_formateado }}</code>
+                                            </td>
+                                            <td>
+                                                <strong>{{ empresa.razon_social }}</strong>
+                                                {% if empresa.tipo_empresa %}
+                                                    <br><small class="text-muted">{{ empresa.get_tipo_empresa_display }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ empresa.ciudad }}</td>
+                                            <td>{{ empresa.telefono }}</td>
+                                            <td>
+                                                {% if empresa.activa %}
+                                                    <span class="badge bg-success">Activa</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Inactiva</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-person"></i>
+                                                {{ empresa.propietario.get_full_name|default:empresa.propietario.username }}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{% url 'empresas:empresa_detail' empresa.pk %}" 
+                                                       class="btn btn-sm btn-outline-info" 
+                                                       title="Ver Detalles">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'empresas:empresa_update' empresa.pk %}" 
+                                                       class="btn btn-sm btn-outline-warning" 
+                                                       title="Editar">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <a href="{% url 'empresas:perfil_list' empresa.pk %}" 
+                                                       class="btn btn-sm btn-outline-secondary" 
+                                                       title="Gestionar Usuarios">
+                                                        <i class="bi bi-people"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Paginación si es necesaria -->
+                        {% if is_paginated %}
+                            <nav aria-label="Paginación de empresas">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1">Primera</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    <li class="page-item active">
+                                        <span class="page-link">
+                                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                                        </span>
+                                    </li>
+                                    
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+                            <h5>No hay empresas registradas</h5>
+                            <p class="mb-3">Comienza creando tu primera empresa para usar el sistema contable.</p>
+                            <a href="{% url 'empresas:empresa_create' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i>
+                                Crear Primera Empresa
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

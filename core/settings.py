@@ -28,13 +28,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-for-development-only-change-in-production')
 
-if not SECRET_KEY:
-    raise ValueError(
-        "SECRET_KEY no está configurada. "
-        "Agrega SECRET_KEY=tu-clave-secreta al archivo .env"
-    )
+# Para desarrollo, usar una clave por defecto si no está configurada
+if not os.getenv('SECRET_KEY') and DEBUG:
+    print("⚠️  Usando SECRET_KEY por defecto para desarrollo. Configura SECRET_KEY en .env para producción.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
@@ -61,6 +59,14 @@ INSTALLED_APPS = [
     # Apps del proyecto
     'accounts',
     'api',  # Nueva app para API
+    
+    # Apps del sistema contable
+    'empresas',      # Gestión de empresas y roles multi-empresa
+    'catalogos',     # Terceros, impuestos, métodos de pago, productos
+    'facturacion',   # Facturas de venta y detalles
+    'tesoreria',     # Pagos, cobros y cuentas bancarias
+    'contabilidad',  # Plan de cuentas, asientos y partidas
+    'reportes',      # Reportes contables y configuraciones
 ]
 
 MIDDLEWARE = [
@@ -68,10 +74,14 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # CORS debe ir temprano
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'core.middleware.DevCSRFMiddleware',  # Middleware personalizado para desarrollo
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    # Middleware personalizado para sistema multi-empresa
+    'empresas.middleware.EmpresaActivaMiddleware',
 ]
 ROOT_URLCONF = 'core.urls'
 
@@ -256,8 +266,26 @@ CORS_ALLOW_CREDENTIALS = True  # Para cookies de sesión si es necesario
 # CSRF Configuration
 CSRF_TRUSTED_ORIGINS = os.getenv(
     'CSRF_TRUSTED_ORIGINS', 
-    'http://127.0.0.1:8000,http://localhost:8000'
+    'http://127.0.0.1:8000,http://localhost:8000,http://127.0.0.1:57765'
 ).split(',')
+
+# Configuraciones adicionales de CSRF para desarrollo
+if DEBUG:
+    CSRF_COOKIE_SECURE = False
+    CSRF_COOKIE_HTTPONLY = False
+    CSRF_USE_SESSIONS = False
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    
+    # Agregar dominios de desarrollo
+    CSRF_TRUSTED_ORIGINS.extend([
+        'http://127.0.0.1:57765',  # Browser preview
+        'http://localhost:57765',
+    ])
+
+# Configuración de sesiones
+SESSION_COOKIE_AGE = 3600  # 1 hora
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True
 
 # ===== CONFIGURACIÓN DE SEGURIDAD PARA PRODUCCIÓN =====
 # Para configuración de producción, consultar documentación de Django Security

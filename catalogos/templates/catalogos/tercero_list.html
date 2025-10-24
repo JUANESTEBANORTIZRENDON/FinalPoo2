@@ -1,0 +1,252 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Terceros - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Terceros</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-people"></i>
+                        Gestión de Terceros
+                    </h4>
+                    <a href="{% url 'catalogos:tercero_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Nuevo Tercero
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Filtros de búsqueda -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="buscar" placeholder="Buscar por nombre o documento...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="filtro_tipo">
+                                <option value="">Todos los tipos</option>
+                                <option value="cliente">Clientes</option>
+                                <option value="proveedor">Proveedores</option>
+                                <option value="ambos">Ambos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="filtro_estado">
+                                <option value="">Todos los estados</option>
+                                <option value="true">Activos</option>
+                                <option value="false">Inactivos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary" onclick="limpiarFiltros()">
+                                <i class="bi bi-x-circle"></i>
+                                Limpiar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {% if object_list %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="tabla-terceros">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Documento</th>
+                                        <th>Razón Social</th>
+                                        <th>Tipo</th>
+                                        <th>Ciudad</th>
+                                        <th>Teléfono</th>
+                                        <th>Email</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tercero in object_list %}
+                                        <tr data-tipo="{{ tercero.tipo_tercero }}" data-activo="{{ tercero.activo }}">
+                                            <td>
+                                                <div>
+                                                    <strong>{{ tercero.numero_documento }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ tercero.get_tipo_documento_display }}</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>{{ tercero.razon_social }}</strong>
+                                                    {% if tercero.nombre_comercial %}
+                                                        <br><small class="text-muted">{{ tercero.nombre_comercial }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if tercero.tipo_tercero == 'cliente' %}bg-primary
+                                                    {% elif tercero.tipo_tercero == 'proveedor' %}bg-info
+                                                    {% else %}bg-secondary{% endif %}">
+                                                    {{ tercero.get_tipo_tercero_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ tercero.ciudad }}</td>
+                                            <td>{{ tercero.telefono|default:"-" }}</td>
+                                            <td>
+                                                {% if tercero.email %}
+                                                    <a href="mailto:{{ tercero.email }}">{{ tercero.email }}</a>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if tercero.activo %}
+                                                    <span class="badge bg-success">Activo</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Inactivo</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{% url 'catalogos:tercero_detail' tercero.pk %}" 
+                                                       class="btn btn-sm btn-outline-info" 
+                                                       title="Ver Detalles">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'catalogos:tercero_update' tercero.pk %}" 
+                                                       class="btn btn-sm btn-outline-warning" 
+                                                       title="Editar">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    {% if tercero.activo %}
+                                                        <button class="btn btn-sm btn-outline-danger" 
+                                                                onclick="toggleEstado('{{ tercero.pk }}', false)"
+                                                                title="Desactivar">
+                                                            <i class="bi bi-toggle-on"></i>
+                                                        </button>
+                                                    {% else %}
+                                                        <button class="btn btn-sm btn-outline-success" 
+                                                                onclick="toggleEstado('{{ tercero.pk }}', true)"
+                                                                title="Activar">
+                                                            <i class="bi bi-toggle-off"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Información de totales -->
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    Mostrando {{ object_list|length }} tercero{{ object_list|length|pluralize }}
+                                </small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+                            <h5>No hay terceros registrados</h5>
+                            <p class="mb-3">Comienza agregando tus primeros clientes y proveedores.</p>
+                            <a href="{% url 'catalogos:tercero_create' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i>
+                                Crear Primer Tercero
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buscar = document.getElementById('buscar');
+    const filtroTipo = document.getElementById('filtro_tipo');
+    const filtroEstado = document.getElementById('filtro_estado');
+    const tabla = document.getElementById('tabla-terceros');
+    
+    function filtrarTabla() {
+        const textoBusqueda = buscar.value.toLowerCase();
+        const tipoSeleccionado = filtroTipo.value;
+        const estadoSeleccionado = filtroEstado.value;
+        
+        const filas = tabla.querySelectorAll('tbody tr');
+        
+        filas.forEach(fila => {
+            const texto = fila.textContent.toLowerCase();
+            const tipo = fila.dataset.tipo;
+            const activo = fila.dataset.activo;
+            
+            let mostrar = true;
+            
+            // Filtro de texto
+            if (textoBusqueda && !texto.includes(textoBusqueda)) {
+                mostrar = false;
+            }
+            
+            // Filtro de tipo
+            if (tipoSeleccionado && tipo !== tipoSeleccionado) {
+                mostrar = false;
+            }
+            
+            // Filtro de estado
+            if (estadoSeleccionado && activo !== estadoSeleccionado) {
+                mostrar = false;
+            }
+            
+            fila.style.display = mostrar ? '' : 'none';
+        });
+    }
+    
+    buscar.addEventListener('input', filtrarTabla);
+    filtroTipo.addEventListener('change', filtrarTabla);
+    filtroEstado.addEventListener('change', filtrarTabla);
+});
+
+function limpiarFiltros() {
+    document.getElementById('buscar').value = '';
+    document.getElementById('filtro_tipo').value = '';
+    document.getElementById('filtro_estado').value = '';
+    
+    // Mostrar todas las filas
+    const filas = document.querySelectorAll('#tabla-terceros tbody tr');
+    filas.forEach(fila => fila.style.display = '');
+}
+
+function toggleEstado(terceroId, nuevoEstado) {
+    if (confirm('¿Estás seguro de cambiar el estado de este tercero?')) {
+        // Aquí iría la llamada AJAX para cambiar el estado
+        fetch(`/catalogos/terceros/${terceroId}/toggle-estado/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({activo: nuevoEstado})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al cambiar el estado');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

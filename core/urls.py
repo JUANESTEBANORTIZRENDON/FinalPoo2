@@ -17,6 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
+from django.shortcuts import redirect
+from django.http import HttpResponse
+
+def home_view(request):
+    """Vista de inicio que redirige según el estado de autenticación"""
+    if request.user.is_authenticated:
+        if request.user.is_superuser or request.user.is_staff:
+            return redirect('/admin/')
+        else:
+            return redirect('/accounts/dashboard/')
+    else:
+        return redirect('/accounts/login/')
 
 urlpatterns = [
     # ===== ADMINISTRACIÓN =====
@@ -30,7 +42,16 @@ urlpatterns = [
     # Nuevos endpoints para móviles/SPA
     path('api/', include('api.urls')),
     
+    # ===== SISTEMA CONTABLE MVT =====
+    # Apps del sistema contable con autenticación por sesiones
+    path('empresas/', include('empresas.urls')),
+    path('catalogos/', include('catalogos.urls')),
+    path('facturacion/', include('facturacion.urls')),
+    path('tesoreria/', include('tesoreria.urls')),
+    path('contabilidad/', include('contabilidad.urls')),
+    path('reportes/', include('reportes.urls')),
+    
     # ===== PÁGINA PRINCIPAL =====
-    # Redirige al login HTML por defecto
-    path('', RedirectView.as_view(url='/accounts/login/', permanent=False)),
+    # Redirige según el estado de autenticación
+    path('', home_view, name='home'),
 ]
