@@ -1,0 +1,136 @@
+{% extends 'empresas/admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Eliminar {{ empresa.razon_social }} - Admin Holding{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Atención:</strong> Esta acción desactivará la empresa en lugar de eliminarla 
+                        permanentemente para mantener la integridad de los datos.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-danger mb-3">
+                                <i class="fas fa-building me-2"></i>Empresa a Desactivar
+                            </h5>
+                            
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ empresa.razon_social }}</h6>
+                                    <p class="card-text">
+                                        <strong>NIT:</strong> {{ empresa.nit }}<br>
+                                        {% if empresa.nombre_comercial %}
+                                        <strong>Nombre Comercial:</strong> {{ empresa.nombre_comercial }}<br>
+                                        {% endif %}
+                                        <strong>Estado:</strong> 
+                                        {% if empresa.activa %}
+                                            <span class="badge bg-success">Activa</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactiva</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5 class="text-warning mb-3">
+                                <i class="fas fa-exclamation-circle me-2"></i>Consecuencias
+                            </h5>
+                            
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <i class="fas fa-building text-danger me-2"></i>
+                                    La empresa será marcada como <strong>inactiva</strong>
+                                </div>
+                                
+                                {% if tiene_usuarios %}
+                                <div class="list-group-item">
+                                    <i class="fas fa-users text-warning me-2"></i>
+                                    Los usuarios asignados serán <strong>desactivados</strong> de esta empresa
+                                </div>
+                                {% endif %}
+                                
+                                <div class="list-group-item">
+                                    <i class="fas fa-database text-info me-2"></i>
+                                    Los datos históricos se <strong>conservarán</strong>
+                                </div>
+                                
+                                <div class="list-group-item">
+                                    <i class="fas fa-undo text-success me-2"></i>
+                                    La empresa puede ser <strong>reactivada</strong> posteriormente
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if tiene_usuarios %}
+                    <div class="alert alert-info mt-4" role="alert">
+                        <i class="fas fa-users me-2"></i>
+                        <strong>Nota:</strong> Esta empresa tiene usuarios asignados. Al desactivarla, 
+                        también se desactivarán todas las asignaciones de usuarios a esta empresa.
+                    </div>
+                    {% endif %}
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="text-muted mb-4">
+                            ¿Estás seguro de que deseas desactivar la empresa 
+                            <strong>"{{ empresa.razon_social }}"</strong>?
+                        </p>
+                        
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger me-3">
+                                <i class="fas fa-trash-alt me-1"></i>
+                                Sí, Desactivar Empresa
+                            </button>
+                        </form>
+                        
+                        <a href="{% url 'empresas:admin_ver_empresa' empresa.id %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>
+                            Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card.border-danger {
+    border-width: 2px;
+}
+
+.list-group-item {
+    border: none;
+    padding: 0.75rem 0;
+}
+
+.list-group-item:not(:last-child) {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.alert {
+    border-radius: 0.5rem;
+}
+
+.card.bg-light {
+    border: 1px solid #dee2e6;
+}
+</style>
+{% endblock %}

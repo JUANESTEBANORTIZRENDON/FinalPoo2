@@ -1,0 +1,396 @@
+{% extends 'empresas/admin/base_admin.html' %}
+
+{% block title %}Historial de Cambios - Administrador{% endblock %}
+
+{% block page_title %}📋 Historial de Cambios{% endblock %}
+{% block page_subtitle %}Registro de actividades de contadores, operadores y observadores (excluye administradores del holding){% endblock %}
+
+{% block extra_css %}
+<style>
+    .historial-card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #667eea;
+        transition: all 0.2s ease;
+    }
+    .historial-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+    }
+    .historial-card.error {
+        border-left-color: #dc3545;
+        background-color: #fff5f5;
+    }
+    .historial-card.warning {
+        border-left-color: #ffc107;
+        background-color: #fffbf0;
+    }
+    .historial-card.success {
+        border-left-color: #28a745;
+        background-color: #f0fff4;
+    }
+    .filtros-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .estadisticas-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    }
+    .accion-icon {
+        font-size: 1.2rem;
+        margin-right: 8px;
+    }
+    .usuario-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .usuario-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    .tiempo-transcurrido {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    .detalle-tecnico {
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        padding: 8px 12px;
+        margin-top: 8px;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .badge-rol {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 10px;
+    }
+    .badge-admin { background-color: #dc3545; }
+    .badge-contador { background-color: #28a745; }
+    .badge-operador { background-color: #ffc107; color: #000; }
+    .badge-observador { background-color: #6c757d; }
+    @media (max-width: 768px) {
+        .historial-card {
+            padding: 12px;
+        }
+        .filtros-card {
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Nota informativa -->
+<div class="alert alert-info d-flex align-items-center mb-4" style="border-radius: 10px; border: none; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-left: 4px solid #667eea;">
+    <i class="fas fa-info-circle me-3" style="color: #667eea; font-size: 1.2rem;"></i>
+    <div>
+        <strong style="color: #667eea;">ℹ️ Información del Historial</strong><br>
+        <small style="color: #495057;">
+            Este historial muestra únicamente las actividades de <strong>contadores, operadores y observadores</strong>. 
+            Las acciones de administradores del holding están disponibles en el 
+            <a href="/admin/empresas/historialcambios/" target="_blank" style="color: #667eea; text-decoration: none;">
+                <strong>Admin de Django</strong> <i class="fas fa-external-link-alt"></i>
+            </a>
+        </small>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="estadisticas-card">
+    <div class="row text-center">
+        <div class="col-md-4">
+            <h3 class="mb-1">{{ estadisticas.total_acciones|default:0 }}</h3>
+            <small>Total de Acciones</small>
+        </div>
+        <div class="col-md-4">
+            <h3 class="mb-1">{{ estadisticas.acciones_hoy|default:0 }}</h3>
+            <small>Acciones Hoy</small>
+        </div>
+        <div class="col-md-4">
+            <h3 class="mb-1">{{ estadisticas.usuarios_activos_hoy|default:0 }}</h3>
+            <small>Usuarios Activos Hoy</small>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros y búsqueda -->
+<div class="filtros-card">
+    <form method="get" class="row g-3">
+        <div class="col-md-3">
+            <label for="busqueda" class="form-label fw-semibold">🔍 Buscar</label>
+            <input type="text" class="form-control" id="busqueda" name="busqueda" 
+                   value="{{ filtros.busqueda }}" placeholder="Usuario, empresa, descripción...">
+        </div>
+        
+        <div class="col-md-2">
+            <label for="usuario" class="form-label fw-semibold">👤 Usuario</label>
+            <select class="form-select" id="usuario" name="usuario">
+                <option value="">Todos los usuarios</option>
+                {% for usuario in usuarios_con_historial %}
+                <option value="{{ usuario.id }}" {% if filtros.usuario_id == usuario.id|stringformat:"s" %}selected{% endif %}>
+                    {{ usuario.get_full_name|default:usuario.username }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="col-md-2">
+            <label for="empresa" class="form-label fw-semibold">🏢 Empresa</label>
+            <select class="form-select" id="empresa" name="empresa">
+                <option value="">Todas las empresas</option>
+                {% for empresa in empresas_con_historial %}
+                <option value="{{ empresa.id }}" {% if filtros.empresa_id == empresa.id|stringformat:"s" %}selected{% endif %}>
+                    {{ empresa.razon_social }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="col-md-2">
+            <label for="tipo_accion" class="form-label fw-semibold">⚡ Tipo de Acción</label>
+            <select class="form-select" id="tipo_accion" name="tipo_accion">
+                <option value="">Todas las acciones</option>
+                {% for tipo_key, tipo_display in tipos_accion_choices %}
+                <option value="{{ tipo_key }}" {% if filtros.tipo_accion == tipo_key %}selected{% endif %}>
+                    {{ tipo_display }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="col-md-1">
+            <label for="fecha_desde" class="form-label fw-semibold">📅 Desde</label>
+            <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" 
+                   value="{{ filtros.fecha_desde }}">
+        </div>
+        
+        <div class="col-md-1">
+            <label for="fecha_hasta" class="form-label fw-semibold">📅 Hasta</label>
+            <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" 
+                   value="{{ filtros.fecha_hasta }}">
+        </div>
+        
+        <div class="col-md-1 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2">🔍</button>
+            <a href="{% url 'empresas:admin_historial_cambios' %}" class="btn btn-outline-secondary">🗑️</a>
+        </div>
+    </form>
+    
+    <div class="row mt-3">
+        <div class="col-12 text-end">
+            <a href="{% url 'empresas:admin_exportar_historial' %}?{{ request.GET.urlencode }}" 
+               class="btn btn-success btn-sm">
+                📤 Exportar CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Lista del historial -->
+<div class="row">
+    {% for cambio in historial %}
+    <div class="col-12">
+        <div class="historial-card {% if not cambio.exitosa %}error{% elif 'error' in cambio.tipo_accion %}warning{% else %}success{% endif %}">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-start">
+                        <span class="accion-icon">{{ cambio.icono_accion }}</span>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="usuario-info">
+                                    <div class="usuario-avatar">
+                                        {{ cambio.usuario.first_name.0|default:cambio.usuario.username.0|upper }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ cambio.usuario.get_full_name|default:cambio.usuario.username }}</strong>
+                                        {% if cambio.rol_usuario != "Sin rol" %}
+                                        <span class="badge badge-rol badge-{{ cambio.rol_usuario|lower }}">
+                                            {{ cambio.rol_usuario }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="ms-auto tiempo-transcurrido">
+                                    {{ cambio.tiempo_transcurrido }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <strong>{{ cambio.get_tipo_accion_display }}</strong>
+                                {% if cambio.empresa %}
+                                <span class="text-muted">en {{ cambio.empresa.razon_social }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-2">
+                                {{ cambio.descripcion }}
+                            </div>
+                            
+                            {% if not cambio.exitosa and cambio.mensaje_error %}
+                            <div class="alert alert-danger py-2 mb-2">
+                                <small><strong>Error:</strong> {{ cambio.mensaje_error }}</small>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="detalle-tecnico">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Fecha:</strong> {{ cambio.fecha_hora|date:"d/m/Y H:i:s" }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>IP:</strong> {{ cambio.ip_address|default:"N/A" }}
+                                    </div>
+                                    {% if cambio.modelo_afectado %}
+                                    <div class="col-md-6">
+                                        <strong>Modelo:</strong> {{ cambio.modelo_afectado }}
+                                    </div>
+                                    {% endif %}
+                                    {% if cambio.objeto_id %}
+                                    <div class="col-md-6">
+                                        <strong>ID Objeto:</strong> {{ cambio.objeto_id }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 text-end">
+                    <div class="d-flex flex-column align-items-end gap-2">
+                        {% if cambio.exitosa %}
+                        <span class="badge bg-success">✅ Exitosa</span>
+                        {% else %}
+                        <span class="badge bg-danger">❌ Error</span>
+                        {% endif %}
+                        
+                        {% if cambio.duracion_ms %}
+                        <small class="text-muted">{{ cambio.duracion_ms }}ms</small>
+                        {% endif %}
+                        
+                        <a href="{% url 'empresas:admin_detalle_historial_cambio' cambio.id %}" 
+                           class="btn btn-sm btn-outline-info">
+                            👁️ Ver Detalle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <h4 class="text-muted">📋 No hay registros en el historial</h4>
+            <p class="text-muted">No se encontraron cambios que coincidan con los filtros seleccionados.</p>
+            <a href="{% url 'empresas:admin_historial_cambios' %}" class="btn btn-primary">
+                🔄 Ver Todo el Historial
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Paginación -->
+{% if historial.has_other_pages %}
+<nav aria-label="Paginación del historial" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if historial.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                ⏮️ Primera
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ historial.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                ⬅️ Anterior
+            </a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item active">
+            <span class="page-link">
+                Página {{ historial.number }} de {{ historial.paginator.num_pages }}
+            </span>
+        </li>
+        
+        {% if historial.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ historial.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                Siguiente ➡️
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ historial.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                Última ⏭️
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+
+<div class="text-center text-muted mt-2">
+    <small>
+        Mostrando {{ historial.start_index }} - {{ historial.end_index }} de {{ historial.paginator.count }} registros
+    </small>
+</div>
+{% endif %}
+
+<script>
+// Auto-submit del formulario cuando cambian los filtros
+document.addEventListener('DOMContentLoaded', function() {
+    const selectElements = document.querySelectorAll('#usuario, #empresa, #tipo_accion');
+    const dateElements = document.querySelectorAll('#fecha_desde, #fecha_hasta');
+    
+    selectElements.forEach(element => {
+        element.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    dateElements.forEach(element => {
+        element.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    // Búsqueda con delay
+    const searchInput = document.getElementById('busqueda');
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            this.form.submit();
+        }, 1000); // Esperar 1 segundo después de que el usuario deje de escribir
+    });
+});
+
+// Actualizar página cada 30 segundos para mostrar nuevos cambios
+setTimeout(function() {
+    location.reload();
+}, 30000);
+</script>
+
+{% endblock %}

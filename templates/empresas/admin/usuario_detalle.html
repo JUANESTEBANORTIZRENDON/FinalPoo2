@@ -1,0 +1,272 @@
+{% extends 'empresas/admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}{{ usuario.get_full_name|default:usuario.username }} - Admin Holding{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user me-2"></i>{{ usuario.get_full_name|default:usuario.username }}
+                        {% if usuario.is_active %}
+                            <span class="badge bg-success ms-2">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger ms-2">Inactivo</span>
+                        {% endif %}
+                    </h4>
+                    <div class="btn-group">
+                        <a href="{% url 'empresas:admin_editar_usuario' usuario.id %}" class="btn btn-primary">
+                            <i class="fas fa-edit me-1"></i>Editar
+                        </a>
+                        <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Información del Usuario -->
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="text-primary mb-3">
+                                        <i class="fas fa-user-circle me-2"></i>Información Básica
+                                    </h5>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-user me-1"></i>Nombre de Usuario:
+                                        </label>
+                                        <p class="mb-1">{{ usuario.username }}</p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-envelope me-1"></i>Email:
+                                        </label>
+                                        <p class="mb-1">
+                                            <a href="mailto:{{ usuario.email }}">{{ usuario.email }}</a>
+                                        </p>
+                                    </div>
+                                    
+                                    {% if usuario.first_name or usuario.last_name %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-id-badge me-1"></i>Nombre Completo:
+                                        </label>
+                                        <p class="mb-1">{{ usuario.get_full_name }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-calendar me-1"></i>Fecha de Registro:
+                                        </label>
+                                        <p class="mb-1">{{ usuario.date_joined|date:"d/m/Y H:i" }}</p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-clock me-1"></i>Último Acceso:
+                                        </label>
+                                        <p class="mb-1">
+                                            {% if usuario.last_login %}
+                                                {{ usuario.last_login|date:"d/m/Y H:i" }}
+                                            {% else %}
+                                                <em class="text-muted">Nunca ha ingresado</em>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h5 class="text-primary mb-3">
+                                        <i class="fas fa-address-card me-2"></i>Información Personal
+                                    </h5>
+                                    
+                                    {% if usuario.perfilusuario.documento %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-id-card me-1"></i>Documento:
+                                        </label>
+                                        <p class="mb-1">{{ usuario.perfilusuario.documento }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if usuario.perfilusuario.telefono %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-phone me-1"></i>Teléfono:
+                                        </label>
+                                        <p class="mb-1">
+                                            <a href="tel:{{ usuario.perfilusuario.telefono }}">{{ usuario.perfilusuario.telefono }}</a>
+                                        </p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if usuario.perfilusuario.ciudad %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-city me-1"></i>Ciudad:
+                                        </label>
+                                        <p class="mb-1">{{ usuario.perfilusuario.ciudad }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if usuario.perfilusuario.direccion %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-map-marker-alt me-1"></i>Dirección:
+                                        </label>
+                                        <p class="mb-1">{{ usuario.perfilusuario.direccion }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-shield-alt me-1"></i>Permisos:
+                                        </label>
+                                        <div>
+                                            {% if usuario.is_superuser %}
+                                                <span class="badge bg-danger me-1">Superusuario</span>
+                                            {% endif %}
+                                            {% if usuario.is_staff %}
+                                                <span class="badge bg-warning me-1">Staff</span>
+                                            {% endif %}
+                                            {% if not usuario.is_superuser and not usuario.is_staff %}
+                                                <span class="badge bg-secondary">Usuario Regular</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Estadísticas -->
+                        <div class="col-md-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-chart-bar me-2"></i>Estadísticas
+                            </h5>
+                            
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h3 class="text-primary mb-1">{{ total_empresas }}</h3>
+                                    <p class="mb-0">
+                                        <i class="fas fa-building me-1"></i>Empresas Asignadas
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            {% if roles_por_empresa %}
+                            <div class="mt-3">
+                                <h6 class="fw-bold mb-2">Roles Asignados:</h6>
+                                {% for rol_info in roles_por_empresa %}
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-capitalize">
+                                        {% if rol_info.rol == 'admin' %}
+                                            <i class="fas fa-crown text-warning me-1"></i>Administrador
+                                        {% elif rol_info.rol == 'contador' %}
+                                            <i class="fas fa-calculator text-success me-1"></i>Contador
+                                        {% elif rol_info.rol == 'operador' %}
+                                            <i class="fas fa-cog text-info me-1"></i>Operador
+                                        {% else %}
+                                            <i class="fas fa-eye text-secondary me-1"></i>Observador
+                                        {% endif %}
+                                    </span>
+                                    <span class="badge bg-primary">{{ rol_info.total }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Empresas Asignadas -->
+                    {% if empresas_asignadas %}
+                    <hr class="my-4">
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-building me-2"></i>Empresas Asignadas
+                    </h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><i class="fas fa-building me-1"></i>Empresa</th>
+                                    <th><i class="fas fa-user-tag me-1"></i>Rol</th>
+                                    <th><i class="fas fa-calendar me-1"></i>Fecha Asignación</th>
+                                    <th><i class="fas fa-toggle-on me-1"></i>Estado</th>
+                                    <th><i class="fas fa-cogs me-1"></i>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for perfil in empresas_asignadas %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-2">
+                                                <i class="fas fa-building text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ perfil.empresa.razon_social }}</div>
+                                                <small class="text-muted">{{ perfil.empresa.nit }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if perfil.rol == 'admin' %}bg-warning
+                                            {% elif perfil.rol == 'contador' %}bg-success
+                                            {% elif perfil.rol == 'operador' %}bg-info
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ perfil.get_rol_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ perfil.fecha_asignacion|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if perfil.activo %}
+                                            <span class="badge bg-success">Activo</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactivo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'empresas:admin_ver_empresa' perfil.empresa.id %}" 
+                                               class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-eye me-1"></i>Ver Empresa
+                                            </a>
+                                            {% if perfil.activo %}
+                                            <a href="{% url 'empresas:admin_desactivar_asignacion' perfil.id %}" 
+                                               class="btn btn-sm btn-outline-danger"
+                                               onclick="return confirm('¿Estás seguro de desactivar esta asignación?')">
+                                                <i class="fas fa-user-times me-1"></i>Desactivar
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <hr class="my-4">
+                    <div class="text-center py-4">
+                        <i class="fas fa-building text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">No hay empresas asignadas</h5>
+                        <p class="text-muted">Este usuario aún no tiene empresas asignadas.</p>
+                        <a href="{% url 'empresas:admin_asignar_usuario' usuario.id %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Asignar a Empresa
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .historial-info-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .historial-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .stat-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 6px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .admin-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        margin-top: 10px;
+    }
+    
+    .admin-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .diferencias-info {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #856404;
+    }
+    
+    .diferencias-info strong {
+        color: #6c5700;
+    }
+</style>
+{% endblock %}
+
+{% block content_title %}
+<h1>📋 Historial de Cambios - Admin Django</h1>
+{% endblock %}
+
+{% block result_list %}
+<!-- Banner informativo -->
+<div class="historial-info-banner">
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            <h3 style="margin: 0 0 10px 0; font-size: 1.3rem;">
+                🔍 Vista Completa del Historial
+            </h3>
+            <p style="margin: 0; opacity: 0.9; font-size: 0.95rem;">
+                Esta vista muestra <strong>TODAS las acciones</strong> registradas en el sistema, 
+                incluyendo las de administradores del holding.
+            </p>
+        </div>
+        <div style="text-align: right;">
+            <a href="{{ admin_holding_url }}" class="admin-link" target="_blank">
+                <i class="fas fa-external-link-alt"></i>
+                Ver Admin Holding
+            </a>
+        </div>
+    </div>
+    
+    <div class="historial-stats">
+        <div class="stat-item">
+            <div class="stat-number">{{ total_registros|default:0 }}</div>
+            <div class="stat-label">Total de Registros</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">{{ registros_usuarios|default:0 }}</div>
+            <div class="stat-label">Acciones de Usuarios</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">{{ registros_admins|default:0 }}</div>
+            <div class="stat-label">Acciones de Admins</div>
+        </div>
+    </div>
+</div>
+
+<!-- Información sobre diferencias -->
+<div class="diferencias-info">
+    <strong>ℹ️ Diferencias entre Admin Django y Admin Holding:</strong>
+    <ul style="margin: 10px 0 0 20px;">
+        <li><strong>Admin Django (esta vista):</strong> Muestra TODAS las acciones, incluyendo administradores del holding</li>
+        <li><strong>Admin Holding:</strong> Solo muestra acciones de contadores, operadores y observadores</li>
+        <li><strong>Propósito:</strong> Admin Django para auditoría completa, Admin Holding para supervisión operativa</li>
+    </ul>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block pagination %}
+{{ block.super }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar indicadores visuales para diferenciar tipos de usuarios
+    const userCells = document.querySelectorAll('.field-usuario_display');
+    
+    userCells.forEach(function(cell) {
+        const text = cell.textContent || cell.innerText;
+        
+        // Si contiene información de rol de administrador, agregar indicador
+        if (text.includes('Administrador') || text.includes('Admin')) {
+            cell.style.background = 'linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%)';
+            cell.style.borderLeft = '3px solid #dc3545';
+            cell.style.paddingLeft = '8px';
+            
+            // Agregar badge
+            const badge = document.createElement('span');
+            badge.style.cssText = `
+                background: #dc3545;
+                color: white;
+                font-size: 0.7rem;
+                padding: 2px 6px;
+                border-radius: 10px;
+                margin-left: 8px;
+                font-weight: 600;
+            `;
+            badge.textContent = 'ADMIN';
+            cell.appendChild(badge);
+        }
+    });
+    
+    // Agregar contador en tiempo real
+    const totalRows = document.querySelectorAll('.results tbody tr').length;
+    const adminRows = document.querySelectorAll('.results tbody tr .field-usuario_display [style*="dc3545"]').length;
+    const userRows = totalRows - adminRows;
+    
+    if (totalRows > 0) {
+        const counter = document.createElement('div');
+        counter.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        `;
+        counter.innerHTML = `
+            <strong>📊 Vista actual:</strong><br>
+            👥 ${userRows} usuarios | 🔑 ${adminRows} admins
+        `;
+        document.body.appendChild(counter);
+    }
+});
+</script>
+{% endblock %}

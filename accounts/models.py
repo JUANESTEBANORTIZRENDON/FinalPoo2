@@ -211,9 +211,22 @@ class PerfilUsuario(models.Model):
 def crear_perfil_usuario(sender, instance, created, **kwargs):
     """
     Señal para crear automáticamente un perfil cuando se crea un usuario
+    Usa get_or_create para evitar duplicados
     """
     if created:
-        PerfilUsuario.objects.create(usuario=instance)
+        # Usar get_or_create para evitar duplicados de forma atómica
+        perfil, created_perfil = PerfilUsuario.objects.get_or_create(
+            usuario=instance,
+            defaults={
+                'numero_documento': '',  # Se llenará después
+                'telefono': '',          # Se llenará después
+            }
+        )
+        
+        if not created_perfil:
+            print(f"ℹ️  Perfil ya existía para usuario {instance.username}")
+        else:
+            print(f"✅ Perfil creado para usuario {instance.username}")
 
 
 @receiver(post_save, sender=User)

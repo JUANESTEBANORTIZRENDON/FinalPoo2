@@ -1,0 +1,196 @@
+{% extends 'empresas/admin/base_admin.html' %}
+
+{% block title %}Dashboard Administrador - Holding Contable{% endblock %}
+
+{% block page_title %}🔑 Dashboard Principal{% endblock %}
+{% block page_subtitle %}Visión general del holding contable{% endblock %}
+
+{% block content %}
+
+<!-- Métricas principales -->
+<div class="row">
+    <div class="col-md-3">
+        <div class="metric-card">
+            <i class="fas fa-building metric-icon"></i>
+            <div class="metric-number">{{ total_empresas }}</div>
+            <div class="metric-label">Empresas Activas</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <i class="fas fa-users metric-icon"></i>
+            <div class="metric-number">{{ total_usuarios }}</div>
+            <div class="metric-label">Usuarios Totales</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <i class="fas fa-exclamation-triangle metric-icon"></i>
+            <div class="metric-number">{{ empresas_sin_contador }}</div>
+            <div class="metric-label">Sin Contador Asignado</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <i class="fas fa-user-clock metric-icon"></i>
+            <div class="metric-number">{{ usuarios_pendientes }}</div>
+            <div class="metric-label">Usuarios Pendientes</div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones rápidas -->
+<div class="quick-actions">
+    <a href="{% url 'empresas:admin_gestionar_empresas' %}" class="quick-action">
+        <i class="fas fa-building"></i>
+        <h6>Gestionar Empresas</h6>
+        <small class="text-muted">Administrar empresas del holding</small>
+    </a>
+    <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="quick-action">
+        <i class="fas fa-users"></i>
+        <h6>Gestionar Usuarios</h6>
+        <small class="text-muted">Asignar roles y permisos</small>
+    </a>
+    <a href="{% url 'empresas:admin_estadisticas' %}" class="quick-action">
+        <i class="fas fa-chart-bar"></i>
+        <h6>Estadísticas</h6>
+        <small class="text-muted">Métricas del holding</small>
+    </a>
+    <a href="{% url 'empresas:admin_historial_cambios' %}" class="quick-action">
+        <i class="fas fa-history"></i>
+        <h6>Historial de Cambios</h6>
+        <small class="text-muted">Auditoría de actividades</small>
+    </a>
+    <a href="{% url 'empresas:dev_auth_required' %}" class="quick-action">
+        <i class="fas fa-code"></i>
+        <h6>Administración Desarrollador</h6>
+        <small class="text-muted">Herramientas técnicas y debugging</small>
+    </a>
+</div>
+
+<div class="row">
+    <!-- Usuarios por rol -->
+    <div class="col-md-6">
+        <div class="admin-card">
+            <h5 class="mb-3">👥 Usuarios por Rol</h5>
+            {% for rol_data in usuarios_por_rol %}
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded" style="background: rgba(102, 126, 234, 0.05);">
+                <div class="d-flex align-items-center">
+                    {% if rol_data.rol == 'admin' %}
+                        <i class="fas fa-crown text-primary me-3"></i>
+                        <span>Administradores</span>
+                    {% elif rol_data.rol == 'contador' %}
+                        <i class="fas fa-calculator text-success me-3"></i>
+                        <span>Contadores</span>
+                    {% elif rol_data.rol == 'operador' %}
+                        <i class="fas fa-tools text-warning me-3"></i>
+                        <span>Operadores</span>
+                    {% elif rol_data.rol == 'observador' %}
+                        <i class="fas fa-eye text-info me-3"></i>
+                        <span>Observadores</span>
+                    {% endif %}
+                </div>
+                <span class="badge bg-primary rounded-pill">{{ rol_data.total }}</span>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+                <i class="fas fa-users text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                <p class="text-muted mt-2">No hay usuarios asignados</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Documentos pendientes -->
+    <div class="col-md-6">
+        <div class="admin-card">
+            <h5 class="mb-3">📋 Documentos Pendientes</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded" style="background: rgba(255, 193, 7, 0.1);">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-file-invoice text-warning me-3"></i>
+                    <span>Facturas por confirmar</span>
+                </div>
+                <span class="badge bg-warning text-dark rounded-pill">{{ facturas_pendientes }}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded" style="background: rgba(255, 193, 7, 0.1);">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-money-bill text-warning me-3"></i>
+                    <span>Pagos por confirmar</span>
+                </div>
+                <span class="badge bg-warning text-dark rounded-pill">{{ pagos_pendientes }}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded" style="background: rgba(255, 193, 7, 0.1);">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-book text-warning me-3"></i>
+                    <span>Asientos por confirmar</span>
+                </div>
+                <span class="badge bg-warning text-dark rounded-pill">{{ asientos_pendientes }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Empresas recientes -->
+    <div class="col-md-6">
+        <div class="admin-card">
+            <h5 class="mb-3">🏢 Empresas Recientes</h5>
+            {% for empresa in empresas_recientes %}
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded" style="background: rgba(102, 126, 234, 0.05);">
+                <div>
+                    <strong class="d-block">{{ empresa.razon_social }}</strong>
+                    <small class="text-muted">{{ empresa.nit }}</small>
+                </div>
+                <div class="text-end">
+                    <span class="status-badge status-active">Activa</span>
+                    <small class="d-block text-muted mt-1">{{ empresa.fecha_creacion|date:"d/m/Y" }}</small>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+                <i class="fas fa-building text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                <p class="text-muted mt-2">No hay empresas registradas</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Usuarios recientes -->
+    <div class="col-md-6">
+        <div class="admin-card">
+            <h5 class="mb-3">👤 Usuarios Recientes</h5>
+            {% for usuario in usuarios_recientes %}
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded" style="background: rgba(102, 126, 234, 0.05);">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div>
+                        <strong class="d-block">{{ usuario.get_full_name|default:usuario.username }}</strong>
+                        <small class="text-muted">{{ usuario.email }}</small>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <span class="status-badge status-active">Activo</span>
+                    <small class="d-block text-muted mt-1">{{ usuario.date_joined|date:"d/m/Y" }}</small>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+                <i class="fas fa-user-plus text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                <p class="text-muted mt-2">No hay usuarios registrados</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh cada 5 minutos
+    setTimeout(function() {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %}

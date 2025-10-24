@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from . import views_admin
+from . import views_dev_auth
 
 app_name = 'empresas'
 
@@ -19,4 +21,26 @@ urlpatterns = [
     # Cambio de empresa activa
     path('cambiar-empresa/', views.CambiarEmpresaView.as_view(), name='cambiar_empresa'),
     path('seleccionar/', views.seleccionar_empresa, name='seleccionar_empresa'),
+    
+    # URLs del módulo administrador
+    path('admin/dashboard/', views_admin.dashboard_admin, name='admin_dashboard'),
+    path('admin/empresas/', views_admin.gestionar_empresas, name='admin_gestionar_empresas'),
+    path('admin/empresas/crear/', views_admin.crear_empresa, name='admin_crear_empresa'),
+    path('admin/empresas/<int:empresa_id>/', views_admin.ver_empresa, name='admin_ver_empresa'),
+    path('admin/empresas/<int:empresa_id>/editar/', views_admin.editar_empresa, name='admin_editar_empresa'),
+    path('admin/empresas/<int:empresa_id>/eliminar/', views_admin.eliminar_empresa, name='admin_eliminar_empresa'),
+    path('admin/usuarios/', views_admin.gestionar_usuarios, name='admin_gestionar_usuarios'),
+    path('admin/usuarios/crear/', views_admin.crear_usuario, name='admin_crear_usuario'),
+    path('admin/usuarios/<int:usuario_id>/', views_admin.ver_usuario, name='admin_ver_usuario'),
+    path('admin/usuarios/<int:usuario_id>/editar/', views_admin.editar_usuario, name='admin_editar_usuario'),
+    path('admin/usuarios/<int:usuario_id>/asignar/', views_admin.asignar_usuario_empresa, name='admin_asignar_usuario'),
+    path('admin/desactivar-asignacion/<int:perfil_id>/', views_admin.desactivar_asignacion, name='admin_desactivar_asignacion'),
+    path('admin/estadisticas/', views_admin.estadisticas_holding, name='admin_estadisticas'),
+    path('admin/historial/', views_admin.historial_cambios, name='admin_historial_cambios'),
+    path('admin/historial/<int:cambio_id>/', views_admin.detalle_historial_cambio, name='admin_detalle_historial_cambio'),
+    path('admin/historial/exportar/', views_admin.exportar_historial, name='admin_exportar_historial'),
+    path('admin/ajax/empresa/<int:empresa_id>/', views_admin.ajax_empresa_info, name='admin_ajax_empresa_info'),
+    
+    # Verificación de desarrollador
+    path('dev-auth/', views_dev_auth.dev_auth_required, name='dev_auth_required'),
 ]

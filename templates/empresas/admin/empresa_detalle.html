@@ -1,0 +1,250 @@
+{% extends 'empresas/admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}{{ empresa.razon_social }} - Admin Holding{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-building me-2"></i>{{ empresa.razon_social }}
+                        {% if empresa.activa %}
+                            <span class="badge bg-success ms-2">Activa</span>
+                        {% else %}
+                            <span class="badge bg-danger ms-2">Inactiva</span>
+                        {% endif %}
+                    </h4>
+                    <div class="btn-group">
+                        <a href="{% url 'empresas:admin_editar_empresa' empresa.id %}" class="btn btn-primary">
+                            <i class="fas fa-edit me-1"></i>Editar
+                        </a>
+                        <a href="{% url 'empresas:admin_gestionar_empresas' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Información de la Empresa -->
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="text-primary mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>Información Básica
+                                    </h5>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-building me-1"></i>Razón Social:
+                                        </label>
+                                        <p class="mb-1">{{ empresa.razon_social }}</p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-id-card me-1"></i>NIT:
+                                        </label>
+                                        <p class="mb-1">{{ empresa.nit }}</p>
+                                    </div>
+                                    
+                                    {% if empresa.nombre_comercial %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-store me-1"></i>Nombre Comercial:
+                                        </label>
+                                        <p class="mb-1">{{ empresa.nombre_comercial }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-calendar me-1"></i>Fecha de Creación:
+                                        </label>
+                                        <p class="mb-1">{{ empresa.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h5 class="text-primary mb-3">
+                                        <i class="fas fa-address-book me-2"></i>Información de Contacto
+                                    </h5>
+                                    
+                                    {% if empresa.email %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-envelope me-1"></i>Email:
+                                        </label>
+                                        <p class="mb-1">
+                                            <a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a>
+                                        </p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if empresa.telefono %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-phone me-1"></i>Teléfono:
+                                        </label>
+                                        <p class="mb-1">
+                                            <a href="tel:{{ empresa.telefono }}">{{ empresa.telefono }}</a>
+                                        </p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if empresa.direccion %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-map-marker-alt me-1"></i>Dirección:
+                                        </label>
+                                        <p class="mb-1">{{ empresa.direccion }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if empresa.ciudad or empresa.departamento %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-map me-1"></i>Ubicación:
+                                        </label>
+                                        <p class="mb-1">
+                                            {% if empresa.ciudad %}{{ empresa.ciudad }}{% endif %}
+                                            {% if empresa.ciudad and empresa.departamento %}, {% endif %}
+                                            {% if empresa.departamento %}{{ empresa.departamento }}{% endif %}
+                                        </p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Estadísticas -->
+                        <div class="col-md-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-chart-bar me-2"></i>Estadísticas
+                            </h5>
+                            
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h3 class="text-primary mb-1">{{ total_usuarios }}</h3>
+                                    <p class="mb-0">
+                                        <i class="fas fa-users me-1"></i>Usuarios Asignados
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            {% if usuarios_por_rol %}
+                            <div class="mt-3">
+                                <h6 class="fw-bold mb-2">Usuarios por Rol:</h6>
+                                {% for rol_info in usuarios_por_rol %}
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-capitalize">
+                                        {% if rol_info.rol == 'admin' %}
+                                            <i class="fas fa-crown text-warning me-1"></i>Administrador
+                                        {% elif rol_info.rol == 'contador' %}
+                                            <i class="fas fa-calculator text-success me-1"></i>Contador
+                                        {% elif rol_info.rol == 'operador' %}
+                                            <i class="fas fa-cog text-info me-1"></i>Operador
+                                        {% else %}
+                                            <i class="fas fa-eye text-secondary me-1"></i>Observador
+                                        {% endif %}
+                                    </span>
+                                    <span class="badge bg-primary">{{ rol_info.total }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Usuarios Asignados -->
+                    {% if usuarios_asignados %}
+                    <hr class="my-4">
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-users me-2"></i>Usuarios Asignados
+                    </h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><i class="fas fa-user me-1"></i>Usuario</th>
+                                    <th><i class="fas fa-user-tag me-1"></i>Rol</th>
+                                    <th><i class="fas fa-calendar me-1"></i>Fecha Asignación</th>
+                                    <th><i class="fas fa-toggle-on me-1"></i>Estado</th>
+                                    <th><i class="fas fa-cogs me-1"></i>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for perfil in usuarios_asignados %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-2">
+                                                {% if perfil.rol == 'admin' %}
+                                                    <i class="fas fa-crown text-warning"></i>
+                                                {% elif perfil.rol == 'contador' %}
+                                                    <i class="fas fa-calculator text-success"></i>
+                                                {% elif perfil.rol == 'operador' %}
+                                                    <i class="fas fa-cog text-info"></i>
+                                                {% else %}
+                                                    <i class="fas fa-eye text-secondary"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">
+                                                    {{ perfil.usuario.get_full_name|default:perfil.usuario.username }}
+                                                </div>
+                                                <small class="text-muted">{{ perfil.usuario.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if perfil.rol == 'admin' %}bg-warning
+                                            {% elif perfil.rol == 'contador' %}bg-success
+                                            {% elif perfil.rol == 'operador' %}bg-info
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ perfil.get_rol_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ perfil.fecha_asignacion|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if perfil.activo %}
+                                            <span class="badge bg-success">Activo</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactivo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if perfil.activo %}
+                                        <a href="{% url 'empresas:admin_desactivar_asignacion' perfil.id %}" 
+                                           class="btn btn-sm btn-outline-danger"
+                                           onclick="return confirm('¿Estás seguro de desactivar esta asignación?')">
+                                            <i class="fas fa-user-times me-1"></i>Desactivar
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <hr class="my-4">
+                    <div class="text-center py-4">
+                        <i class="fas fa-users text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">No hay usuarios asignados</h5>
+                        <p class="text-muted">Esta empresa aún no tiene usuarios asignados.</p>
+                        <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-1"></i>Asignar Usuarios
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

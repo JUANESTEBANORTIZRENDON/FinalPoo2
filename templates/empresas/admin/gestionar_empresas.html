@@ -1,0 +1,326 @@
+{% extends 'empresas/admin/base_admin.html' %}
+
+{% block title %}Gestionar Empresas - Administrador{% endblock %}
+
+{% block page_title %}🏢 Gestionar Empresas{% endblock %}
+{% block page_subtitle %}Administración de empresas del holding{% endblock %}
+
+{% block extra_css %}
+<style>
+    .empresa-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #667eea;
+        transition: all 0.2s ease;
+    }
+    .empresa-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+    }
+    .empresa-card.sin-contador {
+        border-left-color: #ffc107;
+    }
+    .empresa-card.inactiva {
+        border-left-color: #6c757d;
+        opacity: 0.7;
+    }
+    .search-box {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .empresa-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .empresa-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+    .empresa-detail {
+        color: #4a5568;
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+    }
+    .empresa-meta {
+        color: #718096;
+        font-size: 0.8rem;
+        margin-top: 8px;
+    }
+    .empresa-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }
+    .empresa-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: flex-end;
+    }
+    .empresa-buttons {
+        display: flex;
+        gap: 4px;
+    }
+    @media (max-width: 768px) {
+        .empresa-actions {
+            align-items: flex-start;
+            margin-top: 15px;
+        }
+        .empresa-badges {
+            justify-content: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filtros y búsqueda -->
+<div class="admin-card">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <label for="busqueda" class="form-label fw-semibold">🔍 Buscar empresa</label>
+            <input type="text" class="form-control" id="busqueda" name="busqueda" 
+                   value="{{ busqueda }}" placeholder="Razón social, NIT o nombre comercial">
+        </div>
+        <div class="col-md-3">
+            <label for="estado" class="form-label fw-semibold">📊 Estado</label>
+            <select class="form-select" id="estado" name="estado">
+                <option value="todas" {% if estado == 'todas' %}selected{% endif %}>Todas</option>
+                <option value="activas" {% if estado == 'activas' %}selected{% endif %}>Activas</option>
+                <option value="inactivas" {% if estado == 'inactivas' %}selected{% endif %}>Inactivas</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn-admin me-2">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            <a href="{% url 'empresas:admin_gestionar_empresas' %}" class="btn-admin-outline">Limpiar</a>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <a href="{% url 'empresas:admin_crear_empresa' %}" class="btn-admin">
+                <i class="fas fa-plus"></i> Nueva Empresa
+            </a>
+        </div>
+    </form>
+</div>
+
+    <!-- Lista de empresas -->
+    <div class="row">
+        {% for empresa in empresas %}
+        <div class="col-12">
+            <div class="empresa-card {% if not empresa.activa %}inactiva{% elif empresa.tiene_contador == 0 %}sin-contador{% endif %}">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="empresa-info">
+                            <div class="empresa-title">
+                                🏢 {{ empresa.razon_social }}
+                                {% if not empresa.activa %}
+                                    <span class="badge bg-secondary ms-2">Inactiva</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="empresa-detail">
+                                <strong>NIT:</strong> {{ empresa.nit }}
+                                {% if empresa.nombre_comercial %}
+                                    | <strong>Nombre Comercial:</strong> {{ empresa.nombre_comercial }}
+                                {% endif %}
+                            </div>
+                            
+                            {% if empresa.email or empresa.telefono %}
+                            <div class="empresa-detail">
+                                {% if empresa.email %}
+                                    <strong>Email:</strong> {{ empresa.email }}
+                                {% endif %}
+                                {% if empresa.email and empresa.telefono %} | {% endif %}
+                                {% if empresa.telefono %}
+                                    <strong>Teléfono:</strong> {{ empresa.telefono }}
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            {% if empresa.direccion or empresa.ciudad %}
+                            <div class="empresa-detail">
+                                <strong>Dirección:</strong> 
+                                {% if empresa.direccion %}{{ empresa.direccion }}{% endif %}
+                                {% if empresa.direccion and empresa.ciudad %}, {% endif %}
+                                {% if empresa.ciudad %}{{ empresa.ciudad }}{% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="empresa-meta">
+                                Creada: {{ empresa.fecha_creacion|date:"d/m/Y" }} | 
+                                Propietario: {{ empresa.propietario.get_full_name|default:empresa.propietario.username }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="empresa-actions">
+                            <div class="empresa-badges">
+                                <span class="badge bg-info">
+                                    {{ empresa.total_usuarios }} usuario{{ empresa.total_usuarios|pluralize }}
+                                </span>
+                                {% if empresa.tiene_contador > 0 %}
+                                    <span class="badge bg-success">Con contador</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Sin contador</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="empresa-buttons">
+                                <a href="{% url 'empresas:admin_ver_empresa' empresa.id %}" 
+                                   class="btn btn-sm btn-outline-info" title="Ver detalles">
+                                    👁️ Ver
+                                </a>
+                                <a href="{% url 'empresas:admin_editar_empresa' empresa.id %}" 
+                                   class="btn btn-sm btn-outline-primary" title="Editar empresa">
+                                    ✏️ Editar
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-success" 
+                                        onclick="gestionarUsuarios({{ empresa.id }})" title="Gestionar usuarios">
+                                    👥 Usuarios
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <h4 class="text-muted">No se encontraron empresas</h4>
+                <p class="text-muted">No hay empresas que coincidan con los criterios de búsqueda.</p>
+                <a href="{% url 'empresas:admin_crear_empresa' %}" class="btn btn-primary">
+                    ➕ Crear Primera Empresa
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginación -->
+    {% if empresas.has_other_pages %}
+    <nav aria-label="Paginación de empresas">
+        <ul class="pagination justify-content-center">
+            {% if empresas.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ empresas.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if estado != 'todas' %}&estado={{ estado }}{% endif %}">
+                        Anterior
+                    </a>
+                </li>
+            {% endif %}
+            
+            {% for num in empresas.paginator.page_range %}
+                {% if empresas.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > empresas.number|add:'-3' and num < empresas.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if estado != 'todas' %}&estado={{ estado }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if empresas.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ empresas.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if estado != 'todas' %}&estado={{ estado }}{% endif %}">
+                        Siguiente
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Modal para detalle de empresa -->
+<div class="modal fade" id="detalleEmpresaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle de Empresa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detalleEmpresaContent">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function verDetalleEmpresa(empresaId) {
+    const modal = new bootstrap.Modal(document.getElementById('detalleEmpresaModal'));
+    const content = document.getElementById('detalleEmpresaContent');
+    
+    // Mostrar loading
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    `;
+    
+    modal.show();
+    
+    // Cargar datos via AJAX
+    fetch(`/empresas/admin/ajax/empresa/${empresaId}/`)
+        .then(response => response.json())
+        .then(data => {
+            content.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Información General</h6>
+                        <p><strong>Razón Social:</strong> ${data.empresa.razon_social}</p>
+                        <p><strong>NIT:</strong> ${data.empresa.nit}</p>
+                        <p><strong>Email:</strong> ${data.empresa.email}</p>
+                        <p><strong>Teléfono:</strong> ${data.empresa.telefono}</p>
+                        <p><strong>Estado:</strong> ${data.empresa.activa ? 'Activa' : 'Inactiva'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Usuarios Asignados</h6>
+                        ${data.usuarios.length > 0 ? 
+                            data.usuarios.map(usuario => `
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>${usuario.nombre}</span>
+                                    <span class="badge badge-${usuario.rol}">${usuario.rol}</span>
+                                </div>
+                            `).join('') :
+                            '<p class="text-muted">No hay usuarios asignados</p>'
+                        }
+                    </div>
+                </div>
+            `;
+        })
+        .catch(error => {
+            content.innerHTML = '<div class="alert alert-danger">Error al cargar los datos</div>';
+        });
+}
+
+function gestionarUsuarios(empresaId) {
+    window.location.href = `/empresas/admin/usuarios/?empresa=${empresaId}`;
+}
+</script>
+{% endblock %}

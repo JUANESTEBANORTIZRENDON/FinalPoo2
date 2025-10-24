@@ -1,0 +1,238 @@
+{% extends 'empresas/admin/base_admin.html' %}
+
+{% block title %}Detalle del Cambio - Administrador{% endblock %}
+
+{% block page_title %}🔍 Detalle del Cambio{% endblock %}
+{% block page_subtitle %}Información completa de la acción realizada{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <span class="me-2">{{ cambio.icono_accion }}</span>
+                        {{ cambio.get_tipo_accion_display }}
+                        {% if not cambio.exitosa %}
+                        <span class="badge bg-danger ms-2">Error</span>
+                        {% else %}
+                        <span class="badge bg-success ms-2">Exitosa</span>
+                        {% endif %}
+                    </h4>
+                    <a href="{% url 'empresas:admin_historial_cambios' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Volver al Historial
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Información del Usuario -->
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-user me-2"></i>Información del Usuario
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Usuario:</label>
+                                <div class="d-flex align-items-center">
+                                    <div class="usuario-avatar me-2">
+                                        {{ cambio.usuario.first_name.0|default:cambio.usuario.username.0|upper }}
+                                    </div>
+                                    <div>
+                                        <div>{{ cambio.usuario.get_full_name|default:cambio.usuario.username }}</div>
+                                        <small class="text-muted">{{ cambio.usuario.email }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if cambio.empresa %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Empresa:</label>
+                                <p class="mb-1">{{ cambio.empresa.razon_social }}</p>
+                                <small class="text-muted">NIT: {{ cambio.empresa.nit }}</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Rol en la Empresa:</label>
+                                <span class="badge badge-rol badge-{{ cambio.rol_usuario|lower }}">
+                                    {{ cambio.rol_usuario }}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Información de la Acción -->
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-cog me-2"></i>Información de la Acción
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tipo de Acción:</label>
+                                <p class="mb-1">{{ cambio.get_tipo_accion_display }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Descripción:</label>
+                                <p class="mb-1">{{ cambio.descripcion }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Fecha y Hora:</label>
+                                <p class="mb-1">{{ cambio.fecha_hora|date:"d/m/Y H:i:s" }}</p>
+                                <small class="text-muted">{{ cambio.tiempo_transcurrido }}</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Estado:</label>
+                                {% if cambio.exitosa %}
+                                <span class="badge bg-success">✅ Exitosa</span>
+                                {% else %}
+                                <span class="badge bg-danger">❌ Error</span>
+                                {% endif %}
+                            </div>
+                            
+                            {% if cambio.duracion_ms %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Duración:</label>
+                                <p class="mb-1">{{ cambio.duracion_ms }} milisegundos</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Información Técnica -->
+                    <hr class="my-4">
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-code me-2"></i>Información Técnica
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% if cambio.modelo_afectado %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Modelo Afectado:</label>
+                                <p class="mb-1">{{ cambio.modelo_afectado }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if cambio.objeto_id %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">ID del Objeto:</label>
+                                <p class="mb-1">{{ cambio.objeto_id }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if cambio.ip_address %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Dirección IP:</label>
+                                <p class="mb-1">{{ cambio.ip_address }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {% if cambio.url_solicitada %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">URL Solicitada:</label>
+                                <p class="mb-1 text-break">{{ cambio.url_solicitada }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if cambio.metodo_http %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Método HTTP:</label>
+                                <span class="badge bg-info">{{ cambio.metodo_http }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if cambio.user_agent %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Navegador/Dispositivo:</label>
+                                <p class="mb-1 text-break small">{{ cambio.user_agent }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Error Information -->
+                    {% if not cambio.exitosa and cambio.mensaje_error %}
+                    <hr class="my-4">
+                    <h5 class="text-danger mb-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Información del Error
+                    </h5>
+                    
+                    <div class="alert alert-danger">
+                        <strong>Mensaje de Error:</strong><br>
+                        {{ cambio.mensaje_error }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Datos del Cambio -->
+                    {% if cambio.datos_anteriores or cambio.datos_nuevos %}
+                    <hr class="my-4">
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-exchange-alt me-2"></i>Datos del Cambio
+                    </h5>
+                    
+                    <div class="row">
+                        {% if cambio.datos_anteriores %}
+                        <div class="col-md-6">
+                            <h6 class="text-secondary">Datos Anteriores:</h6>
+                            <div class="bg-light p-3 rounded">
+                                <pre class="mb-0"><code>{{ cambio.datos_anteriores|pprint }}</code></pre>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if cambio.datos_nuevos %}
+                        <div class="col-md-6">
+                            <h6 class="text-secondary">Datos Nuevos:</h6>
+                            <div class="bg-light p-3 rounded">
+                                <pre class="mb-0"><code>{{ cambio.datos_nuevos|pprint }}</code></pre>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.usuario-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.badge-rol {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.badge-admin { background-color: #dc3545; }
+.badge-contador { background-color: #28a745; }
+.badge-operador { background-color: #ffc107; color: #000; }
+.badge-observador { background-color: #6c757d; }
+
+pre code {
+    font-size: 0.85rem;
+    color: #495057;
+}
+
+.text-break {
+    word-break: break-all;
+}
+</style>
+{% endblock %}

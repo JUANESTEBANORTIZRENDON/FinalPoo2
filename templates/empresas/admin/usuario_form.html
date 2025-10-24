@@ -1,0 +1,271 @@
+{% extends 'empresas/admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }} - Admin Holding{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user me-2"></i>{{ titulo }}
+                    </h4>
+                    <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Volver
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Información Básica -->
+                            <div class="col-md-6">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-user-circle me-2"></i>Información Básica
+                                </h5>
+                                
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">
+                                        <i class="fas fa-user me-1"></i>Nombre de Usuario *
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="username" 
+                                           name="username" 
+                                           value="{{ usuario.username|default:'' }}"
+                                           required>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa el nombre de usuario.
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">
+                                        <i class="fas fa-envelope me-1"></i>Email *
+                                    </label>
+                                    <input type="email" 
+                                           class="form-control" 
+                                           id="email" 
+                                           name="email" 
+                                           value="{{ usuario.email|default:'' }}"
+                                           required>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa un email válido.
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="first_name" class="form-label">
+                                                <i class="fas fa-user me-1"></i>Nombres
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   id="first_name" 
+                                                   name="first_name" 
+                                                   value="{{ usuario.first_name|default:'' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="last_name" class="form-label">
+                                                <i class="fas fa-user me-1"></i>Apellidos
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   id="last_name" 
+                                                   name="last_name" 
+                                                   value="{{ usuario.last_name|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if accion == 'editar' %}
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               id="is_active" 
+                                               name="is_active"
+                                               {% if usuario.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">
+                                            <i class="fas fa-toggle-on me-1"></i>Usuario Activo
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Información Personal y Contraseña -->
+                            <div class="col-md-6">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-address-card me-2"></i>Información Personal
+                                </h5>
+                                
+                                <div class="mb-3">
+                                    <label for="documento" class="form-label">
+                                        <i class="fas fa-id-card me-1"></i>Documento
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="documento" 
+                                           name="documento" 
+                                           value="{{ usuario.perfilusuario.documento|default:'' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="telefono" class="form-label">
+                                        <i class="fas fa-phone me-1"></i>Teléfono
+                                    </label>
+                                    <input type="tel" 
+                                           class="form-control" 
+                                           id="telefono" 
+                                           name="telefono" 
+                                           value="{{ usuario.perfilusuario.telefono|default:'' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="ciudad" class="form-label">
+                                        <i class="fas fa-city me-1"></i>Ciudad
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="ciudad" 
+                                           name="ciudad" 
+                                           value="{{ usuario.perfilusuario.ciudad|default:'' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="direccion" class="form-label">
+                                        <i class="fas fa-map-marker-alt me-1"></i>Dirección
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="direccion" 
+                                              name="direccion" 
+                                              rows="2">{{ usuario.perfilusuario.direccion|default:'' }}</textarea>
+                                </div>
+                                
+                                <!-- Sección de Contraseña -->
+                                <hr class="my-3">
+                                <h6 class="text-secondary mb-3">
+                                    <i class="fas fa-lock me-2"></i>
+                                    {% if accion == 'crear' %}Contraseña *{% else %}Cambiar Contraseña{% endif %}
+                                </h6>
+                                
+                                {% if accion == 'crear' %}
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">
+                                        <i class="fas fa-lock me-1"></i>Contraseña *
+                                    </label>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="password" 
+                                           name="password" 
+                                           required>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa una contraseña.
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="password_confirm" class="form-label">
+                                        <i class="fas fa-lock me-1"></i>Confirmar Contraseña *
+                                    </label>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="password_confirm" 
+                                           name="password_confirm" 
+                                           required>
+                                    <div class="invalid-feedback">
+                                        Por favor confirma la contraseña.
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="mb-3">
+                                    <label for="new_password" class="form-label">
+                                        <i class="fas fa-lock me-1"></i>Nueva Contraseña
+                                    </label>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="new_password" 
+                                           name="new_password">
+                                    <small class="form-text text-muted">
+                                        Deja en blanco si no deseas cambiar la contraseña
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="password_confirm" class="form-label">
+                                        <i class="fas fa-lock me-1"></i>Confirmar Nueva Contraseña
+                                    </label>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="password_confirm" 
+                                           name="password_confirm">
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                {% if accion == 'crear' %}Crear Usuario{% else %}Actualizar Usuario{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Validación de contraseñas coincidentes
+document.addEventListener('DOMContentLoaded', function() {
+    const password = document.getElementById('{% if accion == "crear" %}password{% else %}new_password{% endif %}');
+    const passwordConfirm = document.getElementById('password_confirm');
+    
+    function validatePasswords() {
+        if (password.value && passwordConfirm.value) {
+            if (password.value !== passwordConfirm.value) {
+                passwordConfirm.setCustomValidity('Las contraseñas no coinciden');
+            } else {
+                passwordConfirm.setCustomValidity('');
+            }
+        }
+    }
+    
+    if (password && passwordConfirm) {
+        password.addEventListener('input', validatePasswords);
+        passwordConfirm.addEventListener('input', validatePasswords);
+    }
+});
+</script>
+{% endblock %}

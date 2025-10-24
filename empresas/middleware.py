@@ -89,6 +89,11 @@ class EmpresaActivaMiddleware:
             perfil_empresa = perfiles_empresa.get(empresa=empresa_activa)
             request.perfil_empresa = perfil_empresa
             request.rol_empresa = perfil_empresa.rol
+            
+            # Redirigir al dashboard específico del rol si está en la raíz
+            if request.path == '/' or request.path == '/accounts/dashboard/':
+                return self.redirect_to_role_dashboard(perfil_empresa.rol)
+                
         except PerfilEmpresa.DoesNotExist:
             # El usuario no tiene acceso a la empresa activa
             messages.error(
@@ -164,6 +169,27 @@ class EmpresaActivaMiddleware:
             if path.startswith(exempt_url):
                 return True
         return False
+    
+    def redirect_to_role_dashboard(self, rol):
+        """
+        Redirige al dashboard específico según el rol del usuario.
+        """
+        dashboard_urls = {
+            'admin': 'empresas:admin_dashboard',
+            'contador': 'empresas:contador_dashboard',  # A crear
+            'operador': 'empresas:operador_dashboard',   # A crear
+            'observador': 'empresas:observador_dashboard'  # A crear
+        }
+        
+        dashboard_url = dashboard_urls.get(rol)
+        if dashboard_url:
+            try:
+                return redirect(dashboard_url)
+            except:
+                # Si la URL no existe, redirigir al dashboard de empresas
+                return redirect('empresas:empresa_list')
+        
+        return redirect('empresas:empresa_list')
 
 
 class EmpresaFilterMixin:

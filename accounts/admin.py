@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.contrib.sessions.models import Session
+from django.contrib.contenttypes.models import ContentType
 from django.utils.html import format_html
 from django.urls import reverse, path
 from django.shortcuts import redirect
@@ -9,7 +11,9 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import transaction
+from django.utils import timezone
 from .models import PerfilUsuario
+from .admin_forms import UsuarioCompletoAdminForm, PerfilUsuarioEditForm, UsuarioEditForm, PerfilUsuarioCompletoForm
 
 
 # ===== CONSTANTES PARA STRINGS DUPLICADOS =====
@@ -31,45 +35,64 @@ WARNING_TEXT_STYLE = "color: #dc3545; font-size: 0.7em;"
 
 
 class PerfilUsuarioInline(admin.StackedInline):
-    """Inline para mostrar el perfil en la página de usuario"""
+    """Inline simplificado para mostrar el perfil en la página de usuario"""
     model = PerfilUsuario
+    form = PerfilUsuarioEditForm
     can_delete = False
-    verbose_name = "Perfil de Usuario"
-    verbose_name_plural = "Perfiles de Usuario"
+    verbose_name = "📋 Perfil Completo del Usuario"
+    verbose_name_plural = "📋 Perfiles de Usuario"
+    max_num = 1  # Solo un perfil por usuario
+    min_num = 0  # No requerir perfil inicialmente (se crea automáticamente)
+    extra = 0    # No mostrar formularios extra vacíos
     
     fieldsets = (
-        ('Información Personal', {
-            'fields': (
-                'tipo_documento', 'numero_documento', 'telefono', 
-                'fecha_nacimiento', 'genero', 'estado_civil'
-            )
+        ('🆔 Identificación', {
+            'fields': ('tipo_documento', 'numero_documento'),
+            'description': 'Información de identificación oficial del usuario'
         }),
-        ('Información de Contacto', {
-            'fields': (
-                'direccion', 'ciudad', 'departamento', 'pais', 'codigo_postal'
-            )
+        ('📱 Contacto', {
+            'fields': ('telefono', 'direccion', 'ciudad', 'departamento', 'codigo_postal'),
+            'description': 'Información de contacto y ubicación'
         }),
-        ('Información Profesional', {
-            'fields': ('profesion', 'empresa', 'cargo')
+        ('👤 Información Personal', {
+            'fields': ('fecha_nacimiento', 'genero', 'estado_civil'),
+            'classes': ('collapse',),
+            'description': 'Información personal opcional'
         }),
-        ('Configuración del Sistema', {
-            'fields': (
-                'acepta_terminos', 'acepta_politica_privacidad', 
-                'recibir_notificaciones', 'activo'
-            )
+        ('💼 Información Profesional', {
+            'fields': ('profesion', 'empresa', 'cargo'),
+            'classes': ('collapse',),
+            'description': 'Información laboral y profesional'
         }),
-        ('Metadatos', {
-            'fields': ('fecha_creacion', 'fecha_actualizacion'),
-            'classes': ('collapse',)
+        ('⚙️ Configuración', {
+            'fields': ('activo',),
+            'classes': ('collapse',),
+            'description': 'Configuración del perfil'
         }),
     )
     
-    readonly_fields = ('fecha_creacion', 'fecha_actualizacion')
+    def get_readonly_fields(self, request, obj=None):
+        """Campos de solo lectura dinámicos"""
+        readonly = []
+        
+        # Si el perfil ya existe y tiene datos críticos, protegerlos
+        if obj and hasattr(obj, 'perfil'):
+            perfil = obj.perfil
+            if perfil.numero_documento:
+                # No permitir cambiar documento si ya está establecido
+                # (para evitar problemas de integridad)
+                pass  # Permitir cambio por ahora, pero se puede restringir
+        
+        return readonly
 
 
 class UsuarioPersonalizadoAdmin(UserAdmin):
     """Admin personalizado para Usuario con perfil integrado"""
     inlines = (PerfilUsuarioInline,)
+    
+    # Usar formularios personalizados
+    add_form = UsuarioCompletoAdminForm
+    form = UsuarioEditForm
     
     list_display = (
         'get_avatar', 'username', 'get_nombre_completo', 'email', 
@@ -89,6 +112,58 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
     )
     
     list_per_page = 25
+    
+    # Fieldsets para creación de usuarios (formulario unificado)
+    add_fieldsets = (
+        ('🔐 Credenciales de Acceso', {
+            'classes': ('wide',),
+            'fields': ('username', 'password1', 'password2'),
+            'description': 'Información básica para el acceso al sistema'
+        }),
+        ('👤 Información Personal', {
+            'classes': ('wide',),
+            'fields': ('first_name', 'last_name', 'email'),
+            'description': 'Datos personales del usuario'
+        }),
+        ('🆔 Identificación', {
+            'classes': ('wide',),
+            'fields': ('tipo_documento', 'numero_documento', 'telefono'),
+            'description': 'Información de identificación y contacto'
+        }),
+        ('📍 Ubicación', {
+            'classes': ('wide', 'collapse'),
+            'fields': ('ciudad', 'departamento'),
+            'description': 'Información de ubicación (opcional)'
+        }),
+        ('👥 Información Adicional', {
+            'classes': ('wide', 'collapse'),
+            'fields': ('fecha_nacimiento', 'genero', 'profesion'),
+            'description': 'Información complementaria (opcional)'
+        }),
+        ('⚙️ Permisos del Sistema', {
+            'classes': ('wide', 'collapse'),
+            'fields': ('is_active', 'is_staff'),
+            'description': 'Configuración de acceso y permisos'
+        }),
+    )
+    
+    # Fieldsets para edición de usuarios existentes
+    fieldsets = (
+        ('🔐 Información de Acceso', {
+            'fields': ('username', 'password')
+        }),
+        ('👤 Información Personal', {
+            'fields': ('first_name', 'last_name', 'email')
+        }),
+        ('🔑 Permisos', {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+            'classes': ('collapse',)
+        }),
+        ('📅 Fechas Importantes', {
+            'fields': ('last_login', 'date_joined'),
+            'classes': ('collapse',)
+        }),
+    )
     
     def get_avatar(self, obj):
         """Mostrar avatar del usuario"""
@@ -283,7 +358,9 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
 
 @admin.register(PerfilUsuario)
 class PerfilUsuarioAdmin(admin.ModelAdmin):
-    """Admin para gestión directa de perfiles"""
+    """Admin inteligente para gestión directa de perfiles con creación automática de usuarios"""
+    form = PerfilUsuarioCompletoForm
+    
     list_display = (
         'usuario', 'documento_completo', 'telefono', 
         'ciudad', 'activo', 'fecha_creacion'
@@ -302,34 +379,154 @@ class PerfilUsuarioAdmin(admin.ModelAdmin):
     readonly_fields = ('fecha_creacion', 'fecha_actualizacion')
     
     fieldsets = (
-        ('Usuario', {
-            'fields': ('usuario',)
+        ('✨ Creación Inteligente', {
+            'fields': ('crear_usuario_automaticamente',),
+            'description': 'Marque esta opción para crear automáticamente un usuario con los datos del perfil'
         }),
-        ('Información Personal', {
-            'fields': (
-                'tipo_documento', 'numero_documento', 'telefono', 
-                'fecha_nacimiento', 'genero', 'estado_civil'
-            )
+        ('👤 Usuario Existente', {
+            'fields': ('usuario',),
+            'description': 'Seleccione un usuario existente (solo si NO marcó "Crear automáticamente")'
         }),
-        ('Información de Contacto', {
-            'fields': (
-                'direccion', 'ciudad', 'departamento', 'pais', 'codigo_postal'
-            )
+        ('🔐 Datos del Nuevo Usuario', {
+            'fields': ('username', 'first_name', 'last_name', 'email', 'password', 'is_active'),
+            'classes': ('collapse',),
+            'description': 'Complete estos datos para crear un nuevo usuario (se generarán automáticamente si se dejan vacíos)'
         }),
-        ('Información Profesional', {
-            'fields': ('profesion', 'empresa', 'cargo')
+        ('🆔 Identificación', {
+            'fields': ('tipo_documento', 'numero_documento'),
+            'description': 'Información de identificación oficial (requerida)'
         }),
-        ('Configuración del Sistema', {
-            'fields': (
-                'acepta_terminos', 'acepta_politica_privacidad', 
-                'recibir_notificaciones', 'activo'
-            )
+        ('📱 Contacto', {
+            'fields': ('telefono', 'direccion', 'ciudad', 'departamento', 'codigo_postal'),
+            'description': 'Información de contacto y ubicación'
         }),
-        ('Metadatos', {
+        ('👥 Información Personal', {
+            'fields': ('fecha_nacimiento', 'genero', 'estado_civil'),
+            'classes': ('collapse',),
+            'description': 'Información personal opcional'
+        }),
+        ('💼 Información Profesional', {
+            'fields': ('profesion', 'empresa', 'cargo'),
+            'classes': ('collapse',),
+            'description': 'Información laboral y profesional'
+        }),
+        ('⚙️ Configuración', {
+            'fields': ('activo',),
+            'classes': ('collapse',),
+            'description': 'Configuración del perfil'
+        }),
+        ('📅 Metadatos', {
             'fields': ('fecha_creacion', 'fecha_actualizacion'),
-            'classes': ('collapse',)
+            'classes': ('collapse',),
+            'description': 'Información del sistema'
         }),
     )
+    
+    def get_readonly_fields(self, request, obj=None):
+        """Campos de solo lectura dinámicos"""
+        readonly = ['fecha_creacion', 'fecha_actualizacion']
+        
+        # Si estamos editando un perfil existente, no permitir cambiar la opción de crear usuario
+        if obj and obj.pk:
+            readonly.extend(['crear_usuario_automaticamente', 'username', 'first_name', 'last_name', 'email', 'password', 'is_active'])
+        
+        return readonly
+    
+    def save_model(self, request, obj, form, change):
+        """Personalizar el guardado del modelo"""
+        # Mostrar mensaje informativo sobre lo que se creó
+        if not change:  # Solo para nuevos objetos
+            crear_automatico = form.cleaned_data.get('crear_usuario_automaticamente')
+            if crear_automatico:
+                username = form.cleaned_data.get('username')
+                password = form.cleaned_data.get('password')
+                
+                # Guardar el objeto
+                super().save_model(request, obj, form, change)
+                
+                # Mostrar mensaje con credenciales
+                messages.success(request, format_html(
+                    '✅ <strong>Usuario y perfil creados exitosamente!</strong><br>'
+                    '👤 <strong>Usuario:</strong> {}<br>'
+                    '🔑 <strong>Contraseña:</strong> {} <br>'
+                    '📧 <strong>Email:</strong> {}<br>'
+                    '💡 <em>Guarde estas credenciales ya que la contraseña no se mostrará nuevamente.</em>',
+                    username, password, form.cleaned_data.get('email')
+                ))
+            else:
+                super().save_model(request, obj, form, change)
+                messages.success(request, '✅ Perfil asociado al usuario existente correctamente.')
+        else:
+            super().save_model(request, obj, form, change)
+    
+    class Media:
+        """Agregar JavaScript personalizado"""
+        js = ('admin/js/perfil_usuario_inteligente.js',)
+
+
+@admin.register(Session)
+class SessionAdmin(admin.ModelAdmin):
+    """Admin para gestión de sesiones activas"""
+    list_display = ('session_key_short', 'get_user', 'expire_date', 'is_expired')
+    list_filter = ('expire_date',)
+    search_fields = ('session_key',)
+    readonly_fields = ('session_key', 'session_data', 'expire_date')
+    
+    def session_key_short(self, obj):
+        """Mostrar versión corta de la session key"""
+        return f"{obj.session_key[:8]}..."
+    session_key_short.short_description = "🔑 Session Key"
+    
+    def get_user(self, obj):
+        """Obtener usuario de la sesión"""
+        try:
+            from django.contrib.sessions.backends.db import SessionStore
+            store = SessionStore(session_key=obj.session_key)
+            user_id = store.get('_auth_user_id')
+            if user_id:
+                try:
+                    user = User.objects.get(id=user_id)
+                    return format_html(
+                        '<a href="/admin/auth/user/{}/change/">{}</a>',
+                        user.id,
+                        user.username
+                    )
+                except User.DoesNotExist:
+                    return format_html('<em style="color: #999;">Usuario eliminado</em>')
+            return format_html('<em style="color: #999;">Sesión anónima</em>')
+        except Exception:
+            return format_html('<em style="color: #999;">Error al obtener usuario</em>')
+    get_user.short_description = "👤 Usuario"
+    
+    def is_expired(self, obj):
+        """Verificar si la sesión está expirada"""
+        now = timezone.now()
+        if obj.expire_date < now:
+            return format_html('<span style="color: red;">❌ Expirada</span>')
+        else:
+            return format_html('<span style="color: green;">✅ Activa</span>')
+    is_expired.short_description = "📊 Estado"
+    
+    def has_add_permission(self, request):
+        """No permitir crear sesiones manualmente"""
+        return False
+
+
+@admin.register(ContentType)
+class ContentTypeAdmin(admin.ModelAdmin):
+    """Admin para gestión de tipos de contenido"""
+    list_display = ('app_label', 'model', 'name', 'id')
+    list_filter = ('app_label',)
+    search_fields = ('app_label', 'model', 'name')
+    readonly_fields = ('app_label', 'model', 'name')
+    
+    def has_add_permission(self, request):
+        """No permitir crear content types manualmente"""
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        """No permitir eliminar content types"""
+        return False
 
 
 # Desregistrar el admin por defecto y registrar el personalizado

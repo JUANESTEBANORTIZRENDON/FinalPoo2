@@ -15,7 +15,8 @@ from .forms import RegistroCompletoForm
 
 # Constantes para URLs reutilizables
 LOGIN_URL_NAME = 'accounts:login'
-ADMIN_URL_PATH = '/admin/'
+ADMIN_URL_PATH = '/admin/'  # Panel de desarrollador Django
+ADMIN_HOLDING_URL_NAME = 'empresas:admin_dashboard'  # Dashboard del holding para administradores
 DASHBOARD_URL_NAME = 'accounts:dashboard'
 
 class RegisterView(CreateView):
@@ -117,8 +118,8 @@ Tu aliado en gestión financiera y contable
         # Si el usuario ya está autenticado, redirigir según su tipo
         if request.user.is_authenticated:
             if request.user.is_superuser or request.user.is_staff:
-                # Administradores van al panel admin
-                return redirect(ADMIN_URL_PATH)
+                # Administradores van al dashboard del holding
+                return redirect(ADMIN_HOLDING_URL_NAME)
             else:
                 # Usuarios normales van al dashboard
                 return redirect(DASHBOARD_URL_NAME)
@@ -273,8 +274,8 @@ class CustomLoginView(LoginView):
         user = self.request.user
         
         if user.is_superuser or user.is_staff:
-            # Administradores van al panel admin
-            return ADMIN_URL_PATH
+            # Administradores van al dashboard del holding
+            return reverse_lazy(ADMIN_HOLDING_URL_NAME)
         else:
             # Usuarios normales van al dashboard
             return reverse_lazy(DASHBOARD_URL_NAME)
@@ -283,7 +284,7 @@ class CustomLoginView(LoginView):
         # Si ya está autenticado, redirigir según su tipo
         if request.user.is_authenticated:
             if request.user.is_superuser or request.user.is_staff:
-                return redirect(ADMIN_URL_PATH)
+                return redirect(ADMIN_HOLDING_URL_NAME)
             else:
                 return redirect(DASHBOARD_URL_NAME)
         return super().dispatch(request, *args, **kwargs)

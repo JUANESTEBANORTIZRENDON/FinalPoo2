@@ -82,6 +82,10 @@ MIDDLEWARE = [
     
     # Middleware personalizado para sistema multi-empresa
     'empresas.middleware.EmpresaActivaMiddleware',
+    
+    # Middleware para historial de cambios
+    'empresas.middleware_historial.ThreadLocalMiddleware',
+    'empresas.middleware_historial.HistorialCambiosMiddleware',
 ]
 ROOT_URLCONF = 'core.urls'
 
@@ -169,6 +173,10 @@ LOCALE_PATHS = [
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

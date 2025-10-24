@@ -1,0 +1,157 @@
+{% extends 'empresas/admin/base_admin.html' %}
+
+{% block title %}Estadísticas del Holding - Administrador{% endblock %}
+
+{% block page_title %}📊 Estadísticas del Holding{% endblock %}
+{% block page_subtitle %}Análisis de rendimiento y métricas del holding contable{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 20px 0;
+    }
+    .contador-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    .metric-small {
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">📊 Estadísticas del Holding</h1>
+            <p class="text-muted">Análisis de rendimiento y métricas del holding contable</p>
+        </div>
+    </div>
+
+    <!-- Empresas por mes -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="stats-card">
+                <h5 class="mb-3">📈 Empresas Creadas por Mes</h5>
+                <div class="chart-container">
+                    <canvas id="empresasPorMesChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <h5 class="mb-3">📋 Resumen Mensual</h5>
+                {% for mes_data in empresas_por_mes %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>{{ mes_data.mes }}</span>
+                    <span class="badge bg-primary">{{ mes_data.count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Rendimiento por contador -->
+    <div class="row">
+        <div class="col-12">
+            <div class="stats-card">
+                <h5 class="mb-3">👨‍💼 Rendimiento por Contador</h5>
+                <div class="row">
+                    {% for contador_data in rendimiento_contadores %}
+                    <div class="col-md-4">
+                        <div class="contador-card">
+                            <h6 class="mb-2">{{ contador_data.contador.get_full_name|default:contador_data.contador.username }}</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="metric-small">{{ contador_data.empresas_asignadas }}</div>
+                                    <small>Empresas</small>
+                                </div>
+                                <div class="col-6">
+                                    <div class="metric-small">{{ contador_data.facturas_mes }}</div>
+                                    <small>Facturas/mes</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <p class="text-muted text-center">No hay contadores asignados</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón de regreso -->
+    <div class="row">
+        <div class="col-12">
+            <a href="{% url 'empresas:admin_dashboard' %}" class="btn btn-outline-primary">
+                ← Volver al Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Gráfico de empresas por mes
+const ctx = document.getElementById('empresasPorMesChart').getContext('2d');
+const empresasPorMesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [
+            {% for mes_data in empresas_por_mes %}
+            '{{ mes_data.mes }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Empresas Creadas',
+            data: [
+                {% for mes_data in empresas_por_mes %}
+                {{ mes_data.count }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            borderColor: 'rgb(102, 126, 234)',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

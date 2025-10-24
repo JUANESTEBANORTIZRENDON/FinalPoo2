@@ -1,0 +1,134 @@
+{% extends 'empresas/admin/base_admin.html' %}
+
+{% block title %}Verificación de Desarrollador{% endblock %}
+
+{% block page_title %}🔐 Verificación de Desarrollador{% endblock %}
+{% block page_subtitle %}Acceso al Panel de Administración Django{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="admin-card">
+            <div class="text-center mb-4">
+                <div style="font-size: 4rem; color: var(--admin-primary); margin-bottom: 20px;">
+                    🔐
+                </div>
+                <h3 class="mb-3">Panel de Desarrollador</h3>
+                <p class="text-muted">
+                    Para acceder al Django Admin se requiere una contraseña adicional de desarrollador por seguridad.
+                </p>
+            </div>
+
+            <form method="post" class="dev-auth-form">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label for="dev_password" class="form-label fw-semibold">
+                        🔑 Contraseña de Desarrollador
+                    </label>
+                    <input 
+                        type="password" 
+                        class="form-control form-control-lg" 
+                        id="dev_password" 
+                        name="dev_password" 
+                        placeholder="Ingresa la contraseña de desarrollador"
+                        required
+                        autocomplete="off"
+                    >
+                    <small class="form-text text-muted">
+                        Esta contraseña es diferente a tu contraseña de usuario.
+                    </small>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn-admin btn-lg">
+                        <i class="fas fa-unlock"></i> Acceder al Panel de Desarrollador
+                    </button>
+                    <a href="{% url 'empresas:admin_dashboard' %}" class="btn-admin-outline">
+                        <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                    </a>
+                </div>
+            </form>
+
+            <div class="mt-4 p-3 rounded" style="background: rgba(102, 126, 234, 0.1);">
+                <h6 class="text-primary mb-2">
+                    <i class="fas fa-info-circle"></i> Información de Seguridad
+                </h6>
+                <ul class="small text-muted mb-0">
+                    <li>Esta verificación adicional protege el acceso técnico al sistema</li>
+                    <li>Solo los administradores del holding pueden acceder</li>
+                    <li>La contraseña puede cambiarse por comando de consola</li>
+                    <li>Los superusuarios tienen acceso directo sin verificación</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.dev-auth-form {
+    padding: 20px 0;
+}
+
+.form-control-lg {
+    padding: 15px;
+    font-size: 1.1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.form-control-lg:focus {
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn-lg {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.form-control.is-invalid {
+    animation: shake 0.5s ease-in-out;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-focus en el campo de contraseña
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('dev_password').focus();
+});
+
+// Efecto de error en contraseña incorrecta
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'error' %}
+            document.addEventListener('DOMContentLoaded', function() {
+                const passwordField = document.getElementById('dev_password');
+                passwordField.classList.add('is-invalid');
+                passwordField.value = '';
+                
+                setTimeout(() => {
+                    passwordField.classList.remove('is-invalid');
+                }, 500);
+            });
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+// Prevenir copiar/pegar en el campo de contraseña
+document.getElementById('dev_password').addEventListener('paste', function(e) {
+    e.preventDefault();
+    alert('Por seguridad, no se permite pegar en este campo.');
+});
+</script>
+{% endblock %}

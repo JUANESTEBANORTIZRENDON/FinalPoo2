@@ -35,6 +35,10 @@ media/
 # Static files (en producción)
 staticfiles/
 static/
+# Permitir archivos CSS personalizados del admin
+!static/admin/
+!static/admin/css/
+!static/admin/css/custom.css
 
 # Archivos del sistema
 .DS_Store

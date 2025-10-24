@@ -1,0 +1,253 @@
+{% extends 'empresas/admin/base_admin.html' %}
+
+{% block title %}Asignar Usuario - Administrador{% endblock %}
+
+{% block page_title %}🏢 Asignar Usuario{% endblock %}
+{% block page_subtitle %}Configurar roles y permisos de usuario{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    .usuario-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .asignacion-actual {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 4px solid #28a745;
+    }
+    .badge-rol {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+    .badge-admin { background-color: #dc3545; }
+    .badge-contador { background-color: #28a745; }
+    .badge-operador { background-color: #ffc107; color: #000; }
+    .badge-observador { background-color: #6c757d; }
+    .btn-asignar {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    .btn-asignar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">🏢 Asignar Usuario a Empresa</h1>
+            <p class="text-muted">Configurar roles y permisos de usuario</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Información del usuario -->
+            <div class="usuario-info">
+                <h4 class="mb-3">👤 {{ usuario.get_full_name|default:usuario.username }}</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Email:</strong> {{ usuario.email|default:"No especificado" }}</p>
+                        <p class="mb-1"><strong>Username:</strong> {{ usuario.username }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Registrado:</strong> {{ usuario.date_joined|date:"d/m/Y" }}</p>
+                        <p class="mb-1"><strong>Estado:</strong> 
+                            {% if usuario.is_active %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de asignación -->
+            <div class="form-card">
+                <h5 class="mb-4">➕ Nueva Asignación</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="empresa_id" class="form-label">Empresa *</label>
+                                <select class="form-select" id="empresa_id" name="empresa_id" required>
+                                    <option value="">Seleccionar empresa...</option>
+                                    {% for empresa in empresas %}
+                                    <option value="{{ empresa.id }}">
+                                        {{ empresa.razon_social }} ({{ empresa.nit }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="rol" class="form-label">Rol *</label>
+                                <select class="form-select" id="rol" name="rol" required>
+                                    <option value="">Seleccionar rol...</option>
+                                    {% for rol_code, rol_name in roles_choices %}
+                                        {% if rol_code != 'admin' %}
+                                        <option value="{{ rol_code }}">
+                                            {% if rol_code == 'contador' %}📊
+                                            {% elif rol_code == 'operador' %}⚙️
+                                            {% elif rol_code == 'observador' %}👁️
+                                            {% endif %}
+                                            {{ rol_name }}
+                                        </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción de roles -->
+                    <div class="mb-4">
+                        <h6>ℹ️ Descripción de Roles:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <strong>📊 Contador:</strong> Manejo contable completo<br>
+                                    <strong>⚙️ Operador:</strong> Operaciones básicas
+                                </small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <strong>👁️ Observador:</strong> Solo consulta (propietario)<br>
+                                    <em>🔒 Administrador: Solo por consola (seguridad)</em>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="btn btn-outline-secondary">
+                            ← Volver
+                        </a>
+                        <button type="submit" class="btn-asignar">
+                            ✅ Asignar Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Asignaciones actuales -->
+            <div class="form-card">
+                <h5 class="mb-3">📋 Asignaciones Actuales</h5>
+                {% for asignacion in asignaciones_actuales %}
+                <div class="asignacion-actual">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong>{{ asignacion.empresa.razon_social }}</strong><br>
+                            <small class="text-muted">{{ asignacion.empresa.nit }}</small>
+                        </div>
+                        <span class="badge badge-{{ asignacion.rol }}">
+                            {% if asignacion.rol == 'admin' %}🔑
+                            {% elif asignacion.rol == 'contador' %}📊
+                            {% elif asignacion.rol == 'operador' %}⚙️
+                            {% elif asignacion.rol == 'observador' %}👁️
+                            {% endif %}
+                            {{ asignacion.get_rol_display }}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            Asignado: {{ asignacion.fecha_asignacion|date:"d/m/Y" }}
+                        </small>
+                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                onclick="desactivarAsignacion({{ asignacion.id }})">
+                            🗑️ Quitar
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-3">
+                    <p class="text-muted mb-0">No tiene asignaciones activas</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Ayuda -->
+            <div class="form-card">
+                <h6>💡 Consejos</h6>
+                <ul class="small text-muted">
+                    <li>Un usuario puede tener múltiples roles en diferentes empresas</li>
+                    <li>El rol <strong>Observador</strong> es ideal para propietarios de empresa</li>
+                    <li>Los <strong>Contadores</strong> pueden confirmar documentos</li>
+                    <li>Los <strong>Operadores</strong> solo pueden crear documentos</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function desactivarAsignacion(perfilId) {
+    if (confirm('¿Estás seguro de que deseas quitar esta asignación?')) {
+        window.location.href = `/empresas/admin/desactivar-asignacion/${perfilId}/`;
+    }
+}
+
+// Validación del formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const empresa = document.getElementById('empresa_id').value;
+    const rol = document.getElementById('rol').value;
+    
+    if (!empresa || !rol) {
+        e.preventDefault();
+        alert('Por favor, selecciona tanto la empresa como el rol.');
+        return false;
+    }
+    
+    // Confirmación especial para rol admin
+    if (rol === 'admin') {
+        if (!confirm('¿Estás seguro de asignar rol de Administrador? Este rol tiene acceso total a la empresa.')) {
+            e.preventDefault();
+            return false;
+        }
+    }
+});
+
+// Información dinámica sobre el rol seleccionado
+document.getElementById('rol').addEventListener('change', function() {
+    const rol = this.value;
+    const descriptions = {
+        'admin': 'Control total: puede crear, editar, confirmar y eliminar todo tipo de documentos.',
+        'contador': 'Acceso contable: puede confirmar documentos y generar reportes oficiales.',
+        'operador': 'Operaciones básicas: puede crear facturas, pagos y registros, pero no confirmar.',
+        'observador': 'Solo lectura: puede consultar información pero no modificar nada.'
+    };
+    
+    // Aquí podrías mostrar una descripción dinámica si quisieras
+});
+</script>
+{% endblock %}

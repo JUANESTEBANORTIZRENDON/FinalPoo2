@@ -1,0 +1,200 @@
+{% extends 'empresas/admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }} - Admin Holding{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-building me-2"></i>{{ titulo }}
+                    </h4>
+                    <a href="{% url 'empresas:admin_gestionar_empresas' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Volver
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Información Básica -->
+                            <div class="col-md-6">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>Información Básica
+                                </h5>
+                                
+                                <div class="mb-3">
+                                    <label for="razon_social" class="form-label">
+                                        <i class="fas fa-building me-1"></i>Razón Social *
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="razon_social" 
+                                           name="razon_social" 
+                                           value="{{ empresa.razon_social|default:'' }}"
+                                           required>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa la razón social.
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="nit" class="form-label">
+                                        <i class="fas fa-id-card me-1"></i>NIT *
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="nit" 
+                                           name="nit" 
+                                           value="{{ empresa.nit|default:'' }}"
+                                           placeholder="123456789-0"
+                                           required>
+                                    <div class="invalid-feedback">
+                                        Por favor ingresa el NIT.
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="nombre_comercial" class="form-label">
+                                        <i class="fas fa-store me-1"></i>Nombre Comercial
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="nombre_comercial" 
+                                           name="nombre_comercial" 
+                                           value="{{ empresa.nombre_comercial|default:'' }}">
+                                </div>
+                                
+                                {% if accion == 'editar' %}
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               id="activa" 
+                                               name="activa"
+                                               {% if empresa.activa %}checked{% endif %}>
+                                        <label class="form-check-label" for="activa">
+                                            <i class="fas fa-toggle-on me-1"></i>Empresa Activa
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Información de Contacto -->
+                            <div class="col-md-6">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-address-book me-2"></i>Información de Contacto
+                                </h5>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">
+                                        <i class="fas fa-envelope me-1"></i>Email
+                                    </label>
+                                    <input type="email" 
+                                           class="form-control" 
+                                           id="email" 
+                                           name="email" 
+                                           value="{{ empresa.email|default:'' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="telefono" class="form-label">
+                                        <i class="fas fa-phone me-1"></i>Teléfono
+                                    </label>
+                                    <input type="tel" 
+                                           class="form-control" 
+                                           id="telefono" 
+                                           name="telefono" 
+                                           value="{{ empresa.telefono|default:'' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="direccion" class="form-label">
+                                        <i class="fas fa-map-marker-alt me-1"></i>Dirección
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="direccion" 
+                                              name="direccion" 
+                                              rows="2">{{ empresa.direccion|default:'' }}</textarea>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="ciudad" class="form-label">
+                                                <i class="fas fa-city me-1"></i>Ciudad
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   id="ciudad" 
+                                                   name="ciudad" 
+                                                   value="{{ empresa.ciudad|default:'' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="departamento" class="form-label">
+                                                <i class="fas fa-map me-1"></i>Departamento
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   id="departamento" 
+                                                   name="departamento" 
+                                                   value="{{ empresa.departamento|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'empresas:admin_gestionar_empresas' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                {% if accion == 'crear' %}Crear Empresa{% else %}Actualizar Empresa{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Formatear NIT mientras se escribe
+document.getElementById('nit').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/[^0-9]/g, '');
+    if (value.length >= 9) {
+        value = value.substring(0, 9) + '-' + value.substring(9, 10);
+    }
+    e.target.value = value;
+});
+</script>
+{% endblock %}

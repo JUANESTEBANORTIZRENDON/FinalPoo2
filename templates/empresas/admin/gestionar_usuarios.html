@@ -1,0 +1,253 @@
+{% extends 'empresas/admin/base_admin.html' %}
+
+{% block title %}Gestionar Usuarios - Administrador{% endblock %}
+
+{% block page_title %}👥 Gestionar Usuarios{% endblock %}
+{% block page_subtitle %}Administración de usuarios y asignación de roles{% endblock %}
+
+{% block extra_css %}
+<style>
+    .usuario-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #28a745;
+    }
+    .usuario-card.sin-asignacion {
+        border-left-color: #ffc107;
+    }
+    .usuario-card.inactivo {
+        border-left-color: #6c757d;
+        opacity: 0.7;
+    }
+    .badge-rol {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        margin: 2px;
+    }
+    .badge-admin { background-color: #dc3545; }
+    .badge-contador { background-color: #28a745; }
+    .badge-operador { background-color: #ffc107; color: #000; }
+    .badge-observador { background-color: #6c757d; }
+    .search-box {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .alert-pendientes {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">👥 Gestionar Usuarios</h1>
+            <p class="text-muted">Administración de usuarios y asignación de roles</p>
+        </div>
+    </div>
+
+    <!-- Alerta de usuarios pendientes -->
+    {% if usuarios_sin_asignacion > 0 %}
+    <div class="alert alert-pendientes" role="alert">
+        <h5 class="alert-heading">⚠️ Usuarios Pendientes de Asignación</h5>
+        <p class="mb-0">
+            Hay <strong>{{ usuarios_sin_asignacion }}</strong> usuario{{ usuarios_sin_asignacion|pluralize }} 
+            registrado{{ usuarios_sin_asignacion|pluralize }} que necesitan ser asignados a empresas.
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Filtros y búsqueda -->
+    <div class="search-box">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="busqueda" class="form-label">Buscar usuario</label>
+                <input type="text" class="form-control" id="busqueda" name="busqueda" 
+                       value="{{ busqueda }}" placeholder="Nombre, email o username">
+            </div>
+            <div class="col-md-2">
+                <label for="rol" class="form-label">Rol</label>
+                <select class="form-select" id="rol" name="rol">
+                    <option value="todos" {% if rol_filtro == 'todos' %}selected{% endif %}>Todos</option>
+                    {% for rol_code, rol_name in roles_choices %}
+                    <option value="{{ rol_code }}" {% if rol_filtro == rol_code %}selected{% endif %}>
+                        {{ rol_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="estado" class="form-label">Estado</label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="todos" {% if estado == 'todos' %}selected{% endif %}>Todos</option>
+                    <option value="activos" {% if estado == 'activos' %}selected{% endif %}>Activos</option>
+                    <option value="inactivos" {% if estado == 'inactivos' %}selected{% endif %}>Inactivos</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">🔍 Buscar</button>
+                <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="btn btn-outline-secondary">Limpiar</a>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <a href="{% url 'empresas:admin_crear_usuario' %}" class="btn btn-success">➕ Nuevo Usuario</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de usuarios -->
+    <div class="row">
+        {% for usuario in usuarios %}
+        <div class="col-12">
+            <div class="usuario-card {% if not usuario.is_active %}inactivo{% elif not usuario.perfilempresa_set.exists %}sin-asignacion{% endif %}">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="mb-1">
+                            {{ usuario.get_full_name|default:usuario.username }}
+                            {% if not usuario.is_active %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                            {% if usuario.is_superuser %}
+                                <span class="badge bg-danger">Superusuario</span>
+                            {% endif %}
+                        </h5>
+                        <p class="mb-1">
+                            <strong>Email:</strong> {{ usuario.email|default:"No especificado" }} | 
+                            <strong>Username:</strong> {{ usuario.username }}
+                        </p>
+                        
+                        <!-- Roles y empresas asignadas -->
+                        <div class="mb-2">
+                            {% for perfil in usuario.perfilempresa_set.all %}
+                                {% if perfil.activo %}
+                                <span class="badge badge-{{ perfil.rol }}">
+                                    {% if perfil.rol == 'admin' %}🔑
+                                    {% elif perfil.rol == 'contador' %}📊
+                                    {% elif perfil.rol == 'operador' %}⚙️
+                                    {% elif perfil.rol == 'observador' %}👁️
+                                    {% endif %}
+                                    {{ perfil.get_rol_display }} - {{ perfil.empresa.razon_social|truncatechars:30 }}
+                                </span>
+                                {% endif %}
+                            {% empty %}
+                                <span class="badge bg-warning text-dark">Sin asignaciones</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <small class="text-muted">
+                            Registrado: {{ usuario.date_joined|date:"d/m/Y" }} | 
+                            Último acceso: {{ usuario.last_login|date:"d/m/Y H:i"|default:"Nunca" }}
+                        </small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="mb-2">
+                            <span class="badge bg-info">
+                                {{ usuario.perfilempresa_set.count }} asignación{{ usuario.perfilempresa_set.count|pluralize:"es" }}
+                            </span>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'empresas:admin_asignar_usuario' usuario.id %}" 
+                               class="btn btn-sm btn-outline-success">
+                                🏢 Asignar
+                            </a>
+                            <a href="{% url 'empresas:admin_editar_usuario' usuario.id %}" 
+                               class="btn btn-sm btn-outline-primary">
+                                ✏️ Editar
+                            </a>
+                            {% if usuario.is_active %}
+                                <button type="button" class="btn btn-sm btn-outline-warning" 
+                                        onclick="toggleUsuario({{ usuario.id }}, false)">
+                                    🚫 Desactivar
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-sm btn-outline-success" 
+                                        onclick="toggleUsuario({{ usuario.id }}, true)">
+                                    ✅ Activar
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <h4 class="text-muted">No se encontraron usuarios</h4>
+                <p class="text-muted">No hay usuarios que coincidan con los criterios de búsqueda.</p>
+                <a href="{% url 'empresas:admin_crear_usuario' %}" class="btn btn-primary">
+                    ➕ Crear Primer Usuario
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginación -->
+    {% if usuarios.has_other_pages %}
+    <nav aria-label="Paginación de usuarios">
+        <ul class="pagination justify-content-center">
+            {% if usuarios.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ usuarios.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if rol_filtro != 'todos' %}&rol={{ rol_filtro }}{% endif %}{% if estado != 'todos' %}&estado={{ estado }}{% endif %}">
+                        Anterior
+                    </a>
+                </li>
+            {% endif %}
+            
+            {% for num in usuarios.paginator.page_range %}
+                {% if usuarios.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > usuarios.number|add:'-3' and num < usuarios.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if rol_filtro != 'todos' %}&rol={{ rol_filtro }}{% endif %}{% if estado != 'todos' %}&estado={{ estado }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if usuarios.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ usuarios.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if rol_filtro != 'todos' %}&rol={{ rol_filtro }}{% endif %}{% if estado != 'todos' %}&estado={{ estado }}{% endif %}">
+                        Siguiente
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleUsuario(usuarioId, activar) {
+    const accion = activar ? 'activar' : 'desactivar';
+    
+    if (confirm(`¿Estás seguro de que deseas ${accion} este usuario?`)) {
+        // Aquí implementarías la llamada AJAX para activar/desactivar
+        // Por ahora, redirigimos al admin de Django
+        window.location.href = `/admin/auth/user/${usuarioId}/change/`;
+    }
+}
+
+// Auto-completar búsqueda
+document.getElementById('busqueda').addEventListener('input', function(e) {
+    // Implementar auto-completar si es necesario
+});
+</script>
+{% endblock %}

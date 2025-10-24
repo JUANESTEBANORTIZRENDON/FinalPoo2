@@ -1,0 +1,328 @@
+<!-- Navegación inteligente por rol -->
+{% if user.is_authenticated and request.rol_empresa %}
+
+    <!-- ADMINISTRADOR DEL HOLDING -->
+    {% if request.rol_empresa == 'admin' %}
+    <div class="role-indicator admin-role">
+        <i class="fas fa-crown"></i>
+        <span>Administrador del Holding</span>
+    </div>
+    <div class="quick-nav admin-nav">
+        <a href="{% url 'empresas:admin_dashboard' %}" class="nav-item {% if 'admin_dashboard' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="{% url 'empresas:admin_gestionar_empresas' %}" class="nav-item {% if 'admin_gestionar_empresas' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fas fa-building"></i>
+            <span>Empresas</span>
+        </a>
+        <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="nav-item {% if 'admin_gestionar_usuarios' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fas fa-users"></i>
+            <span>Usuarios</span>
+        </a>
+        <a href="{% url 'empresas:admin_estadisticas' %}" class="nav-item {% if 'admin_estadisticas' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fas fa-chart-bar"></i>
+            <span>Estadísticas</span>
+        </a>
+    </div>
+
+    <!-- CONTADOR -->
+    {% elif request.rol_empresa == 'contador' %}
+    <div class="role-indicator contador-role">
+        <i class="fas fa-calculator"></i>
+        <span>Contador - {{ request.empresa_activa.razon_social|truncatechars:25 }}</span>
+    </div>
+    <div class="quick-nav contador-nav">
+        <a href="#" class="nav-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-file-invoice"></i>
+            <span>Facturas</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-money-bill"></i>
+            <span>Pagos</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-book"></i>
+            <span>Contabilidad</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-chart-pie"></i>
+            <span>Reportes</span>
+        </a>
+    </div>
+
+    <!-- OPERADOR -->
+    {% elif request.rol_empresa == 'operador' %}
+    <div class="role-indicator operador-role">
+        <i class="fas fa-tools"></i>
+        <span>Operador - {{ request.empresa_activa.razon_social|truncatechars:25 }}</span>
+    </div>
+    <div class="quick-nav operador-nav">
+        <a href="#" class="nav-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-file-plus"></i>
+            <span>Nueva Factura</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-cash-register"></i>
+            <span>Registrar Pago</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-boxes"></i>
+            <span>Productos</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-address-book"></i>
+            <span>Terceros</span>
+        </a>
+    </div>
+
+    <!-- OBSERVADOR -->
+    {% elif request.rol_empresa == 'observador' %}
+    <div class="role-indicator observador-role">
+        <i class="fas fa-eye"></i>
+        <span>Mi Empresa - {{ request.empresa_activa.razon_social|truncatechars:25 }}</span>
+    </div>
+    <div class="quick-nav observador-nav">
+        <a href="#" class="nav-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Mi Dashboard</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-file-alt"></i>
+            <span>Mis Facturas</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-receipt"></i>
+            <span>Mis Pagos</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-chart-bar"></i>
+            <span>Mis Reportes</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-info-circle"></i>
+            <span>Info Empresa</span>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Selector de empresa (solo si tiene múltiples empresas) -->
+    {% if user.perfilempresa_set.count > 1 %}
+    <div class="empresa-selector">
+        <button class="btn-empresa-selector" onclick="toggleEmpresaSelector()">
+            <i class="fas fa-building"></i>
+            <span>{{ request.empresa_activa.razon_social|truncatechars:20 }}</span>
+            <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="empresa-dropdown" id="empresaDropdown">
+            {% for perfil in user.perfilempresa_set.all %}
+                {% if perfil.activo %}
+                <a href="{% url 'empresas:seleccionar_empresa' %}?empresa_id={{ perfil.empresa.id }}" 
+                   class="empresa-option {% if perfil.empresa.id == request.empresa_activa.id %}active{% endif %}">
+                    <div class="empresa-info">
+                        <strong>{{ perfil.empresa.razon_social }}</strong>
+                        <small>{{ perfil.get_rol_display }}</small>
+                    </div>
+                </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+{% endif %}
+
+<style>
+/* Estilos para navegación por rol */
+.role-indicator {
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: white;
+}
+
+.admin-role {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.contador-role {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.operador-role {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    color: #000;
+}
+
+.observador-role {
+    background: linear-gradient(135deg, #6c757d 0%, #17a2b8 100%);
+}
+
+.quick-nav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    font-size: 0.9rem;
+}
+
+.admin-nav .nav-item:hover,
+.admin-nav .nav-item.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.contador-nav .nav-item:hover,
+.contador-nav .nav-item.active {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.operador-nav .nav-item:hover,
+.operador-nav .nav-item.active {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    color: #000;
+    transform: translateY(-2px);
+}
+
+.observador-nav .nav-item:hover,
+.observador-nav .nav-item.active {
+    background: linear-gradient(135deg, #6c757d 0%, #17a2b8 100%);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.empresa-selector {
+    position: relative;
+    margin-top: 20px;
+}
+
+.btn-empresa-selector {
+    width: 100%;
+    padding: 12px 15px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-empresa-selector:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+}
+
+.empresa-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+    margin-top: 5px;
+}
+
+.empresa-dropdown.show {
+    display: block;
+}
+
+.empresa-option {
+    display: block;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.2s ease;
+}
+
+.empresa-option:hover {
+    background: #f8fafc;
+}
+
+.empresa-option.active {
+    background: #667eea;
+    color: white;
+}
+
+.empresa-option:last-child {
+    border-bottom: none;
+}
+
+.empresa-info strong {
+    display: block;
+    font-size: 0.9rem;
+}
+
+.empresa-info small {
+    display: block;
+    opacity: 0.7;
+    font-size: 0.8rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .quick-nav {
+        flex-direction: column;
+    }
+    
+    .nav-item {
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .role-indicator span {
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<script>
+function toggleEmpresaSelector() {
+    const dropdown = document.getElementById('empresaDropdown');
+    dropdown.classList.toggle('show');
+}
+
+// Cerrar dropdown al hacer clic fuera
+document.addEventListener('click', function(event) {
+    const selector = document.querySelector('.empresa-selector');
+    const dropdown = document.getElementById('empresaDropdown');
+    
+    if (selector && !selector.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+</script>

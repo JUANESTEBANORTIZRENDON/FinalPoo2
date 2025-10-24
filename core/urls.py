@@ -23,10 +23,8 @@ from django.http import HttpResponse
 def home_view(request):
     """Vista de inicio que redirige según el estado de autenticación"""
     if request.user.is_authenticated:
-        if request.user.is_superuser or request.user.is_staff:
-            return redirect('/admin/')
-        else:
-            return redirect('/accounts/dashboard/')
+        # Redirigir al dashboard del holding según el rol
+        return redirect('/empresas/admin/dashboard/')
     else:
         return redirect('/accounts/login/')
 
