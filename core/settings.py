@@ -38,7 +38,10 @@ if not os.getenv('SECRET_KEY') and DEBUG:
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
-
+# https://docs.djangoproject.com/en/3.0/ref/settings/#allowed-hosts
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # Application definition
 
@@ -86,6 +89,9 @@ MIDDLEWARE = [
     # Middleware para historial de cambios
     'empresas.middleware_historial.ThreadLocalMiddleware',
     'empresas.middleware_historial.HistorialCambiosMiddleware',
+    
+    # Middleware para Whitenoise
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
 ]
 ROOT_URLCONF = 'core.urls'
 
@@ -177,9 +183,17 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+# This production code might break development mode, so we check whether we're in DEBUG mode
+if not DEBUG:
+    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
+    # and renames the files with unique names for each version to support long-term caching
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
