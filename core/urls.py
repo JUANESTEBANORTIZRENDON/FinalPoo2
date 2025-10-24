@@ -27,7 +27,8 @@ def home_view(request):
         return redirect('/empresas/admin/dashboard/')
     else:
         return redirect('/accounts/login/')
-
+ 
+ #Holi
 urlpatterns = [
     # ===== ADMINISTRACIÓN =====
     path('admin/', admin.site.urls),
