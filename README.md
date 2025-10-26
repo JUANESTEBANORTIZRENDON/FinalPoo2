@@ -1,82 +1,212 @@
-# � S_CONTABLE - Comandos Esenciales
+# 🚀 S_CONTABLE - Comandos Esenciales# � S_CONTABLE - Comandos Esenciales
 
-## ⚡ Comandos Rápidos
 
-### 1️⃣ Activar Entorno Virtual
-```bash
-.\env\Scripts\Activate.ps1
-```
+
+## 🔧 Configuración Inicial (Primera vez)## ⚡ Comandos Rápidos
+
+
+
+### 1️⃣ Habilitar Scripts en PowerShell### 1️⃣ Activar Entorno Virtual
+
+```bash```bash
+
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser.\env\Scripts\Activate.ps1
+
+``````
+
+*Solo necesario la primera vez si da error de permisos*
 
 ### 2️⃣ Instalar Dependencias (primera vez)
-```bash
-pip install -r requirements.txt
+
+### 2️⃣ Crear Entorno Virtual (si no existe)```bash
+
+```bashpip install -r requirements.txt
+
+python -m venv env```
+
 ```
 
 ### 3️⃣ Aplicar Migraciones
-```bash
-python manage.py migrate
+
+### 3️⃣ Activar Entorno Virtual```bash
+
+```bashpython manage.py migrate
+
+.\env\Scripts\Activate.ps1```
+
 ```
 
 ### 4️⃣ Crear Superusuario (primera vez)
-```bash
-python manage.py createsuperuser
-```
-**Datos por defecto:**
+
+### 4️⃣ Instalar Dependencias```bash
+
+```bashpython manage.py createsuperuser
+
+pip install -r requirements.txt```
+
+```**Datos por defecto:**
+
 - Usuario: `admin`
-- Email: `admin@scontable.com`
+
+### 5️⃣ Aplicar Migraciones- Email: `admin@scontable.com`
+
+```bash- Contraseña: `Admin123!`
+
+python manage.py migrate
+
+```### 5️⃣ Ejecutar Servidor
+
+```bash
+
+### 6️⃣ Crear Superusuariopython manage.py runserver
+
+```bash```
+
+python manage.py createsuperuserAcceder en: http://127.0.0.1:8000/
+
+```
+
+**Datos por defecto:**---
+
+- Usuario: `admin`
+
+- Email: `admin@scontable.com`## � Flujo de Trabajo Diario
+
 - Contraseña: `Admin123!`
 
-### 5️⃣ Ejecutar Servidor
 ```bash
-python manage.py runserver
-```
-Acceder en: http://127.0.0.1:8000/
 
----
+---# 1. Activar entorno
 
-## � Flujo de Trabajo Diario
-
-```bash
-# 1. Activar entorno
 .\env\Scripts\Activate.ps1
 
+## ⚡ Uso Diario
+
 # 2. Ejecutar servidor
-python manage.py runserver
-```
+
+```bashpython manage.py runserver
+
+# 1. Activar entorno virtual```
+
+.\env\Scripts\Activate.ps1
 
 ---
+
+# 2. Ejecutar servidor
+
+python manage.py runserver## 🛠️ Comandos de Desarrollo
+
+```
+
+### Cuando cambias modelos
+
+Acceder en: **http://127.0.0.1:8000/**```bash
+
+python manage.py makemigrations
+
+---python manage.py migrate
+
+```
 
 ## 🛠️ Comandos de Desarrollo
 
-### Cuando cambias modelos
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
 ### Verificar proyecto
-```bash
-python manage.py check
-```
 
-### Acceder al admin
+### Cuando cambias modelos```bash
+
+```bashpython manage.py check
+
+python manage.py makemigrations```
+
+python manage.py migrate
+
+```### Acceder al admin
+
 - URL: http://127.0.0.1:8000/admin/
-- Usuario: `admin`
-- Contraseña: `Admin123!`
+
+### Verificar proyecto- Usuario: `admin`
+
+```bash- Contraseña: `Admin123!`
+
+python manage.py check
+
+```---
+
+
+
+### Acceder al admin## 📌 URLs Importantes
+
+- **URL**: http://127.0.0.1:8000/admin/
+
+- **Usuario**: `admin`- **Admin**: http://127.0.0.1:8000/admin/
+
+- **Contraseña**: `Admin123!`- **Login**: http://127.0.0.1:8000/accounts/login/
+
+- **Dashboard**: http://127.0.0.1:8000/accounts/dashboard/
+
+---
 
 ---
 
 ## 📌 URLs Importantes
 
+## ⚠️ Importante
+
 - **Admin**: http://127.0.0.1:8000/admin/
-- **Login**: http://127.0.0.1:8000/accounts/login/
-- **Dashboard**: http://127.0.0.1:8000/accounts/dashboard/
+
+- **Login**: http://127.0.0.1:8000/accounts/login/- **Siempre activar el entorno virtual primero**
+
+- **Dashboard**: http://127.0.0.1:8000/accounts/dashboard/- **No subir el archivo `.env` al repositorio**
+
+- **Hacer migraciones después de cambiar modelos**
 
 ---
 
-## ⚠️ Importante
 
-- **Siempre activar el entorno virtual primero**
-- **No subir el archivo `.env` al repositorio**
-- **Hacer migraciones después de cambiar modelos**
+## ⚠️ Solución de Problemas
 
+### Error: "Activate.ps1 is not recognized"
+```bash
+# Solución: Habilitar ejecución de scripts
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### Error: "No existe el entorno virtual"
+```bash
+# Solución: Crear el entorno virtual
+python -m venv env
+```
+
+### Error: "password authentication failed" (Base de datos)
+El proyecto está configurado para PostgreSQL en la nube. Para trabajar localmente:
+
+**Opción 1: Usar SQLite (Recomendado para desarrollo local)**
+1. Abrir `core/settings.py`
+2. Comentar la configuración de PostgreSQL
+3. Descomentar la configuración de SQLite:
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+```
+
+**Opción 2: Usar tus credenciales de PostgreSQL**
+1. Edita el archivo `.env` con tus credenciales
+2. Ejecuta las migraciones
+
+### Reinstalar dependencias
+```bash
+pip install --force-reinstall -r requirements.txt
+```
+
+---
+
+## 📝 Notas Importantes
+
+- ✅ **Siempre activar el entorno virtual primero**
+- ✅ **No subir el archivo `.env` al repositorio**
+- ✅ **Hacer migraciones después de cambiar modelos**
+- ✅ **El entorno virtual está en la carpeta `env/` (ignorada por git)**
