@@ -393,8 +393,8 @@ class HistorialCambios(models.Model):
     # Información técnica
     modelo_afectado = models.CharField(
         max_length=100,
-        null=True,
         blank=True,
+        default='',
         verbose_name="Modelo Afectado",
         help_text="Nombre del modelo que fue modificado"
     )
@@ -428,23 +428,23 @@ class HistorialCambios(models.Model):
     )
     
     user_agent = models.TextField(
-        null=True,
         blank=True,
+        default='',
         verbose_name="User Agent",
         help_text="Información del navegador/dispositivo"
     )
     
     url_solicitada = models.URLField(
         max_length=500,
-        null=True,
         blank=True,
+        default='',
         verbose_name="URL Solicitada"
     )
     
     metodo_http = models.CharField(
         max_length=10,
-        null=True,
         blank=True,
+        default='',
         verbose_name="Método HTTP",
         help_text="GET, POST, PUT, DELETE, etc."
     )
