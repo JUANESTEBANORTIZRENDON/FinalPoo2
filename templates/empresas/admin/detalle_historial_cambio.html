@@ -33,7 +33,7 @@
                             </h5>
                             
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Usuario:</label>
+                                <span class="form-label fw-bold">Usuario:</span>
                                 <div class="d-flex align-items-center">
                                     <div class="usuario-avatar me-2">
                                         {{ cambio.usuario.first_name.0|default:cambio.usuario.username.0|upper }}
@@ -47,13 +47,13 @@
                             
                             {% if cambio.empresa %}
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Empresa:</label>
+                                <span class="form-label fw-bold">Empresa:</span>
                                 <p class="mb-1">{{ cambio.empresa.razon_social }}</p>
                                 <small class="text-muted">NIT: {{ cambio.empresa.nit }}</small>
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Rol en la Empresa:</label>
+                                <span class="form-label fw-bold">Rol en la Empresa:</span>
                                 <span class="badge badge-rol badge-{{ cambio.rol_usuario|lower }}">
                                     {{ cambio.rol_usuario }}
                                 </span>
@@ -68,23 +68,23 @@
                             </h5>
                             
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Tipo de Acción:</label>
+                                <span class="form-label fw-bold">Tipo de Acción:</span>
                                 <p class="mb-1">{{ cambio.get_tipo_accion_display }}</p>
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Descripción:</label>
+                                <span class="form-label fw-bold">Descripción:</span>
                                 <p class="mb-1">{{ cambio.descripcion }}</p>
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Fecha y Hora:</label>
+                                <span class="form-label fw-bold">Fecha y Hora:</span>
                                 <p class="mb-1">{{ cambio.fecha_hora|date:"d/m/Y H:i:s" }}</p>
                                 <small class="text-muted">{{ cambio.tiempo_transcurrido }}</small>
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Estado:</label>
+                                <span class="form-label fw-bold">Estado:</span>
                                 {% if cambio.exitosa %}
                                 <span class="badge bg-success">✅ Exitosa</span>
                                 {% else %}
@@ -94,7 +94,7 @@
                             
                             {% if cambio.duracion_ms %}
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Duración:</label>
+                                <span class="form-label fw-bold">Duración:</span>
                                 <p class="mb-1">{{ cambio.duracion_ms }} milisegundos</p>
                             </div>
                             {% endif %}
@@ -111,21 +111,21 @@
                         <div class="col-md-6">
                             {% if cambio.modelo_afectado %}
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Modelo Afectado:</label>
+                                <span class="form-label fw-bold">Modelo Afectado:</span>
                                 <p class="mb-1">{{ cambio.modelo_afectado }}</p>
                             </div>
                             {% endif %}
                             
                             {% if cambio.objeto_id %}
                             <div class="mb-3">
-                                <label class="form-label fw-bold">ID del Objeto:</label>
+                                <span class="form-label fw-bold">ID del Objeto:</span>
                                 <p class="mb-1">{{ cambio.objeto_id }}</p>
                             </div>
                             {% endif %}
                             
                             {% if cambio.ip_address %}
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Dirección IP:</label>
+                                <span class="form-label fw-bold">Dirección IP:</span>
                                 <p class="mb-1">{{ cambio.ip_address }}</p>
                             </div>
                             {% endif %}
@@ -134,21 +134,21 @@
                         <div class="col-md-6">
                             {% if cambio.url_solicitada %}
                             <div class="mb-3">
-                                <label class="form-label fw-bold">URL Solicitada:</label>
+                                <span class="form-label fw-bold">URL Solicitada:</span>
                                 <p class="mb-1 text-break">{{ cambio.url_solicitada }}</p>
                             </div>
                             {% endif %}
                             
                             {% if cambio.metodo_http %}
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Método HTTP:</label>
+                                <span class="form-label fw-bold">Método HTTP:</span>
                                 <span class="badge bg-info">{{ cambio.metodo_http }}</span>
                             </div>
                             {% endif %}
                             
                             {% if cambio.user_agent %}
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Navegador/Dispositivo:</label>
+                                <span class="form-label fw-bold">Navegador/Dispositivo:</span>
                                 <p class="mb-1 text-break small">{{ cambio.user_agent }}</p>
                             </div>
                             {% endif %}

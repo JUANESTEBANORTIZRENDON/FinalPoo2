@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (numeroDocumento) {
         numeroDocumento.addEventListener('input', function() {
             // Remover caracteres no numéricos
-            this.value = this.value.replace(/[^0-9]/g, '');
+            this.value = this.value.replaceAll(/[^0-9]/g, '');
         });
     }
 });
