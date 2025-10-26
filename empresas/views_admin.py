@@ -19,6 +19,7 @@ from contabilidad.models import Asiento
 MSG_NO_PERMISOS = 'No tienes permisos para acceder a esta sección.'
 URL_LOGIN = 'accounts:login'
 URL_GESTIONAR_USUARIOS = 'empresas:admin_gestionar_usuarios'
+URL_GESTIONAR_EMPRESAS = 'empresas:admin_gestionar_empresas'
 TEMPLATE_EMPRESA_FORM = 'empresas/admin/empresa_form.html'
 TEMPLATE_USUARIO_FORM = 'empresas/admin/usuario_form.html'
 TITULO_CREAR_EMPRESA = 'Crear Nueva Empresa'
@@ -470,7 +471,7 @@ def crear_empresa(request):
         try:
             empresa = _crear_empresa_desde_request(request)
             messages.success(request, f'Empresa "{empresa.razon_social}" creada exitosamente.')
-            return redirect('empresas:admin_gestionar_empresas')
+            return redirect(URL_GESTIONAR_EMPRESAS)
             
         except Exception as e:
             error_msg = _manejar_error_db_empresa(str(e), nit)
@@ -511,7 +512,7 @@ def editar_empresa(request, empresa_id):
             empresa.save()
             
             messages.success(request, f'Empresa "{empresa.razon_social}" actualizada exitosamente.')
-            return redirect('empresas:admin_gestionar_empresas')
+            return redirect(URL_GESTIONAR_EMPRESAS)
         except Exception as e:
             messages.error(request, f'Error al actualizar la empresa: {str(e)}')
     
@@ -573,7 +574,7 @@ def eliminar_empresa(request, empresa_id):
             PerfilEmpresa.objects.filter(empresa=empresa).update(activo=False)
             
             messages.success(request, f'Empresa "{razon_social}" desactivada exitosamente.')
-            return redirect('empresas:admin_gestionar_empresas')
+            return redirect(URL_GESTIONAR_EMPRESAS)
         except Exception as e:
             messages.error(request, f'Error al desactivar la empresa: {str(e)}')
     
@@ -589,6 +590,68 @@ def eliminar_empresa(request, empresa_id):
 
 # ===== VISTAS CRUD PARA USUARIOS =====
 
+# ===== FUNCIONES AUXILIARES PARA CRUD USUARIOS =====
+
+def _validar_datos_usuario(request):
+    """Valida los datos de entrada para crear usuario"""
+    username = request.POST.get('username', '').strip()
+    email = request.POST.get('email', '').strip()
+    password = request.POST.get('password', '').strip()
+    password_confirm = request.POST.get('password_confirm', '').strip()
+    
+    if not username:
+        return False, 'El nombre de usuario es obligatorio.'
+    
+    if not email:
+        return False, 'El email es obligatorio.'
+    
+    if not password:
+        return False, 'La contraseña es obligatoria.'
+    
+    if password != password_confirm:
+        return False, 'Las contraseñas no coinciden.'
+    
+    return True, None
+
+def _verificar_usuario_duplicado(username, email):
+    """Verifica si username o email ya existen"""
+    if User.objects.filter(username=username).exists():
+        return True, f'Ya existe un usuario con el nombre "{username}".'
+    
+    if User.objects.filter(email=email).exists():
+        return True, f'Ya existe un usuario con el email "{email}".'
+    
+    return False, None
+
+def _crear_usuario_desde_request(request):
+    """Crea un usuario con los datos del request"""
+    username = request.POST.get('username', '').strip()
+    email = request.POST.get('email', '').strip()
+    password = request.POST.get('password', '').strip()
+    first_name = request.POST.get('first_name', '').strip()
+    last_name = request.POST.get('last_name', '').strip()
+    
+    return User.objects.create_user(
+        username=username,
+        email=email,
+        password=password,
+        first_name=first_name,
+        last_name=last_name,
+        is_active=True
+    )
+
+def _crear_perfil_usuario(usuario, request):
+    """Crea el perfil de usuario si no existe"""
+    from accounts.models import PerfilUsuario
+    if not hasattr(usuario, 'perfilusuario'):
+        PerfilUsuario.objects.create(
+            usuario=usuario,
+            documento=request.POST.get('documento', ''),
+            telefono=request.POST.get('telefono', ''),
+            ciudad=request.POST.get('ciudad', ''),
+            direccion=request.POST.get('direccion', '')
+        )
+
 @login_required
 def crear_usuario(request):
     """Vista para crear un nuevo usuario"""
@@ -597,79 +660,30 @@ def crear_usuario(request):
         return redirect(URL_LOGIN)
     
     if request.method == 'POST':
+        # Validar datos básicos
+        valido, error = _validar_datos_usuario(request)
+        if not valido:
+            messages.error(request, error)
+            return render(request, TEMPLATE_USUARIO_FORM, {
+                'titulo': TITULO_CREAR_USUARIO,
+                'accion': 'crear'
+            })
+        
+        # Verificar duplicados
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        duplicado, error = _verificar_usuario_duplicado(username, email)
+        if duplicado:
+            messages.error(request, error)
+            return render(request, TEMPLATE_USUARIO_FORM, {
+                'titulo': TITULO_CREAR_USUARIO,
+                'accion': 'crear'
+            })
+        
+        # Crear usuario
         try:
-            # Validar datos requeridos
-            username = request.POST.get('username', '').strip()
-            email = request.POST.get('email', '').strip()
-            first_name = request.POST.get('first_name', '').strip()
-            last_name = request.POST.get('last_name', '').strip()
-            password = request.POST.get('password', '').strip()
-            password_confirm = request.POST.get('password_confirm', '').strip()
-            
-            # Validaciones
-            if not username:
-                messages.error(request, 'El nombre de usuario es obligatorio.')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_CREAR_USUARIO,
-                    'accion': 'crear'
-                })
-            
-            if not email:
-                messages.error(request, 'El email es obligatorio.')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_CREAR_USUARIO,
-                    'accion': 'crear'
-                })
-            
-            if not password:
-                messages.error(request, 'La contraseña es obligatoria.')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_CREAR_USUARIO,
-                    'accion': 'crear'
-                })
-            
-            if password != password_confirm:
-                messages.error(request, 'Las contraseñas no coinciden.')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_CREAR_USUARIO,
-                    'accion': 'crear'
-                })
-            
-            # Verificar si el usuario ya existe
-            if User.objects.filter(username=username).exists():
-                messages.error(request, f'Ya existe un usuario con el nombre "{username}".')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_CREAR_USUARIO,
-                    'accion': 'crear'
-                })
-            
-            if User.objects.filter(email=email).exists():
-                messages.error(request, f'Ya existe un usuario con el email "{email}".')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_CREAR_USUARIO,
-                    'accion': 'crear'
-                })
-            
-            # Crear usuario
-            usuario = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password,
-                first_name=first_name,
-                last_name=last_name,
-                is_active=True
-            )
-            
-            # Crear perfil de usuario si no existe
-            from accounts.models import PerfilUsuario
-            if not hasattr(usuario, 'perfilusuario'):
-                PerfilUsuario.objects.create(
-                    usuario=usuario,
-                    documento=request.POST.get('documento', ''),
-                    telefono=request.POST.get('telefono', ''),
-                    ciudad=request.POST.get('ciudad', ''),
-                    direccion=request.POST.get('direccion', '')
-                )
+            usuario = _crear_usuario_desde_request(request)
+            _crear_perfil_usuario(usuario, request)
             
             messages.success(request, f'Usuario "{usuario.get_full_name() or usuario.username}" creado exitosamente.')
             return redirect(URL_GESTIONAR_USUARIOS)
@@ -683,6 +697,48 @@ def crear_usuario(request):
     }
     return render(request, TEMPLATE_USUARIO_FORM, context)
 
+
+def _validar_datos_usuario_editar(usuario):
+    """Valida datos básicos de usuario en edición"""
+    if not usuario.username:
+        return False, 'El nombre de usuario es obligatorio.'
+    
+    if not usuario.email:
+        return False, 'El email es obligatorio.'
+    
+    return True, None
+
+def _verificar_duplicados_edicion(usuario):
+    """Verifica duplicados excluyendo el usuario actual"""
+    if User.objects.filter(username=usuario.username).exclude(id=usuario.id).exists():
+        return True, f'Ya existe otro usuario con el nombre "{usuario.username}".'
+    
+    if User.objects.filter(email=usuario.email).exclude(id=usuario.id).exists():
+        return True, f'Ya existe otro usuario con el email "{usuario.email}".'
+    
+    return False, None
+
+def _actualizar_perfil_usuario(usuario, request):
+    """Actualiza o crea el perfil de usuario"""
+    from accounts.models import PerfilUsuario
+    perfil, created = PerfilUsuario.objects.get_or_create(usuario=usuario)
+    perfil.documento = request.POST.get('documento', '')
+    perfil.telefono = request.POST.get('telefono', '')
+    perfil.ciudad = request.POST.get('ciudad', '')
+    perfil.direccion = request.POST.get('direccion', '')
+    perfil.save()
+
+def _cambiar_password_si_necesario(usuario, request):
+    """Cambia la contraseña si se proporcionó una nueva"""
+    new_password = request.POST.get('new_password', '').strip()
+    if new_password:
+        password_confirm = request.POST.get('password_confirm', '').strip()
+        if new_password != password_confirm:
+            return False, 'Las contraseñas no coinciden.'
+        usuario.set_password(new_password)
+        usuario.save()
+        return True, 'Contraseña actualizada exitosamente.'
+    return True, None
 
 @login_required
 def editar_usuario(request, usuario_id):
@@ -702,34 +758,20 @@ def editar_usuario(request, usuario_id):
             usuario.last_name = request.POST.get('last_name', '').strip()
             usuario.is_active = request.POST.get('is_active') == 'on'
             
-            # Validaciones
-            if not usuario.username:
-                messages.error(request, 'El nombre de usuario es obligatorio.')
+            # Validar datos básicos
+            valido, error = _validar_datos_usuario_editar(usuario)
+            if not valido:
+                messages.error(request, error)
                 return render(request, TEMPLATE_USUARIO_FORM, {
                     'titulo': TITULO_EDITAR_USUARIO,
                     'accion': 'editar',
                     'usuario': usuario
                 })
             
-            if not usuario.email:
-                messages.error(request, 'El email es obligatorio.')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_EDITAR_USUARIO,
-                    'accion': 'editar',
-                    'usuario': usuario
-                })
-            
-            # Verificar duplicados (excluyendo el usuario actual)
-            if User.objects.filter(username=usuario.username).exclude(id=usuario.id).exists():
-                messages.error(request, f'Ya existe otro usuario con el nombre "{usuario.username}".')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_EDITAR_USUARIO,
-                    'accion': 'editar',
-                    'usuario': usuario
-                })
-            
-            if User.objects.filter(email=usuario.email).exclude(id=usuario.id).exists():
-                messages.error(request, f'Ya existe otro usuario con el email "{usuario.email}".')
+            # Verificar duplicados
+            duplicado, error = _verificar_duplicados_edicion(usuario)
+            if duplicado:
+                messages.error(request, error)
                 return render(request, TEMPLATE_USUARIO_FORM, {
                     'titulo': TITULO_EDITAR_USUARIO,
                     'accion': 'editar',
@@ -737,30 +779,20 @@ def editar_usuario(request, usuario_id):
                 })
             
             usuario.save()
+            _actualizar_perfil_usuario(usuario, request)
             
-            # Actualizar perfil si existe
-            from accounts.models import PerfilUsuario
-            perfil, created = PerfilUsuario.objects.get_or_create(usuario=usuario)
-            perfil.documento = request.POST.get('documento', '')
-            perfil.telefono = request.POST.get('telefono', '')
-            perfil.ciudad = request.POST.get('ciudad', '')
-            perfil.direccion = request.POST.get('direccion', '')
-            perfil.save()
+            # Cambiar contraseña si es necesario
+            pwd_ok, pwd_msg = _cambiar_password_si_necesario(usuario, request)
+            if not pwd_ok:
+                messages.error(request, pwd_msg)
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_EDITAR_USUARIO,
+                    'accion': 'editar',
+                    'usuario': usuario
+                })
             
-            # Cambiar contraseña si se proporciona
-            new_password = request.POST.get('new_password', '').strip()
-            if new_password:
-                password_confirm = request.POST.get('password_confirm', '').strip()
-                if new_password != password_confirm:
-                    messages.error(request, 'Las contraseñas no coinciden.')
-                    return render(request, TEMPLATE_USUARIO_FORM, {
-                        'titulo': TITULO_EDITAR_USUARIO,
-                        'accion': 'editar',
-                        'usuario': usuario
-                    })
-                usuario.set_password(new_password)
-                usuario.save()
-                messages.info(request, 'Contraseña actualizada exitosamente.')
+            if pwd_msg:
+                messages.info(request, pwd_msg)
             
             messages.success(request, f'Usuario "{usuario.get_full_name() or usuario.username}" actualizado exitosamente.')
             return redirect(URL_GESTIONAR_USUARIOS)
