@@ -470,8 +470,8 @@ class HistorialCambios(models.Model):
     )
     
     mensaje_error = models.TextField(
-        null=True,
         blank=True,
+        default='',
         verbose_name="Mensaje de Error",
         help_text="Mensaje de error si la acción falló"
     )

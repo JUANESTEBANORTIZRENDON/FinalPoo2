@@ -52,4 +52,14 @@ class Migration(migrations.Migration):
                 verbose_name='Método HTTP'
             ),
         ),
+        migrations.AlterField(
+            model_name='historialcambios',
+            name='mensaje_error',
+            field=models.TextField(
+                blank=True,
+                default='',
+                help_text='Mensaje de error si la acción falló',
+                verbose_name='Mensaje de Error'
+            ),
+        ),
     ]

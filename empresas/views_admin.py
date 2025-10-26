@@ -400,7 +400,7 @@ def _validar_datos_empresa(request):
     
     # Validar formato de NIT
     import re
-    if not re.match(r'^\d{9,11}-\d{1}$', nit):
+    if not re.match(r'^\d{9,11}-\d$', nit):
         return False, 'El NIT debe tener el formato correcto: 123456789-0'
     
     return True, None

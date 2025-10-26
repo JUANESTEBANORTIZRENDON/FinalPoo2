@@ -38,7 +38,7 @@ def registrar_logout(usuario, request):
 
 def registrar_cambio_empresa(usuario, empresa_anterior, empresa_nueva, request):
     """Registra el cambio de empresa activa"""
-    descripcion = f'Cambió de empresa activa'
+    descripcion = 'Cambió de empresa activa'
     if empresa_anterior:
         descripcion += f' desde "{empresa_anterior.razon_social}"'
     if empresa_nueva:
@@ -351,7 +351,7 @@ def registrar_actualizacion_perfil(usuario, request):
     HistorialCambios.registrar_accion(
         usuario=usuario,
         tipo_accion='usuario_perfil_actualizado',
-        descripcion=f'Perfil de usuario actualizado',
+        descripcion='Perfil de usuario actualizado',
         empresa=empresa,
         request=request
     )
