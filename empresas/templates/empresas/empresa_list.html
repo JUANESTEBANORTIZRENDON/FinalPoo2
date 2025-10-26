@@ -72,13 +72,15 @@
                                                 <div class="btn-group" role="group" aria-label="Acciones para la empresa">
                                                     <a href="{% url 'empresas:empresa_detail' empresa.pk %}" 
                                                        class="btn btn-sm btn-outline-info" 
-                                                       title="Ver Detalles">
-                                                        <i class="bi bi-eye"></i>
+                                                       title="Ver Detalles"
+                                                       aria-label="Ver detalles de {{ empresa.razon_social }}">
+                                                        <i class="bi bi-eye" aria-hidden="true"></i>
                                                     </a>
                                                     <a href="{% url 'empresas:empresa_update' empresa.pk %}" 
                                                        class="btn btn-sm btn-outline-warning" 
-                                                       title="Editar">
-                                                        <i class="bi bi-pencil"></i>
+                                                       title="Editar"
+                                                       aria-label="Editar {{ empresa.razon_social }}">
+                                                        <i class="bi bi-pencil" aria-hidden="true"></i>
                                                     </a>
                                                     <a href="{% url 'empresas:perfil_list' empresa.pk %}" 
                                                        class="btn btn-sm btn-outline-secondary" 

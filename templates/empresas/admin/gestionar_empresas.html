@@ -257,11 +257,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="detalleEmpresaContent">
-                <div class="text-center">
-                    <div class="spinner-border" role="status" aria-label="Cargando información de la empresa">
+                <output class="text-center d-block">
+                    <div class="spinner-border" aria-label="Cargando información de la empresa">
                         <span class="visually-hidden">Cargando...</span>
                     </div>
-                </div>
+                </output>
             </div>
         </div>
     </div>
@@ -276,11 +276,11 @@ function verDetalleEmpresa(empresaId) {
     
     // Mostrar loading
     content.innerHTML = `
-        <div class="text-center">
-            <div class="spinner-border" role="status" aria-label="Cargando detalles de la empresa">
+        <output class="text-center d-block">
+            <div class="spinner-border" aria-label="Cargando detalles de la empresa">
                 <span class="visually-hidden">Cargando...</span>
             </div>
-        </div>
+        </output>
     `;
     
     modal.show();

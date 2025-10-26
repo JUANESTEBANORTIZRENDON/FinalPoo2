@@ -118,25 +118,29 @@
                                                 <div class="btn-group" role="group" aria-label="Acciones para el tercero">
                                                     <a href="{% url 'catalogos:tercero_detail' tercero.pk %}" 
                                                        class="btn btn-sm btn-outline-info" 
-                                                       title="Ver Detalles">
-                                                        <i class="bi bi-eye"></i>
+                                                       title="Ver Detalles"
+                                                       aria-label="Ver detalles del tercero {{ tercero.razon_social }}">
+                                                        <i class="bi bi-eye" aria-hidden="true"></i>
                                                     </a>
                                                     <a href="{% url 'catalogos:tercero_update' tercero.pk %}" 
                                                        class="btn btn-sm btn-outline-warning" 
-                                                       title="Editar">
-                                                        <i class="bi bi-pencil"></i>
+                                                       title="Editar"
+                                                       aria-label="Editar tercero {{ tercero.razon_social }}">
+                                                        <i class="bi bi-pencil" aria-hidden="true"></i>
                                                     </a>
                                                     {% if tercero.activo %}
                                                         <button class="btn btn-sm btn-outline-danger" 
                                                                 onclick="toggleEstado('{{ tercero.pk }}', false)"
-                                                                title="Desactivar">
-                                                            <i class="bi bi-toggle-on"></i>
+                                                                title="Desactivar"
+                                                                aria-label="Desactivar tercero {{ tercero.razon_social }}">
+                                                            <i class="bi bi-toggle-on" aria-hidden="true"></i>
                                                         </button>
                                                     {% else %}
                                                         <button class="btn btn-sm btn-outline-success" 
                                                                 onclick="toggleEstado('{{ tercero.pk }}', true)"
-                                                                title="Activar">
-                                                            <i class="bi bi-toggle-off"></i>
+                                                                title="Activar"
+                                                                aria-label="Activar tercero {{ tercero.razon_social }}">
+                                                            <i class="bi bi-toggle-off" aria-hidden="true"></i>
                                                         </button>
                                                     {% endif %}
                                                 </div>
