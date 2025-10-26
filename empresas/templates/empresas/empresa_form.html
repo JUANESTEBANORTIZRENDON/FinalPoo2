@@ -152,9 +152,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Agregar clases de Bootstrap a los campos del formulario
     const formFields = document.querySelectorAll('input, select, textarea');
-    formFields.forEach(field => {
+    for (const field of formFields) {
         field.classList.add('form-control');
-    });
+    }
 });
 </script>
 {% endblock %}
