@@ -14,6 +14,12 @@ DESC_TERCERO_CREADO = 'Tercero creado'
 DESC_IMPUESTO_CREADO = 'Impuesto creado'
 DESC_METODO_PAGO_CREADO = 'Método de pago creado'
 DESC_PRODUCTO_CREADO = 'Producto creado'
+DESC_FACTURA_CREADA = 'Factura creada'
+
+# Constantes para rutas comunes
+PATH_TERCEROS = '/terceros/'
+PATH_PRODUCTOS = '/productos/'
+PATH_ASIENTOS = '/asientos/'
 
 
 class HistorialCambiosMiddleware(MiddlewareMixin):
@@ -160,8 +166,8 @@ class HistorialCambiosMiddleware(MiddlewareMixin):
             '/catalogos/productos/nuevo/': ('producto_crear', DESC_PRODUCTO_CREADO),
             
             # Acciones de facturación
-            '/facturacion/facturas/crear/': ('factura_crear', 'Factura creada'),
-            '/facturacion/facturas/nueva/': ('factura_crear', 'Factura creada'),
+            '/facturacion/facturas/crear/': ('factura_crear', DESC_FACTURA_CREADA),
+            '/facturacion/facturas/nueva/': ('factura_crear', DESC_FACTURA_CREADA),
             
             # Acciones de tesorería
             '/tesoreria/pagos/crear/': ('pago_crear', 'Pago registrado'),
@@ -203,21 +209,21 @@ class HistorialCambiosMiddleware(MiddlewareMixin):
     
     def _determinar_accion_crear(self, path):
         """Determina la acción de creación basada en la ruta"""
-        if '/terceros/' in path:
+        if PATH_TERCEROS in path:
             return ('tercero_crear', DESC_TERCERO_CREADO)
         elif '/impuestos/' in path:
             return ('configuracion_cambiar', DESC_IMPUESTO_CREADO)
         elif '/metodos-pago/' in path:
             return ('configuracion_cambiar', DESC_METODO_PAGO_CREADO)
-        elif '/productos/' in path:
+        elif PATH_PRODUCTOS in path:
             return ('producto_crear', DESC_PRODUCTO_CREADO)
         elif '/facturas/' in path:
-            return ('factura_crear', 'Factura creada')
+            return ('factura_crear', DESC_FACTURA_CREADA)
         elif '/pagos/' in path:
             return ('pago_crear', 'Pago registrado')
         elif '/cobros/' in path:
             return ('cobro_crear', 'Cobro registrado')
-        elif '/asientos/' in path:
+        elif PATH_ASIENTOS in path:
             return ('asiento_crear', 'Asiento contable creado')
         elif '/empresas/' in path:
             return ('empresa_crear', 'Empresa creada')
@@ -226,13 +232,13 @@ class HistorialCambiosMiddleware(MiddlewareMixin):
     
     def _determinar_accion_editar(self, path):
         """Determina la acción de edición basada en la ruta"""
-        if '/terceros/' in path:
+        if PATH_TERCEROS in path:
             return ('tercero_editar', 'Tercero editado')
         elif '/impuestos/' in path:
             return ('configuracion_cambiar', 'Impuesto editado')
         elif '/metodos-pago/' in path:
             return ('configuracion_cambiar', 'Método de pago editado')
-        elif '/productos/' in path:
+        elif PATH_PRODUCTOS in path:
             return ('producto_editar', 'Producto editado')
         elif '/facturas/' in path:
             return ('factura_editar', 'Factura editada')
@@ -240,7 +246,7 @@ class HistorialCambiosMiddleware(MiddlewareMixin):
             return ('pago_editar', 'Pago editado')
         elif '/cobros/' in path:
             return ('cobro_editar', 'Cobro editado')
-        elif '/asientos/' in path:
+        elif PATH_ASIENTOS in path:
             return ('asiento_editar', 'Asiento contable editado')
         elif '/empresas/' in path:
             return ('empresa_editar', 'Empresa editada')
@@ -249,11 +255,11 @@ class HistorialCambiosMiddleware(MiddlewareMixin):
     
     def _determinar_accion_eliminar(self, path):
         """Determina la acción de eliminación basada en la ruta"""
-        if '/terceros/' in path:
+        if PATH_TERCEROS in path:
             return ('tercero_eliminar', 'Tercero eliminado')
-        elif '/productos/' in path:
+        elif PATH_PRODUCTOS in path:
             return ('producto_eliminar', 'Producto eliminado')
-        elif '/asientos/' in path:
+        elif PATH_ASIENTOS in path:
             return ('asiento_eliminar', 'Asiento contable eliminado')
         else:
             return ('configuracion_cambiar', f'Elemento eliminado en: {path}')
