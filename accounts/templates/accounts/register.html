@@ -108,7 +108,7 @@
                                    name="{{ form.numero_documento.name }}" 
                                    value="{{ form.numero_documento.value|default:'' }}"
                                    placeholder="1234567890"
-                                   pattern="[0-9]{6,20}"
+                                   pattern="\d{6,20}"
                                    required>
                             <div class="form-text">Solo números, sin puntos ni espacios</div>
                         </div>
@@ -124,7 +124,7 @@
                                name="{{ form.telefono.name }}" 
                                value="{{ form.telefono.value|default:'' }}"
                                placeholder="+573001234567 o 3001234567"
-                               pattern="(\+57)?[0-9]{10,12}"
+                               pattern="(\+57)?\d{10,12}"
                                required>
                         <div class="form-text">Número celular colombiano</div>
                     </div>

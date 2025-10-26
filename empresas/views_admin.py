@@ -291,9 +291,6 @@ def estadisticas_holding(request):
         messages.error(request, MSG_NO_PERMISOS)
         return redirect(URL_LOGIN)
     
-    # Estadísticas por mes (últimos 6 meses)
-    fecha_inicio = timezone.now() - timedelta(days=180)
-    
     # Empresas creadas por mes
     empresas_por_mes = []
     for i in range(6):
@@ -721,7 +718,7 @@ def _verificar_duplicados_edicion(usuario):
 def _actualizar_perfil_usuario(usuario, request):
     """Actualiza o crea el perfil de usuario"""
     from accounts.models import PerfilUsuario
-    perfil, created = PerfilUsuario.objects.get_or_create(usuario=usuario)
+    perfil, _ = PerfilUsuario.objects.get_or_create(usuario=usuario)
     perfil.documento = request.POST.get('documento', '')
     perfil.telefono = request.POST.get('telefono', '')
     perfil.ciudad = request.POST.get('ciudad', '')

@@ -178,7 +178,7 @@
         var forms = document.getElementsByClassName('needs-validation');
         Array.prototype.filter.call(forms, function(form) {
             form.addEventListener('submit', function(event) {
-                if (form.checkValidity() === false) {
+                if (!form.checkValidity()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
@@ -190,7 +190,7 @@
 
 // Formatear NIT mientras se escribe
 document.getElementById('nit').addEventListener('input', function(e) {
-    let value = e.target.value.replaceAll(/[^0-9]/g, '');
+    let value = e.target.value.replaceAll(/\D/g, '');
     if (value.length >= 9) {
         value = value.substring(0, 9) + '-' + value.substring(9, 10);
     }
