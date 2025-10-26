@@ -33,6 +33,9 @@ LINK_STYLE = "color: #007cba;"
 BUTTON_DELETE_STYLE = "background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 0.8em;"
 WARNING_TEXT_STYLE = "color: #dc3545; font-size: 0.7em;"
 
+# Constante para el título de la sección de identificación
+IDENT_SECTION_TITLE = '🆔 Identificación'
+
 
 class PerfilUsuarioInline(admin.StackedInline):
     """Inline simplificado para mostrar el perfil en la página de usuario"""
@@ -46,7 +49,7 @@ class PerfilUsuarioInline(admin.StackedInline):
     extra = 0    # No mostrar formularios extra vacíos
     
     fieldsets = (
-        ('🆔 Identificación', {
+        (IDENT_SECTION_TITLE, {
             'fields': ('tipo_documento', 'numero_documento'),
             'description': 'Información de identificación oficial del usuario'
         }),
@@ -125,7 +128,7 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
             'fields': ('first_name', 'last_name', 'email'),
             'description': 'Datos personales del usuario'
         }),
-        ('🆔 Identificación', {
+        (IDENT_SECTION_TITLE, {
             'classes': ('wide',),
             'fields': ('tipo_documento', 'numero_documento', 'telefono'),
             'description': 'Información de identificación y contacto'
@@ -392,7 +395,7 @@ class PerfilUsuarioAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
             'description': 'Complete estos datos para crear un nuevo usuario (se generarán automáticamente si se dejan vacíos)'
         }),
-        ('🆔 Identificación', {
+        (IDENT_SECTION_TITLE, {
             'fields': ('tipo_documento', 'numero_documento'),
             'description': 'Información de identificación oficial (requerida)'
         }),
