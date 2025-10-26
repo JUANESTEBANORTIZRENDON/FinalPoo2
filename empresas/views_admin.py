@@ -19,6 +19,11 @@ from contabilidad.models import Asiento
 MSG_NO_PERMISOS = 'No tienes permisos para acceder a esta sección.'
 URL_LOGIN = 'accounts:login'
 URL_GESTIONAR_USUARIOS = 'empresas:admin_gestionar_usuarios'
+TEMPLATE_EMPRESA_FORM = TEMPLATE_EMPRESA_FORM
+TEMPLATE_USUARIO_FORM = TEMPLATE_USUARIO_FORM
+TITULO_CREAR_EMPRESA = 'Crear Nueva Empresa'
+TITULO_CREAR_USUARIO = 'Crear Nuevo Usuario'
+TITULO_EDITAR_USUARIO = 'Editar Usuario'
 
 
 def es_administrador_holding(user):
@@ -397,15 +402,15 @@ def crear_empresa(request):
             # Validaciones básicas
             if not razon_social:
                 messages.error(request, 'La razón social es obligatoria.')
-                return render(request, 'empresas/admin/empresa_form.html', {
-                    'titulo': 'Crear Nueva Empresa',
+                return render(request, TEMPLATE_EMPRESA_FORM, {
+                    'titulo': TITULO_CREAR_EMPRESA,
                     'accion': 'crear'
                 })
             
             if not nit:
                 messages.error(request, 'El NIT es obligatorio.')
-                return render(request, 'empresas/admin/empresa_form.html', {
-                    'titulo': 'Crear Nueva Empresa',
+                return render(request, TEMPLATE_EMPRESA_FORM, {
+                    'titulo': TITULO_CREAR_EMPRESA,
                     'accion': 'crear'
                 })
             
@@ -413,16 +418,16 @@ def crear_empresa(request):
             import re
             if not re.match(r'^\d{9,11}-\d{1}$', nit):
                 messages.error(request, 'El NIT debe tener el formato correcto: 123456789-0')
-                return render(request, 'empresas/admin/empresa_form.html', {
-                    'titulo': 'Crear Nueva Empresa',
+                return render(request, TEMPLATE_EMPRESA_FORM, {
+                    'titulo': TITULO_CREAR_EMPRESA,
                     'accion': 'crear'
                 })
             
             # Verificar si el NIT ya existe
             if Empresa.objects.filter(nit=nit).exists():
                 messages.error(request, f'Ya existe una empresa con el NIT "{nit}".')
-                return render(request, 'empresas/admin/empresa_form.html', {
-                    'titulo': 'Crear Nueva Empresa',
+                return render(request, TEMPLATE_EMPRESA_FORM, {
+                    'titulo': TITULO_CREAR_EMPRESA,
                     'accion': 'crear'
                 })
             
@@ -457,16 +462,16 @@ def crear_empresa(request):
             else:
                 messages.error(request, f'Error al crear la empresa: {error_msg}')
             
-            return render(request, 'empresas/admin/empresa_form.html', {
-                'titulo': 'Crear Nueva Empresa',
+            return render(request, TEMPLATE_EMPRESA_FORM, {
+                'titulo': TITULO_CREAR_EMPRESA,
                 'accion': 'crear'
             })
     
     context = {
-        'titulo': 'Crear Nueva Empresa',
+        'titulo': TITULO_CREAR_EMPRESA,
         'accion': 'crear'
     }
-    return render(request, 'empresas/admin/empresa_form.html', context)
+    return render(request, TEMPLATE_EMPRESA_FORM, context)
 
 
 @login_required
@@ -501,7 +506,7 @@ def editar_empresa(request, empresa_id):
         'accion': 'editar',
         'empresa': empresa
     }
-    return render(request, 'empresas/admin/empresa_form.html', context)
+    return render(request, TEMPLATE_EMPRESA_FORM, context)
 
 
 @login_required
@@ -590,44 +595,44 @@ def crear_usuario(request):
             # Validaciones
             if not username:
                 messages.error(request, 'El nombre de usuario es obligatorio.')
-                return render(request, 'empresas/admin/usuario_form.html', {
-                    'titulo': 'Crear Nuevo Usuario',
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_CREAR_USUARIO,
                     'accion': 'crear'
                 })
             
             if not email:
                 messages.error(request, 'El email es obligatorio.')
-                return render(request, 'empresas/admin/usuario_form.html', {
-                    'titulo': 'Crear Nuevo Usuario',
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_CREAR_USUARIO,
                     'accion': 'crear'
                 })
             
             if not password:
                 messages.error(request, 'La contraseña es obligatoria.')
-                return render(request, 'empresas/admin/usuario_form.html', {
-                    'titulo': 'Crear Nuevo Usuario',
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_CREAR_USUARIO,
                     'accion': 'crear'
                 })
             
             if password != password_confirm:
                 messages.error(request, 'Las contraseñas no coinciden.')
-                return render(request, 'empresas/admin/usuario_form.html', {
-                    'titulo': 'Crear Nuevo Usuario',
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_CREAR_USUARIO,
                     'accion': 'crear'
                 })
             
             # Verificar si el usuario ya existe
             if User.objects.filter(username=username).exists():
                 messages.error(request, f'Ya existe un usuario con el nombre "{username}".')
-                return render(request, 'empresas/admin/usuario_form.html', {
-                    'titulo': 'Crear Nuevo Usuario',
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_CREAR_USUARIO,
                     'accion': 'crear'
                 })
             
             if User.objects.filter(email=email).exists():
                 messages.error(request, f'Ya existe un usuario con el email "{email}".')
-                return render(request, 'empresas/admin/usuario_form.html', {
-                    'titulo': 'Crear Nuevo Usuario',
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_CREAR_USUARIO,
                     'accion': 'crear'
                 })
             
@@ -659,10 +664,10 @@ def crear_usuario(request):
             messages.error(request, f'Error al crear el usuario: {str(e)}')
     
     context = {
-        'titulo': 'Crear Nuevo Usuario',
+        'titulo': TITULO_CREAR_USUARIO,
         'accion': 'crear'
     }
-    return render(request, 'empresas/admin/usuario_form.html', context)
+    return render(request, TEMPLATE_USUARIO_FORM, context)
 
 
 @login_required
@@ -686,16 +691,16 @@ def editar_usuario(request, usuario_id):
             # Validaciones
             if not usuario.username:
                 messages.error(request, 'El nombre de usuario es obligatorio.')
-                return render(request, 'empresas/admin/usuario_form.html', {
-                    'titulo': 'Editar Usuario',
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_EDITAR_USUARIO,
                     'accion': 'editar',
                     'usuario': usuario
                 })
             
             if not usuario.email:
                 messages.error(request, 'El email es obligatorio.')
-                return render(request, 'empresas/admin/usuario_form.html', {
-                    'titulo': 'Editar Usuario',
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_EDITAR_USUARIO,
                     'accion': 'editar',
                     'usuario': usuario
                 })
@@ -703,16 +708,16 @@ def editar_usuario(request, usuario_id):
             # Verificar duplicados (excluyendo el usuario actual)
             if User.objects.filter(username=usuario.username).exclude(id=usuario.id).exists():
                 messages.error(request, f'Ya existe otro usuario con el nombre "{usuario.username}".')
-                return render(request, 'empresas/admin/usuario_form.html', {
-                    'titulo': 'Editar Usuario',
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_EDITAR_USUARIO,
                     'accion': 'editar',
                     'usuario': usuario
                 })
             
             if User.objects.filter(email=usuario.email).exclude(id=usuario.id).exists():
                 messages.error(request, f'Ya existe otro usuario con el email "{usuario.email}".')
-                return render(request, 'empresas/admin/usuario_form.html', {
-                    'titulo': 'Editar Usuario',
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_EDITAR_USUARIO,
                     'accion': 'editar',
                     'usuario': usuario
                 })
@@ -734,8 +739,8 @@ def editar_usuario(request, usuario_id):
                 password_confirm = request.POST.get('password_confirm', '').strip()
                 if new_password != password_confirm:
                     messages.error(request, 'Las contraseñas no coinciden.')
-                    return render(request, 'empresas/admin/usuario_form.html', {
-                        'titulo': 'Editar Usuario',
+                    return render(request, TEMPLATE_USUARIO_FORM, {
+                        'titulo': TITULO_EDITAR_USUARIO,
                         'accion': 'editar',
                         'usuario': usuario
                     })
@@ -750,11 +755,11 @@ def editar_usuario(request, usuario_id):
             messages.error(request, f'Error al actualizar el usuario: {str(e)}')
     
     context = {
-        'titulo': 'Editar Usuario',
+        'titulo': TITULO_EDITAR_USUARIO,
         'accion': 'editar',
         'usuario': usuario
     }
-    return render(request, 'empresas/admin/usuario_form.html', context)
+    return render(request, TEMPLATE_USUARIO_FORM, context)
 
 
 @login_required
