@@ -320,7 +320,7 @@ function verDetalleEmpresa(empresaId) {
 }
 
 function gestionarUsuarios(empresaId) {
-    window.location.href = `/empresas/admin/usuarios/?empresa=${empresaId}`;
+    globalThis.location.href = `/empresas/admin/usuarios/?empresa=${empresaId}`;
 }
 </script>
 {% endblock %}

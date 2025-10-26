@@ -213,7 +213,7 @@
 <script>
 function desactivarAsignacion(perfilId) {
     if (confirm('¿Estás seguro de que deseas quitar esta asignación?')) {
-        window.location.href = `/empresas/admin/desactivar-asignacion/${perfilId}/`;
+        globalThis.location.href = `/empresas/admin/desactivar-asignacion/${perfilId}/`;
     }
 }
 

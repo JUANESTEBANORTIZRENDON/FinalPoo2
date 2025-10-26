@@ -241,7 +241,7 @@ function toggleUsuario(usuarioId, activar) {
     if (confirm(`¿Estás seguro de que deseas ${accion} este usuario?`)) {
         // Aquí implementarías la llamada AJAX para activar/desactivar
         // Por ahora, redirigimos al admin de Django
-        window.location.href = `/admin/auth/user/${usuarioId}/change/`;
+        globalThis.location.href = `/admin/auth/user/${usuarioId}/change/`;
     }
 }
 
