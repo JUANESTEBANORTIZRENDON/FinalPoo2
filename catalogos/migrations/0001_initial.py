@@ -6,6 +6,11 @@ from decimal import Decimal
 from django.db import migrations, models
 
 
+# Constantes para verbose_name comunes (evita duplicación de literales)
+VN_CODIGO = 'Código'
+VN_FECHA_CREACION = 'Fecha de Creación'
+
+
 class Migration(migrations.Migration):
 
     initial = True
@@ -19,12 +24,12 @@ class Migration(migrations.Migration):
             name='Impuesto',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('codigo', models.CharField(help_text='Código interno del impuesto', max_length=10, verbose_name='Código')),
+                ('codigo', models.CharField(help_text='Código interno del impuesto', max_length=10, verbose_name=VN_CODIGO)),
                 ('nombre', models.CharField(max_length=100, verbose_name='Nombre del Impuesto')),
                 ('tipo_impuesto', models.CharField(choices=[('IVA', 'IVA (Impuesto al Valor Agregado)'), ('ICA', 'ICA (Impuesto de Industria y Comercio)'), ('RETEFUENTE', 'Retención en la Fuente'), ('RETEIVA', 'Retención de IVA'), ('RETEICA', 'Retención de ICA'), ('OTRO', 'Otro Impuesto')], max_length=15, verbose_name='Tipo de Impuesto')),
                 ('porcentaje', models.DecimalField(decimal_places=2, help_text='Porcentaje del impuesto (ej: 19.00 para IVA del 19%)', max_digits=5, validators=[django.core.validators.MinValueValidator(Decimal('0.00')), django.core.validators.MaxValueValidator(Decimal('100.00'))], verbose_name='Porcentaje (%)')),
                 ('activo', models.BooleanField(default=True, verbose_name='Impuesto Activo')),
-                ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Creación')),
+                ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name=VN_FECHA_CREACION)),
                 ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='empresas.empresa', verbose_name='Empresa')),
             ],
             options={
@@ -38,12 +43,12 @@ class Migration(migrations.Migration):
             name='MetodoPago',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('codigo', models.CharField(help_text='Código interno del método de pago', max_length=10, verbose_name='Código')),
+                ('codigo', models.CharField(help_text='Código interno del método de pago', max_length=10, verbose_name=VN_CODIGO)),
                 ('nombre', models.CharField(max_length=100, verbose_name='Nombre del Método de Pago')),
                 ('tipo_metodo', models.CharField(choices=[('EFECTIVO', 'Efectivo'), ('TRANSFERENCIA', 'Transferencia Bancaria'), ('CHEQUE', 'Cheque'), ('TARJETA_CREDITO', 'Tarjeta de Crédito'), ('TARJETA_DEBITO', 'Tarjeta de Débito'), ('CONSIGNACION', 'Consignación'), ('OTRO', 'Otro')], max_length=20, verbose_name='Tipo de Método')),
                 ('requiere_referencia', models.BooleanField(default=False, help_text='Si requiere número de cheque, referencia de transferencia, etc.', verbose_name='Requiere Referencia')),
                 ('activo', models.BooleanField(default=True, verbose_name='Método Activo')),
-                ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Creación')),
+                ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name=VN_FECHA_CREACION)),
                 ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='empresas.empresa', verbose_name='Empresa')),
             ],
             options={
@@ -57,7 +62,7 @@ class Migration(migrations.Migration):
             name='Producto',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('codigo', models.CharField(help_text='Código interno del producto/servicio', max_length=20, verbose_name='Código')),
+                ('codigo', models.CharField(help_text='Código interno del producto/servicio', max_length=20, verbose_name=VN_CODIGO)),
                 ('nombre', models.CharField(max_length=200, verbose_name='Nombre')),
                 ('descripcion', models.TextField(blank=True, verbose_name='Descripción')),
                 ('tipo_producto', models.CharField(choices=[('producto', 'Producto'), ('servicio', 'Servicio')], default='producto', max_length=10, verbose_name='Tipo')),
@@ -67,7 +72,7 @@ class Migration(migrations.Migration):
                 ('stock_actual', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=15, validators=[django.core.validators.MinValueValidator(Decimal('0.00'))], verbose_name='Stock Actual')),
                 ('stock_minimo', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=15, validators=[django.core.validators.MinValueValidator(Decimal('0.00'))], verbose_name='Stock Mínimo')),
                 ('activo', models.BooleanField(default=True, verbose_name='Producto Activo')),
-                ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Creación')),
+                ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name=VN_FECHA_CREACION)),
                 ('fecha_actualizacion', models.DateTimeField(auto_now=True, verbose_name='Última Actualización')),
                 ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='empresas.empresa', verbose_name='Empresa')),
                 ('impuesto', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='catalogos.impuesto', verbose_name='Impuesto Aplicable')),
@@ -94,7 +99,7 @@ class Migration(migrations.Migration):
                 ('telefono', models.CharField(blank=True, max_length=15, validators=[django.core.validators.RegexValidator(message='Formato: +5713001234567 o 13001234567', regex='^\\+?57?[0-9]{7,12}$')], verbose_name='Teléfono')),
                 ('email', models.EmailField(blank=True, max_length=254, verbose_name='Email')),
                 ('activo', models.BooleanField(default=True, verbose_name='Tercero Activo')),
-                ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Creación')),
+                ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name=VN_FECHA_CREACION)),
                 ('fecha_actualizacion', models.DateTimeField(auto_now=True, verbose_name='Última Actualización')),
                 ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='empresas.empresa', verbose_name='Empresa')),
             ],
@@ -106,3 +111,4 @@ class Migration(migrations.Migration):
             },
         ),
     ]
+
