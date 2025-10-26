@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Agregar indicadores visuales para diferenciar tipos de usuarios
     const userCells = document.querySelectorAll('.field-usuario_display');
     
-    userCells.forEach(function(cell) {
+    for (const cell of userCells) {
         const text = cell.textContent || cell.innerText;
         
         // Si contiene información de rol de administrador, agregar indicador
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
             badge.textContent = 'ADMIN';
             cell.appendChild(badge);
         }
-    });
+    }
     
     // Agregar contador en tiempo real
     const totalRows = document.querySelectorAll('.results tbody tr').length;

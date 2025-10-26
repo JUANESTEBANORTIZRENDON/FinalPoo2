@@ -432,14 +432,14 @@
         });
         
         // Active nav link
-        const currentPath = window.location.pathname;
+        const currentPath = globalThis.location.pathname;
         const navLinks = document.querySelectorAll('.nav-link');
         
-        navLinks.forEach(link => {
+        for (const link of navLinks) {
             if (link.getAttribute('href') === currentPath) {
                 link.classList.add('active');
             }
-        });
+        }
     </script>
     
     {% block extra_js %}{% endblock %}

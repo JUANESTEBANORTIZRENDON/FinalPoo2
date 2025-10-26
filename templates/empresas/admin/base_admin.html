@@ -611,20 +611,22 @@
         // Auto-hide alerts after 5 seconds
         setTimeout(function() {
             const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
+            for (const alert of alerts) {
                 const bsAlert = new bootstrap.Alert(alert);
                 bsAlert.close();
-            });
+            }
         }, 5000);
 
         // Add animation to cards on load
         document.addEventListener('DOMContentLoaded', function() {
             const cards = document.querySelectorAll('.admin-card, .metric-card');
-            cards.forEach((card, index) => {
+            let index = 0;
+            for (const card of cards) {
                 setTimeout(() => {
                     card.classList.add('animate-slide-up');
                 }, index * 100);
-            });
+                index++;
+            }
         });
 
         // Función para confirmar logout

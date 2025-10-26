@@ -363,17 +363,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectElements = document.querySelectorAll('#usuario, #empresa, #tipo_accion');
     const dateElements = document.querySelectorAll('#fecha_desde, #fecha_hasta');
     
-    selectElements.forEach(element => {
+    for (const element of selectElements) {
         element.addEventListener('change', function() {
             this.form.submit();
         });
-    });
+    }
     
-    dateElements.forEach(element => {
+    for (const element of dateElements) {
         element.addEventListener('change', function() {
             this.form.submit();
         });
-    });
+    }
     
     // Búsqueda con delay
     const searchInput = document.getElementById('busqueda');
