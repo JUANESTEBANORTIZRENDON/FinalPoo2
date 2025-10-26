@@ -234,7 +234,8 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <div class="btn-group" role="group" aria-label="Acciones para el perfil">
+                                        <fieldset class="btn-group" style="border: none; padding: 0; margin: 0; min-width: auto;">
+                                            <legend class="visually-hidden">Acciones para el perfil en {{ perfil.empresa.razon_social }}</legend>
                                             <a href="{% url 'empresas:admin_ver_empresa' perfil.empresa.id %}" 
                                                class="btn btn-sm btn-outline-info"
                                                aria-label="Ver empresa {{ perfil.empresa.razon_social }}">
@@ -248,7 +249,7 @@
                                                 <i class="fas fa-user-times me-1" aria-hidden="true"></i>Desactivar
                                             </a>
                                             {% endif %}
-                                        </div>
+                                        </fieldset>
                                     </td>
                                 </tr>
                                 {% endfor %}

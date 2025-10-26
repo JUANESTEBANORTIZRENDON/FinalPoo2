@@ -69,7 +69,8 @@
                                                 {{ empresa.propietario.get_full_name|default:empresa.propietario.username }}
                                             </td>
                                             <td>
-                                                <div class="btn-group" role="group" aria-label="Acciones para la empresa">
+                                                <fieldset class="btn-group" style="border: none; padding: 0; margin: 0; min-width: auto;">
+                                                    <legend class="visually-hidden">Acciones para la empresa {{ empresa.razon_social }}</legend>
                                                     <a href="{% url 'empresas:empresa_detail' empresa.pk %}" 
                                                        class="btn btn-sm btn-outline-info" 
                                                        title="Ver Detalles"
@@ -84,10 +85,11 @@
                                                     </a>
                                                     <a href="{% url 'empresas:perfil_list' empresa.pk %}" 
                                                        class="btn btn-sm btn-outline-secondary" 
-                                                       title="Gestionar Usuarios">
-                                                        <i class="bi bi-people"></i>
+                                                       title="Gestionar Usuarios"
+                                                       aria-label="Gestionar usuarios de {{ empresa.razon_social }}">
+                                                        <i class="bi bi-people" aria-hidden="true"></i>
                                                     </a>
-                                                </div>
+                                                </fieldset>
                                             </td>
                                         </tr>
                                     {% endfor %}

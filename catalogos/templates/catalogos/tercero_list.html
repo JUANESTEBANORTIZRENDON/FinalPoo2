@@ -115,7 +115,8 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <div class="btn-group" role="group" aria-label="Acciones para el tercero">
+                                                <fieldset class="btn-group" style="border: none; padding: 0; margin: 0; min-width: auto;">
+                                                    <legend class="visually-hidden">Acciones para el tercero {{ tercero.razon_social }}</legend>
                                                     <a href="{% url 'catalogos:tercero_detail' tercero.pk %}" 
                                                        class="btn btn-sm btn-outline-info" 
                                                        title="Ver Detalles"
@@ -143,7 +144,7 @@
                                                             <i class="bi bi-toggle-off" aria-hidden="true"></i>
                                                         </button>
                                                     {% endif %}
-                                                </div>
+                                                </fieldset>
                                             </td>
                                         </tr>
                                     {% endfor %}
