@@ -188,7 +188,7 @@ class EmpresaActivaMiddleware:
         if dashboard_url:
             try:
                 return redirect(dashboard_url)
-            except (ValueError, KeyError) as e:
+            except (ValueError, KeyError):
                 # Si la URL no existe, redirigir al dashboard de empresas
                 return redirect('empresas:empresa_list')
         
