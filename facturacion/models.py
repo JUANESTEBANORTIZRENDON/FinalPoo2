@@ -4,6 +4,10 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 
 
+# Constante para evitar duplicación del literal 'empresas.Empresa'
+EMPRESA_MODEL = 'empresas.Empresa'
+
+
 class Factura(models.Model):
     """
     Modelo para gestionar facturas de venta.
@@ -21,7 +25,7 @@ class Factura(models.Model):
     
     # Relación con empresa (multi-tenant)
     empresa = models.ForeignKey(
-        'empresas.Empresa',
+        EMPRESA_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Empresa"
     )

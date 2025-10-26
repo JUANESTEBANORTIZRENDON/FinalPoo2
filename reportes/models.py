@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+# Constante para evitar duplicación del literal 'empresas.Empresa'
+EMPRESA_MODEL = 'empresas.Empresa'
+
+
 class ReporteGenerado(models.Model):
     """
     Modelo para gestionar el historial de reportes generados.
@@ -25,7 +29,7 @@ class ReporteGenerado(models.Model):
     
     # Relación con empresa (multi-tenant)
     empresa = models.ForeignKey(
-        'empresas.Empresa',
+        EMPRESA_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Empresa"
     )
@@ -128,7 +132,7 @@ class ConfiguracionReporte(models.Model):
     """
     # Relación con empresa (multi-tenant)
     empresa = models.ForeignKey(
-        'empresas.Empresa',
+        EMPRESA_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Empresa"
     )

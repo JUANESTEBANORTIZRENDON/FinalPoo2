@@ -4,6 +4,10 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 
 
+# Constante para evitar duplicación del literal 'empresas.Empresa'
+EMPRESA_MODEL = 'empresas.Empresa'
+
+
 class Pago(models.Model):
     """
     Modelo para gestionar pagos (cobros a clientes y egresos a proveedores).
@@ -21,7 +25,7 @@ class Pago(models.Model):
     
     # Relación con empresa (multi-tenant)
     empresa = models.ForeignKey(
-        'empresas.Empresa',
+        EMPRESA_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Empresa"
     )
@@ -214,7 +218,7 @@ class CuentaBancaria(models.Model):
     
     # Relación con empresa (multi-tenant)
     empresa = models.ForeignKey(
-        'empresas.Empresa',
+        EMPRESA_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Empresa"
     )

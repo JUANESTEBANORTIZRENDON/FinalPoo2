@@ -3,6 +3,10 @@ from django.core.validators import RegexValidator, MinValueValidator, MaxValueVa
 from decimal import Decimal
 
 
+# Constante para evitar duplicación del literal 'empresas.Empresa'
+EMPRESA_MODEL = 'empresas.Empresa'
+
+
 class Tercero(models.Model):
     """
     Modelo para gestionar terceros (clientes y proveedores).
@@ -23,7 +27,7 @@ class Tercero(models.Model):
     
     # Relación con empresa (multi-tenant)
     empresa = models.ForeignKey(
-        'empresas.Empresa',
+        EMPRESA_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Empresa"
     )
@@ -150,7 +154,7 @@ class Impuesto(models.Model):
     
     # Relación con empresa (multi-tenant)
     empresa = models.ForeignKey(
-        'empresas.Empresa',
+        EMPRESA_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Empresa"
     )
@@ -224,7 +228,7 @@ class MetodoPago(models.Model):
     
     # Relación con empresa (multi-tenant)
     empresa = models.ForeignKey(
-        'empresas.Empresa',
+        EMPRESA_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Empresa"
     )
@@ -284,7 +288,7 @@ class Producto(models.Model):
     
     # Relación con empresa (multi-tenant)
     empresa = models.ForeignKey(
-        'empresas.Empresa',
+        EMPRESA_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Empresa"
     )

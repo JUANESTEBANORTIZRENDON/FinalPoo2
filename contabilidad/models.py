@@ -5,6 +5,10 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
 
+# Constante para evitar duplicación del literal 'empresas.Empresa'
+EMPRESA_MODEL = 'empresas.Empresa'
+
+
 class CuentaContable(models.Model):
     """
     Modelo para el plan de cuentas contables.
@@ -26,7 +30,7 @@ class CuentaContable(models.Model):
     
     # Relación con empresa (multi-tenant)
     empresa = models.ForeignKey(
-        'empresas.Empresa',
+        EMPRESA_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Empresa"
     )
@@ -201,7 +205,7 @@ class Asiento(models.Model):
     
     # Relación con empresa (multi-tenant)
     empresa = models.ForeignKey(
-        'empresas.Empresa',
+        EMPRESA_MODEL,
         on_delete=models.CASCADE,
         verbose_name="Empresa"
     )
