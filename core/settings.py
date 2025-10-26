@@ -15,7 +15,6 @@ import os
 from dotenv import load_dotenv
 from urllib.parse import urlparse, parse_qsl
 from datetime import timedelta
-import dj_database_url
 
 # Cargar variables de entorno
 load_dotenv()
@@ -121,26 +120,20 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Configuración con dj-database-url (más limpio y estándar)
-DATABASE_URL = os.getenv("DATABASE_URL")
+# Configuración de PostgreSQL con Neon
+tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
 
-if DATABASE_URL:
-    # Configuración para PostgreSQL (Neon) usando dj-database-url
-    DATABASES = {
-        'default': dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,  # Reutilizar conexiones por 10 minutos
-            conn_health_checks=True,  # Verificar salud de conexiones
-        )
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': tmpPostgres.path.replace('/', ''),
+        'USER': tmpPostgres.username,
+        'PASSWORD': tmpPostgres.password,
+        'HOST': tmpPostgres.hostname,
+        'PORT': 5432,
+        'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
     }
-else:
-    # Fallback a SQLite para desarrollo local
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 
 # Password validation
