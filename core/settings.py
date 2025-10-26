@@ -28,19 +28,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# Para desarrollo, usar una clave por defecto si no está configurada
+# La SECRET_KEY SIEMPRE debe estar en variables de entorno (archivo .env o Render)
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-if not os.getenv('SECRET_KEY') and DEBUG:
-    print("⚠️  Usando SECRET_KEY por defecto para desarrollo. Configura SECRET_KEY en .env para producción.")
-    SECRET_KEY = 'django-insecure-dev-key-for-development-only-change-in-production'
-else:
-    SECRET_KEY = os.getenv('SECRET_KEY')
-    if not SECRET_KEY:
-        raise ValueError(
-            "SECRET_KEY no está configurada. "
-            "Debes configurar la variable de entorno SECRET_KEY en producción."
-        )
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError(
+        "❌ SECRET_KEY no está configurada.\n"
+        "   📝 Para desarrollo local: Crea un archivo .env con SECRET_KEY=tu-clave\n"
+        "   🚀 Para producción (Render): Configura SECRET_KEY en Environment Variables"
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
