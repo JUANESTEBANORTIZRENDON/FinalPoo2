@@ -52,11 +52,6 @@ class HistorialCambiosMiddleware(MiddlewareMixin):
         if self._should_skip_logging(request):
             return response
         
-        # Calcular duración de la petición
-        duration_ms = None
-        if hasattr(request, '_historial_start_time'):
-            duration_ms = int((time.time() - request._historial_start_time) * 1000)
-        
         # Determinar si la acción fue exitosa
         exitosa = 200 <= response.status_code < 400
         mensaje_error = None
