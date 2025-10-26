@@ -56,7 +56,7 @@ class Command(BaseCommand):
             admin_url = reverse('admin:index')
             sessions_url = reverse('admin:sessions_session_changelist')
             contenttypes_url = reverse('admin:contenttypes_contenttype_changelist')
-            self.stdout.write(self.style.SUCCESS(f'✅ URLs del admin funcionando:'))
+            self.stdout.write(self.style.SUCCESS('✅ URLs del admin funcionando:'))
             self.stdout.write(f'   - Admin index: {admin_url}')
             self.stdout.write(f'   - Sessions list: {sessions_url}')
             self.stdout.write(f'   - ContentTypes list: {contenttypes_url}')

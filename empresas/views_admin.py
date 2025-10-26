@@ -966,35 +966,35 @@ def detalle_historial_cambio(request, cambio_id):
 
 
 @login_required
-def exportar_historial(request):
-    """Vista para exportar el historial de cambios a CSV/Excel"""
-    if not es_administrador_holding(request.user):
-        messages.error(request, MSG_NO_PERMISOS)
-        return redirect(URL_LOGIN)
-    
-    import csv
-    from django.http import HttpResponse
-    from datetime import datetime
-    
-    # Aplicar los mismos filtros que en la vista principal
+def _aplicar_filtros_historial_exportar(historial, request):
+    """Aplicar filtros básicos al queryset de historial"""
     usuario_id = request.GET.get('usuario')
     empresa_id = request.GET.get('empresa')
     tipo_accion = request.GET.get('tipo_accion')
-    fecha_desde = request.GET.get('fecha_desde')
-    fecha_hasta = request.GET.get('fecha_hasta')
     busqueda = request.GET.get('busqueda', '').strip()
     
-    historial = HistorialCambios.objects.select_related('usuario', 'empresa').exclude(
-        usuario__is_superuser=True  # Excluir administradores del holding
-    )
-    
-    # Aplicar filtros (mismo código que en historial_cambios)
     if usuario_id:
         historial = historial.filter(usuario_id=usuario_id)
     if empresa_id:
         historial = historial.filter(empresa_id=empresa_id)
     if tipo_accion:
         historial = historial.filter(tipo_accion=tipo_accion)
+    if busqueda:
+        from django.db.models import Q
+        historial = historial.filter(
+            Q(descripcion__icontains=busqueda) |
+            Q(usuario__username__icontains=busqueda) |
+            Q(empresa__razon_social__icontains=busqueda)
+        )
+    return historial
+
+
+def _aplicar_filtros_fecha_exportar(historial, request):
+    """Aplicar filtros de fecha al historial"""
+    from datetime import datetime
+    fecha_desde = request.GET.get('fecha_desde')
+    fecha_hasta = request.GET.get('fecha_hasta')
+    
     if fecha_desde:
         try:
             fecha_desde_obj = datetime.strptime(fecha_desde, '%Y-%m-%d')
@@ -1007,13 +1007,40 @@ def exportar_historial(request):
             historial = historial.filter(fecha_hora__date__lte=fecha_hasta_obj.date())
         except ValueError:
             pass
-    if busqueda:
-        from django.db.models import Q
-        historial = historial.filter(
-            Q(descripcion__icontains=busqueda) |
-            Q(usuario__username__icontains=busqueda) |
-            Q(empresa__razon_social__icontains=busqueda)
-        )
+    return historial
+
+
+def _generar_fila_csv(cambio):
+    """Generar una fila de datos para el CSV"""
+    return [
+        cambio.fecha_hora.strftime('%d/%m/%Y %H:%M:%S'),
+        cambio.usuario.get_full_name() or cambio.usuario.username,
+        cambio.empresa.razon_social if cambio.empresa else 'N/A',
+        cambio.get_tipo_accion_display(),
+        cambio.descripcion,
+        cambio.rol_usuario,
+        cambio.ip_address or 'N/A',
+        'Sí' if cambio.exitosa else 'No',
+        cambio.mensaje_error or 'N/A'
+    ]
+
+
+def exportar_historial(request):
+    """Vista para exportar el historial de cambios a CSV/Excel"""
+    if not es_administrador_holding(request.user):
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
+    
+    import csv
+    from django.http import HttpResponse
+    from datetime import datetime
+    
+    # Obtener y filtrar historial
+    historial = HistorialCambios.objects.select_related('usuario', 'empresa').exclude(
+        usuario__is_superuser=True  # Excluir administradores del holding
+    )
+    historial = _aplicar_filtros_historial_exportar(historial, request)
+    historial = _aplicar_filtros_fecha_exportar(historial, request)
     
     # Crear respuesta CSV
     response = HttpResponse(content_type='text/csv')
@@ -1033,16 +1060,6 @@ def exportar_historial(request):
     ])
     
     for cambio in historial.order_by('-fecha_hora')[:1000]:  # Limitar a 1000 registros
-        writer.writerow([
-            cambio.fecha_hora.strftime('%d/%m/%Y %H:%M:%S'),
-            cambio.usuario.get_full_name() or cambio.usuario.username,
-            cambio.empresa.razon_social if cambio.empresa else 'N/A',
-            cambio.get_tipo_accion_display(),
-            cambio.descripcion,
-            cambio.rol_usuario,
-            cambio.ip_address or 'N/A',
-            'Sí' if cambio.exitosa else 'No',
-            cambio.mensaje_error or 'N/A'
-        ])
+        writer.writerow(_generar_fila_csv(cambio))
     
     return response

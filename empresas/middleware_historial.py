@@ -193,9 +193,8 @@ class HistorialCambiosMiddleware(MiddlewareMixin):
             elif '/eliminar/' in path:
                 return self._determinar_accion_eliminar(path)
         
-        elif method == 'GET':
-            if '/reportes/' in path:
-                return ('reporte_generar', f'Consulta de reporte: {path}')
+        elif method == 'GET' and '/reportes/' in path:
+            return ('reporte_generar', f'Consulta de reporte: {path}')
         
         # Acciones de error
         if not (200 <= response.status_code < 400):

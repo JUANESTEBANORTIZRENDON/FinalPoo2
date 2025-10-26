@@ -108,8 +108,8 @@ class ServicioContabilidad:
             if factura.total_impuestos > 0:
                 cuenta_iva = ServicioContabilidad.obtener_cuenta_por_codigo(empresa, '2408')  # IVA por pagar
             
-        except CuentaContable.DoesNotExist as e:
-            raise Exception(f"No se encontró la cuenta contable necesaria: {e}")
+        except CuentaContable.DoesNotExist:
+            raise Exception("No se encontró la cuenta contable necesaria")
         
         # Crear partidas del asiento
         orden = 1
@@ -229,8 +229,8 @@ class ServicioContabilidad:
             cuenta_caja = ServicioContabilidad.obtener_cuenta_por_codigo(empresa, '1105')  # Caja
             cuenta_clientes = ServicioContabilidad.obtener_cuenta_por_codigo(empresa, '1305')  # Clientes
             
-        except CuentaContable.DoesNotExist as e:
-            raise Exception(f"No se encontró la cuenta contable necesaria: {e}")
+        except CuentaContable.DoesNotExist:
+            raise Exception("No se encontró la cuenta contable necesaria")
         
         # Crear partidas del asiento
         # 1. Partida de débito (Caja/Banco)
