@@ -37,32 +37,32 @@
                                     </h5>
                                     
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-building me-1"></i>Razón Social:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">{{ empresa.razon_social }}</p>
                                     </div>
                                     
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-id-card me-1"></i>NIT:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">{{ empresa.nit }}</p>
                                     </div>
                                     
                                     {% if empresa.nombre_comercial %}
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-store me-1"></i>Nombre Comercial:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">{{ empresa.nombre_comercial }}</p>
                                     </div>
                                     {% endif %}
                                     
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-calendar me-1"></i>Fecha de Creación:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">{{ empresa.fecha_creacion|date:"d/m/Y H:i" }}</p>
                                     </div>
                                 </div>
@@ -74,9 +74,9 @@
                                     
                                     {% if empresa.email %}
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-envelope me-1"></i>Email:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">
                                             <a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a>
                                         </p>
@@ -85,9 +85,9 @@
                                     
                                     {% if empresa.telefono %}
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-phone me-1"></i>Teléfono:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">
                                             <a href="tel:{{ empresa.telefono }}">{{ empresa.telefono }}</a>
                                         </p>
@@ -96,18 +96,18 @@
                                     
                                     {% if empresa.direccion %}
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-map-marker-alt me-1"></i>Dirección:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">{{ empresa.direccion }}</p>
                                     </div>
                                     {% endif %}
                                     
                                     {% if empresa.ciudad or empresa.departamento %}
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-map me-1"></i>Ubicación:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">
                                             {% if empresa.ciudad %}{{ empresa.ciudad }}{% endif %}
                                             {% if empresa.ciudad and empresa.departamento %}, {% endif %}
