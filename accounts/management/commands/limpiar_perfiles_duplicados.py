@@ -52,7 +52,7 @@ class Command(BaseCommand):
     def _eliminar_perfiles_duplicados(self, dry_run):
         """Elimina perfiles duplicados manteniendo solo el primero de cada usuario"""
         perfiles_duplicados = self._encontrar_perfiles_duplicados()
-        usuarios_afectados = len(set(p.usuario for p in perfiles_duplicados))
+        usuarios_afectados = len({p.usuario for p in perfiles_duplicados})
         
         self.stdout.write(f'🔄 Usuarios con múltiples perfiles: {usuarios_afectados}')
         self.stdout.write(f'🗑️  Perfiles duplicados a eliminar: {len(perfiles_duplicados)}')

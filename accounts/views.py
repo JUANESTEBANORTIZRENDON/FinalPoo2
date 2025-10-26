@@ -247,7 +247,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 empresa=empresa
             ).order_by('-fecha_creacion')[:5]
             
-        except Exception as e:
+        except Exception:
             # En caso de error, devolver estadísticas vacías
             stats = {
                 'total_clientes': 0,
