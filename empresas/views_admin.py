@@ -19,8 +19,8 @@ from contabilidad.models import Asiento
 MSG_NO_PERMISOS = 'No tienes permisos para acceder a esta sección.'
 URL_LOGIN = 'accounts:login'
 URL_GESTIONAR_USUARIOS = 'empresas:admin_gestionar_usuarios'
-TEMPLATE_EMPRESA_FORM = TEMPLATE_EMPRESA_FORM
-TEMPLATE_USUARIO_FORM = TEMPLATE_USUARIO_FORM
+TEMPLATE_EMPRESA_FORM = 'empresas/admin/empresa_form.html'
+TEMPLATE_USUARIO_FORM = 'empresas/admin/usuario_form.html'
 TITULO_CREAR_EMPRESA = 'Crear Nueva Empresa'
 TITULO_CREAR_USUARIO = 'Crear Nuevo Usuario'
 TITULO_EDITAR_USUARIO = 'Editar Usuario'
@@ -386,6 +386,60 @@ def ajax_empresa_info(request, empresa_id):
 
 # ===== VISTAS CRUD PARA EMPRESAS =====
 
+def _validar_datos_empresa(request):
+    """Valida los datos de entrada para crear/editar empresa"""
+    razon_social = request.POST.get('razon_social', '').strip()
+    nit = request.POST.get('nit', '').strip()
+    
+    if not razon_social:
+        return False, 'La razón social es obligatoria.'
+    
+    if not nit:
+        return False, 'El NIT es obligatorio.'
+    
+    # Validar formato de NIT
+    import re
+    if not re.match(r'^\d{9,11}-\d{1}$', nit):
+        return False, 'El NIT debe tener el formato correcto: 123456789-0'
+    
+    return True, None
+
+def _verificar_nit_duplicado(nit, empresa_id=None):
+    """Verifica si el NIT ya existe en otra empresa"""
+    query = Empresa.objects.filter(nit=nit)
+    if empresa_id:
+        query = query.exclude(id=empresa_id)
+    return query.exists()
+
+def _crear_empresa_desde_request(request):
+    """Crea una empresa con los datos del request"""
+    return Empresa.objects.create(
+        razon_social=request.POST.get('razon_social', '').strip(),
+        nit=request.POST.get('nit', '').strip(),
+        nombre_comercial=request.POST.get('nombre_comercial', ''),
+        email=request.POST.get('email', ''),
+        telefono=request.POST.get('telefono', ''),
+        direccion=request.POST.get('direccion', ''),
+        ciudad=request.POST.get('ciudad', ''),
+        departamento=request.POST.get('departamento', ''),
+        propietario=request.user,
+        activa=True
+    )
+
+def _manejar_error_db_empresa(error_msg, nit):
+    """Genera mensaje de error específico según el tipo de error de BD"""
+    if 'UNIQUE constraint failed' in error_msg and 'nit' in error_msg:
+        return f'Ya existe una empresa con el NIT "{nit}". Por favor verifica el número.'
+    elif 'NOT NULL constraint failed' in error_msg:
+        if 'propietario_id' in error_msg:
+            return 'Error interno: No se pudo asignar el propietario. Contacta al administrador.'
+        else:
+            return 'Faltan campos obligatorios. Por favor completa toda la información requerida.'
+    elif 'CHECK constraint failed' in error_msg:
+        return 'Los datos ingresados no cumplen con el formato requerido. Verifica el NIT y otros campos.'
+    else:
+        return f'Error al crear la empresa: {error_msg}'
+
 @login_required
 def crear_empresa(request):
     """Vista para crear una nueva empresa"""
@@ -394,73 +448,33 @@ def crear_empresa(request):
         return redirect(URL_LOGIN)
     
     if request.method == 'POST':
+        # Validar datos básicos
+        valido, error = _validar_datos_empresa(request)
+        if not valido:
+            messages.error(request, error)
+            return render(request, TEMPLATE_EMPRESA_FORM, {
+                'titulo': TITULO_CREAR_EMPRESA,
+                'accion': 'crear'
+            })
+        
+        # Verificar NIT duplicado
+        nit = request.POST.get('nit', '').strip()
+        if _verificar_nit_duplicado(nit):
+            messages.error(request, f'Ya existe una empresa con el NIT "{nit}".')
+            return render(request, TEMPLATE_EMPRESA_FORM, {
+                'titulo': TITULO_CREAR_EMPRESA,
+                'accion': 'crear'
+            })
+        
+        # Crear empresa
         try:
-            # Validar datos requeridos
-            razon_social = request.POST.get('razon_social', '').strip()
-            nit = request.POST.get('nit', '').strip()
-            
-            # Validaciones básicas
-            if not razon_social:
-                messages.error(request, 'La razón social es obligatoria.')
-                return render(request, TEMPLATE_EMPRESA_FORM, {
-                    'titulo': TITULO_CREAR_EMPRESA,
-                    'accion': 'crear'
-                })
-            
-            if not nit:
-                messages.error(request, 'El NIT es obligatorio.')
-                return render(request, TEMPLATE_EMPRESA_FORM, {
-                    'titulo': TITULO_CREAR_EMPRESA,
-                    'accion': 'crear'
-                })
-            
-            # Validar formato de NIT
-            import re
-            if not re.match(r'^\d{9,11}-\d{1}$', nit):
-                messages.error(request, 'El NIT debe tener el formato correcto: 123456789-0')
-                return render(request, TEMPLATE_EMPRESA_FORM, {
-                    'titulo': TITULO_CREAR_EMPRESA,
-                    'accion': 'crear'
-                })
-            
-            # Verificar si el NIT ya existe
-            if Empresa.objects.filter(nit=nit).exists():
-                messages.error(request, f'Ya existe una empresa con el NIT "{nit}".')
-                return render(request, TEMPLATE_EMPRESA_FORM, {
-                    'titulo': TITULO_CREAR_EMPRESA,
-                    'accion': 'crear'
-                })
-            
-            # Crear empresa
-            empresa = Empresa.objects.create(
-                razon_social=razon_social,
-                nit=nit,
-                nombre_comercial=request.POST.get('nombre_comercial', ''),
-                email=request.POST.get('email', ''),
-                telefono=request.POST.get('telefono', ''),
-                direccion=request.POST.get('direccion', ''),
-                ciudad=request.POST.get('ciudad', ''),
-                departamento=request.POST.get('departamento', ''),
-                propietario=request.user,  # Asignar el usuario actual como propietario
-                activa=True
-            )
+            empresa = _crear_empresa_desde_request(request)
             messages.success(request, f'Empresa "{empresa.razon_social}" creada exitosamente.')
             return redirect('empresas:admin_gestionar_empresas')
             
         except Exception as e:
-            # Mensajes de error más específicos
-            error_msg = str(e)
-            if 'UNIQUE constraint failed' in error_msg and 'nit' in error_msg:
-                messages.error(request, f'Ya existe una empresa con el NIT "{nit}". Por favor verifica el número.')
-            elif 'NOT NULL constraint failed' in error_msg:
-                if 'propietario_id' in error_msg:
-                    messages.error(request, 'Error interno: No se pudo asignar el propietario. Contacta al administrador.')
-                else:
-                    messages.error(request, 'Faltan campos obligatorios. Por favor completa toda la información requerida.')
-            elif 'CHECK constraint failed' in error_msg:
-                messages.error(request, 'Los datos ingresados no cumplen con el formato requerido. Verifica el NIT y otros campos.')
-            else:
-                messages.error(request, f'Error al crear la empresa: {error_msg}')
+            error_msg = _manejar_error_db_empresa(str(e), nit)
+            messages.error(request, error_msg)
             
             return render(request, TEMPLATE_EMPRESA_FORM, {
                 'titulo': TITULO_CREAR_EMPRESA,
