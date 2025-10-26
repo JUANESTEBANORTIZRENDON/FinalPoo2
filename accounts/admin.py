@@ -35,7 +35,8 @@ WARNING_TEXT_STYLE = "color: #dc3545; font-size: 0.7em;"
 
 # Constante para el título de la sección de identificación
 IDENT_SECTION_TITLE = '🆔 Identificación'
-
+# Constante para el título de la sección de información personal
+PERSONAL_SECTION_TITLE = '👤 Información Personal'
 
 class PerfilUsuarioInline(admin.StackedInline):
     """Inline simplificado para mostrar el perfil en la página de usuario"""
@@ -57,7 +58,7 @@ class PerfilUsuarioInline(admin.StackedInline):
             'fields': ('telefono', 'direccion', 'ciudad', 'departamento', 'codigo_postal'),
             'description': 'Información de contacto y ubicación'
         }),
-        ('👤 Información Personal', {
+        (PERSONAL_SECTION_TITLE, {
             'fields': ('fecha_nacimiento', 'genero', 'estado_civil'),
             'classes': ('collapse',),
             'description': 'Información personal opcional'
@@ -123,7 +124,7 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
             'fields': ('username', 'password1', 'password2'),
             'description': 'Información básica para el acceso al sistema'
         }),
-        ('👤 Información Personal', {
+        (PERSONAL_SECTION_TITLE, {
             'classes': ('wide',),
             'fields': ('first_name', 'last_name', 'email'),
             'description': 'Datos personales del usuario'
@@ -155,7 +156,7 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
         ('🔐 Información de Acceso', {
             'fields': ('username', 'password')
         }),
-        ('👤 Información Personal', {
+        (PERSONAL_SECTION_TITLE, {
             'fields': ('first_name', 'last_name', 'email')
         }),
         ('🔑 Permisos', {

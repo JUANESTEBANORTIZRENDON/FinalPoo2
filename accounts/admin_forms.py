@@ -8,6 +8,9 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import PerfilUsuario
 from django.db import transaction
 
+# Texto de ayuda reutilizable
+IS_ACTIVE_HELP = "Determina si el usuario puede iniciar sesión"
+
 
 class UsuarioCompletoAdminForm(UserCreationForm):
     """
@@ -101,7 +104,7 @@ class UsuarioCompletoAdminForm(UserCreationForm):
         initial=True,
         required=False,
         label="Usuario Activo",
-        help_text="Determina si el usuario puede iniciar sesión"
+        help_text=IS_ACTIVE_HELP
     )
     
     is_staff = forms.BooleanField(
@@ -330,52 +333,51 @@ class PerfilUsuarioCompletoForm(forms.ModelForm):
         crear_automatico = cleaned_data.get('crear_usuario_automaticamente')
         usuario_existente = cleaned_data.get('usuario')
         
-        # Si no se va a crear automáticamente, debe seleccionar un usuario existente
+        self._validate_user_selection(crear_automatico, usuario_existente)
+        
+        if crear_automatico:
+            self._validate_min_fields(cleaned_data)
+            self._ensure_generated_defaults(cleaned_data)
+        
+        return cleaned_data
+
+    # === Helpers para reducir complejidad cognitiva ===
+    def _validate_user_selection(self, crear_automatico, usuario_existente):
+        """Valida que haya selección de usuario o activación de creación automática"""
         if not crear_automatico and not usuario_existente:
             raise forms.ValidationError(
                 "Debe seleccionar un usuario existente o marcar 'Crear usuario automáticamente'"
             )
-        
-        # Si se va a crear automáticamente, validar campos mínimos
-        if crear_automatico:
-            numero_documento = cleaned_data.get('numero_documento')
-            telefono = cleaned_data.get('telefono')
-            
-            if not numero_documento:
-                raise forms.ValidationError("El número de documento es requerido para crear el usuario")
-            
-            if not telefono:
-                raise forms.ValidationError("El teléfono es requerido para crear el usuario")
-            
-            # Generar datos automáticamente si no se proporcionan
-            if not cleaned_data.get('first_name'):
-                cleaned_data['first_name'] = f"Usuario {numero_documento}"
-            
-            if not cleaned_data.get('last_name'):
-                cleaned_data['last_name'] = "Generado"
-            
-            if not cleaned_data.get('username'):
-                # Generar username basado en documento
-                base_username = f"user_{numero_documento}"
-                username = base_username
-                counter = 1
-                while User.objects.filter(username=username).exists():
-                    username = f"{base_username}_{counter}"
-                    counter += 1
-                cleaned_data['username'] = username
-            
-            if not cleaned_data.get('email'):
-                # Generar email temporal
-                cleaned_data['email'] = f"{cleaned_data['username']}@temp.local"
-            
-            if not cleaned_data.get('password'):
-                # Generar contraseña temporal
-                import secrets
-                import string
-                alphabet = string.ascii_letters + string.digits
-                cleaned_data['password'] = ''.join(secrets.choice(alphabet) for _ in range(12))
-        
-        return cleaned_data
+
+    def _validate_min_fields(self, cleaned_data):
+        """Valida campos mínimos requeridos para crear usuario automático"""
+        if not cleaned_data.get('numero_documento'):
+            raise forms.ValidationError("El número de documento es requerido para crear el usuario")
+        if not cleaned_data.get('telefono'):
+            raise forms.ValidationError("El teléfono es requerido para crear el usuario")
+
+    def _ensure_generated_defaults(self, cleaned_data):
+        """Genera valores por defecto cuando faltan datos para la creación automática"""
+        numero_documento = cleaned_data.get('numero_documento')
+        if not cleaned_data.get('first_name'):
+            cleaned_data['first_name'] = f"Usuario {numero_documento}"
+        if not cleaned_data.get('last_name'):
+            cleaned_data['last_name'] = "Generado"
+        if not cleaned_data.get('username'):
+            base_username = f"user_{numero_documento}"
+            username = base_username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}_{counter}"
+                counter += 1
+            cleaned_data['username'] = username
+        if not cleaned_data.get('email'):
+            cleaned_data['email'] = f"{cleaned_data['username']}@temp.local"
+        if not cleaned_data.get('password'):
+            import secrets
+            import string
+            alphabet = string.ascii_letters + string.digits
+            cleaned_data['password'] = ''.join(secrets.choice(alphabet) for _ in range(12))
     
     def clean_numero_documento(self):
         """Validar que el número de documento sea único"""
@@ -456,7 +458,7 @@ class UsuarioEditForm(forms.ModelForm):
         self.fields['first_name'].label = "Nombres"
         self.fields['last_name'].label = "Apellidos"
         self.fields['email'].help_text = "Correo electrónico único"
-        self.fields['is_active'].help_text = "Determina si el usuario puede iniciar sesión"
+        self.fields['is_active'].help_text = IS_ACTIVE_HELP
         self.fields['is_staff'].help_text = "Permite acceso al admin de Django"
         self.fields['is_superuser'].help_text = "Otorga todos los permisos (usar con precaución)"
     
