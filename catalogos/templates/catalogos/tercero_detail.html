@@ -36,8 +36,9 @@
                         <div class="col-md-6">
                             <h6 class="text-muted">Información Básica</h6>
                             <table class="table table-borderless">
+                                <tbody>
                                 <tr>
-                                    <td><strong>Tipo:</strong></td>
+                                    <th scope="row">Tipo:</th>
                                     <td>
                                         <span class="badge 
                                             {% if object.tipo_tercero == 'cliente' %}bg-primary
@@ -48,24 +49,24 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Documento:</strong></td>
+                                    <th scope="row">Documento:</th>
                                     <td>
                                         {{ object.get_tipo_documento_display }}: 
                                         <code>{{ object.numero_documento }}</code>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Razón Social:</strong></td>
+                                    <th scope="row">Razón Social:</th>
                                     <td>{{ object.razon_social }}</td>
                                 </tr>
                                 {% if object.nombre_comercial %}
                                 <tr>
-                                    <td><strong>Nombre Comercial:</strong></td>
+                                    <th scope="row">Nombre Comercial:</th>
                                     <td>{{ object.nombre_comercial }}</td>
                                 </tr>
                                 {% endif %}
                                 <tr>
-                                    <td><strong>Estado:</strong></td>
+                                    <th scope="row">Estado:</th>
                                     <td>
                                         {% if object.activo %}
                                             <span class="badge bg-success">Activo</span>
@@ -74,29 +75,31 @@
                                         {% endif %}
                                     </td>
                                 </tr>
+                                </tbody>
                             </table>
                         </div>
                         
                         <div class="col-md-6">
                             <h6 class="text-muted">Información de Contacto</h6>
                             <table class="table table-borderless">
+                                <tbody>
                                 <tr>
-                                    <td><strong>Dirección:</strong></td>
+                                    <th scope="row">Dirección:</th>
                                     <td>{{ object.direccion }}</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Ciudad:</strong></td>
+                                    <th scope="row">Ciudad:</th>
                                     <td>{{ object.ciudad }}</td>
                                 </tr>
                                 {% if object.telefono %}
                                 <tr>
-                                    <td><strong>Teléfono:</strong></td>
+                                    <th scope="row">Teléfono:</th>
                                     <td>{{ object.telefono }}</td>
                                 </tr>
                                 {% endif %}
                                 {% if object.email %}
                                 <tr>
-                                    <td><strong>Email:</strong></td>
+                                    <th scope="row">Email:</th>
                                     <td>
                                         <a href="mailto:{{ object.email }}">{{ object.email }}</a>
                                     </td>
@@ -104,10 +107,11 @@
                                 {% endif %}
                                 {% if object.regimen_tributario %}
                                 <tr>
-                                    <td><strong>Régimen:</strong></td>
+                                    <th scope="row">Régimen:</th>
                                     <td>{{ object.get_regimen_tributario_display }}</td>
                                 </tr>
                                 {% endif %}
+                                </tbody>
                             </table>
                         </div>
                     </div>

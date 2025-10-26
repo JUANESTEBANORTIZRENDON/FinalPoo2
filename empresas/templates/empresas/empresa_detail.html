@@ -40,16 +40,17 @@
                         <div class="col-md-6">
                             <h6 class="text-muted">Información Legal</h6>
                             <table class="table table-borderless">
+                                <tbody>
                                 <tr>
-                                    <td><strong>NIT:</strong></td>
+                                    <th scope="row">NIT:</th>
                                     <td><code>{{ object.nit_formateado }}</code></td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Razón Social:</strong></td>
+                                    <th scope="row">Razón Social:</th>
                                     <td>{{ object.razon_social }}</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Tipo:</strong></td>
+                                    <th scope="row">Tipo:</th>
                                     <td>
                                         {% if object.tipo_empresa %}
                                             <span class="badge bg-secondary">{{ object.get_tipo_empresa_display }}</span>
@@ -59,7 +60,7 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Estado:</strong></td>
+                                    <th scope="row">Estado:</th>
                                     <td>
                                         {% if object.activa %}
                                             <span class="badge bg-success">Activa</span>
@@ -68,26 +69,28 @@
                                         {% endif %}
                                     </td>
                                 </tr>
+                                </tbody>
                             </table>
                         </div>
                         
                         <div class="col-md-6">
                             <h6 class="text-muted">Información de Contacto</h6>
                             <table class="table table-borderless">
+                                <tbody>
                                 <tr>
-                                    <td><strong>Dirección:</strong></td>
+                                    <th scope="row">Dirección:</th>
                                     <td>{{ object.direccion }}</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Ciudad:</strong></td>
+                                    <th scope="row">Ciudad:</th>
                                     <td>{{ object.ciudad }}</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Teléfono:</strong></td>
+                                    <th scope="row">Teléfono:</th>
                                     <td>{{ object.telefono }}</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Email:</strong></td>
+                                    <th scope="row">Email:</th>
                                     <td>
                                         {% if object.email %}
                                             <a href="mailto:{{ object.email }}">{{ object.email }}</a>
