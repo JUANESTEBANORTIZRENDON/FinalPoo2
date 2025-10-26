@@ -424,7 +424,7 @@
             const sidebar = document.getElementById('sidebar');
             const toggle = document.getElementById('sidebarToggle');
             
-            if (window.innerWidth <= 768 && 
+            if (globalThis.innerWidth <= 768 && 
                 !sidebar.contains(event.target) && 
                 !toggle?.contains(event.target)) {
                 sidebar.classList.remove('show');
