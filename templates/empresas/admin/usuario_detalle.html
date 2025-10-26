@@ -37,16 +37,16 @@
                                     </h5>
                                     
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-user me-1"></i>Nombre de Usuario:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">{{ usuario.username }}</p>
                                     </div>
                                     
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-envelope me-1"></i>Email:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">
                                             <a href="mailto:{{ usuario.email }}">{{ usuario.email }}</a>
                                         </p>
@@ -54,24 +54,24 @@
                                     
                                     {% if usuario.first_name or usuario.last_name %}
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-id-badge me-1"></i>Nombre Completo:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">{{ usuario.get_full_name }}</p>
                                     </div>
                                     {% endif %}
                                     
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-calendar me-1"></i>Fecha de Registro:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">{{ usuario.date_joined|date:"d/m/Y H:i" }}</p>
                                     </div>
                                     
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-clock me-1"></i>Último Acceso:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">
                                             {% if usuario.last_login %}
                                                 {{ usuario.last_login|date:"d/m/Y H:i" }}
@@ -89,18 +89,18 @@
                                     
                                     {% if usuario.perfilusuario.documento %}
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-id-card me-1"></i>Documento:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">{{ usuario.perfilusuario.documento }}</p>
                                     </div>
                                     {% endif %}
                                     
                                     {% if usuario.perfilusuario.telefono %}
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-phone me-1"></i>Teléfono:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">
                                             <a href="tel:{{ usuario.perfilusuario.telefono }}">{{ usuario.perfilusuario.telefono }}</a>
                                         </p>
@@ -109,26 +109,26 @@
                                     
                                     {% if usuario.perfilusuario.ciudad %}
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-city me-1"></i>Ciudad:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">{{ usuario.perfilusuario.ciudad }}</p>
                                     </div>
                                     {% endif %}
                                     
                                     {% if usuario.perfilusuario.direccion %}
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-map-marker-alt me-1"></i>Dirección:
-                                        </label>
+                                        </span>
                                         <p class="mb-1">{{ usuario.perfilusuario.direccion }}</p>
                                     </div>
                                     {% endif %}
                                     
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">
+                                        <span class="form-label fw-bold">
                                             <i class="fas fa-shield-alt me-1"></i>Permisos:
-                                        </label>
+                                        </span>
                                         <div>
                                             {% if usuario.is_superuser %}
                                                 <span class="badge bg-danger me-1">Superusuario</span>
