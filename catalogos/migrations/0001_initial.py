@@ -6,7 +6,8 @@ from decimal import Decimal
 from django.db import migrations, models
 
 
-# Constantes para verbose_name comunes (evita duplicación de literales)
+# Constantes para evitar duplicación de literales
+EMPRESA_MODEL = 'empresas.empresa'
 VN_CODIGO = 'Código'
 VN_FECHA_CREACION = 'Fecha de Creación'
 
@@ -30,7 +31,7 @@ class Migration(migrations.Migration):
                 ('porcentaje', models.DecimalField(decimal_places=2, help_text='Porcentaje del impuesto (ej: 19.00 para IVA del 19%)', max_digits=5, validators=[django.core.validators.MinValueValidator(Decimal('0.00')), django.core.validators.MaxValueValidator(Decimal('100.00'))], verbose_name='Porcentaje (%)')),
                 ('activo', models.BooleanField(default=True, verbose_name='Impuesto Activo')),
                 ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name=VN_FECHA_CREACION)),
-                ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='empresas.empresa', verbose_name='Empresa')),
+                ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=EMPRESA_MODEL, verbose_name='Empresa')),
             ],
             options={
                 'verbose_name': 'Impuesto',
@@ -49,7 +50,7 @@ class Migration(migrations.Migration):
                 ('requiere_referencia', models.BooleanField(default=False, help_text='Si requiere número de cheque, referencia de transferencia, etc.', verbose_name='Requiere Referencia')),
                 ('activo', models.BooleanField(default=True, verbose_name='Método Activo')),
                 ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name=VN_FECHA_CREACION)),
-                ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='empresas.empresa', verbose_name='Empresa')),
+                ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=EMPRESA_MODEL, verbose_name='Empresa')),
             ],
             options={
                 'verbose_name': 'Método de Pago',
@@ -74,7 +75,7 @@ class Migration(migrations.Migration):
                 ('activo', models.BooleanField(default=True, verbose_name='Producto Activo')),
                 ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name=VN_FECHA_CREACION)),
                 ('fecha_actualizacion', models.DateTimeField(auto_now=True, verbose_name='Última Actualización')),
-                ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='empresas.empresa', verbose_name='Empresa')),
+                ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=EMPRESA_MODEL, verbose_name='Empresa')),
                 ('impuesto', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='catalogos.impuesto', verbose_name='Impuesto Aplicable')),
             ],
             options={
@@ -101,7 +102,7 @@ class Migration(migrations.Migration):
                 ('activo', models.BooleanField(default=True, verbose_name='Tercero Activo')),
                 ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name=VN_FECHA_CREACION)),
                 ('fecha_actualizacion', models.DateTimeField(auto_now=True, verbose_name='Última Actualización')),
-                ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='empresas.empresa', verbose_name='Empresa')),
+                ('empresa', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=EMPRESA_MODEL, verbose_name='Empresa')),
             ],
             options={
                 'verbose_name': 'Tercero',

@@ -3,8 +3,10 @@ from django.core.validators import RegexValidator, MinValueValidator, MaxValueVa
 from decimal import Decimal
 
 
-# Constante para evitar duplicación del literal 'empresas.Empresa'
+# Constantes para evitar duplicación de literales
 EMPRESA_MODEL = 'empresas.Empresa'
+VN_CODIGO = 'Código'
+VN_FECHA_CREACION = 'Fecha de Creación'
 
 
 class Tercero(models.Model):
@@ -113,7 +115,7 @@ class Tercero(models.Model):
     
     fecha_creacion = models.DateTimeField(
         auto_now_add=True,
-        verbose_name="Fecha de Creación"
+        verbose_name=VN_FECHA_CREACION
     )
     
     fecha_actualizacion = models.DateTimeField(
@@ -162,7 +164,7 @@ class Impuesto(models.Model):
     # Información del impuesto
     codigo = models.CharField(
         max_length=10,
-        verbose_name="Código",
+        verbose_name=VN_CODIGO,
         help_text="Código interno del impuesto"
     )
     
@@ -195,7 +197,7 @@ class Impuesto(models.Model):
     
     fecha_creacion = models.DateTimeField(
         auto_now_add=True,
-        verbose_name="Fecha de Creación"
+        verbose_name=VN_FECHA_CREACION
     )
     
     class Meta:
@@ -236,7 +238,7 @@ class MetodoPago(models.Model):
     # Información del método de pago
     codigo = models.CharField(
         max_length=10,
-        verbose_name="Código",
+        verbose_name=VN_CODIGO,
         help_text="Código interno del método de pago"
     )
     
@@ -264,7 +266,7 @@ class MetodoPago(models.Model):
     
     fecha_creacion = models.DateTimeField(
         auto_now_add=True,
-        verbose_name="Fecha de Creación"
+        verbose_name=VN_FECHA_CREACION
     )
     
     class Meta:
@@ -375,7 +377,7 @@ class Producto(models.Model):
     
     fecha_creacion = models.DateTimeField(
         auto_now_add=True,
-        verbose_name="Fecha de Creación"
+        verbose_name=VN_FECHA_CREACION
     )
     
     fecha_actualizacion = models.DateTimeField(

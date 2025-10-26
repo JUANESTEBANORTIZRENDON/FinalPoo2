@@ -262,7 +262,7 @@ class HistorialCambiosAdmin(admin.ModelAdmin):
             try:
                 datos_formateados = json.dumps(obj.datos_anteriores, indent=2, ensure_ascii=False)
                 return format_html('<pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 0.8rem;">{}</pre>', datos_formateados)
-            except:
+            except (TypeError, ValueError) as e:
                 return str(obj.datos_anteriores)
         return '-'
     datos_anteriores_display.short_description = '📋 Datos Anteriores'
@@ -274,7 +274,7 @@ class HistorialCambiosAdmin(admin.ModelAdmin):
             try:
                 datos_formateados = json.dumps(obj.datos_nuevos, indent=2, ensure_ascii=False)
                 return format_html('<pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 0.8rem;">{}</pre>', datos_formateados)
-            except:
+            except (TypeError, ValueError) as e:
                 return str(obj.datos_nuevos)
         return '-'
     datos_nuevos_display.short_description = '📋 Datos Nuevos'
