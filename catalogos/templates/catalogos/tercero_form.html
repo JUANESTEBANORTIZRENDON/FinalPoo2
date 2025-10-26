@@ -252,20 +252,21 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Agregar clases de Bootstrap a los campos del formulario
     const formFields = document.querySelectorAll('input, select, textarea');
-    formFields.forEach(field => {
+    for (const field of formFields) {
         if (field.type !== 'checkbox') {
             field.classList.add('form-control');
         } else {
             field.classList.add('form-check-input');
         }
-    });
+    }
     
     // Validación en tiempo real del número de documento
     const numeroDocumento = document.querySelector('#id_numero_documento');
     if (numeroDocumento) {
         numeroDocumento.addEventListener('input', function() {
-            // Remover caracteres no numéricos
-            this.value = this.value.replace(/\D/g, '');
+            // Remover caracteres no numéricos (solo dígitos permitidos)
+            const valor = this.value;
+            this.value = valor.replace(/\D/g, '');
         });
     }
 });
