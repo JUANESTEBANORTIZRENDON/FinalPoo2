@@ -7,6 +7,9 @@ from django.urls import reverse
 from django.contrib import messages
 from .models import Empresa, PerfilEmpresa, EmpresaActiva
 
+# Constante para evitar duplicación del literal 'empresas:cambiar_empresa'
+CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
+
 
 class EmpresaActivaMiddleware:
     """
@@ -79,7 +82,7 @@ class EmpresaActivaMiddleware:
         
         if not empresa_activa:
             # Redirigir a selección de empresa
-            return redirect('empresas:cambiar_empresa')
+            return redirect(CAMBIAR_EMPRESA_URL)
         
         # Establecer empresa activa en el request
         request.empresa_activa = empresa_activa
@@ -100,7 +103,7 @@ class EmpresaActivaMiddleware:
                 request,
                 'No tienes acceso a la empresa seleccionada.'
             )
-            return redirect('empresas:cambiar_empresa')
+            return redirect(CAMBIAR_EMPRESA_URL)
         
         return None
     
@@ -233,7 +236,7 @@ def empresa_requerida(view_func):
                 request,
                 'Debes seleccionar una empresa para acceder a esta función.'
             )
-            return redirect('empresas:cambiar_empresa')
+            return redirect(CAMBIAR_EMPRESA_URL)
         
         return view_func(request, *args, **kwargs)
     

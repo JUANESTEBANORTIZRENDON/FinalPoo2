@@ -9,6 +9,12 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from .models import HistorialCambios, EmpresaActiva
 
+# Constantes para evitar duplicación de literales de descripciones
+DESC_TERCERO_CREADO = 'Tercero creado'
+DESC_IMPUESTO_CREADO = 'Impuesto creado'
+DESC_METODO_PAGO_CREADO = 'Método de pago creado'
+DESC_PRODUCTO_CREADO = 'Producto creado'
+
 
 class HistorialCambiosMiddleware(MiddlewareMixin):
     """
@@ -138,20 +144,20 @@ class HistorialCambiosMiddleware(MiddlewareMixin):
             '/empresas/cambiar-empresa/': ('usuario_cambio_empresa', 'Cambio de empresa activa'),
             
             # Acciones de catálogos - Terceros
-            '/catalogos/terceros/crear/': ('tercero_crear', 'Tercero creado'),
-            '/catalogos/terceros/nuevo/': ('tercero_crear', 'Tercero creado'),
+            '/catalogos/terceros/crear/': ('tercero_crear', DESC_TERCERO_CREADO),
+            '/catalogos/terceros/nuevo/': ('tercero_crear', DESC_TERCERO_CREADO),
             
             # Acciones de catálogos - Impuestos
-            '/catalogos/impuestos/crear/': ('configuracion_cambiar', 'Impuesto creado'),
-            '/catalogos/impuestos/nuevo/': ('configuracion_cambiar', 'Impuesto creado'),
+            '/catalogos/impuestos/crear/': ('configuracion_cambiar', DESC_IMPUESTO_CREADO),
+            '/catalogos/impuestos/nuevo/': ('configuracion_cambiar', DESC_IMPUESTO_CREADO),
             
             # Acciones de catálogos - Métodos de pago
-            '/catalogos/metodos-pago/crear/': ('configuracion_cambiar', 'Método de pago creado'),
-            '/catalogos/metodos-pago/nuevo/': ('configuracion_cambiar', 'Método de pago creado'),
+            '/catalogos/metodos-pago/crear/': ('configuracion_cambiar', DESC_METODO_PAGO_CREADO),
+            '/catalogos/metodos-pago/nuevo/': ('configuracion_cambiar', DESC_METODO_PAGO_CREADO),
             
             # Acciones de catálogos - Productos
-            '/catalogos/productos/crear/': ('producto_crear', 'Producto creado'),
-            '/catalogos/productos/nuevo/': ('producto_crear', 'Producto creado'),
+            '/catalogos/productos/crear/': ('producto_crear', DESC_PRODUCTO_CREADO),
+            '/catalogos/productos/nuevo/': ('producto_crear', DESC_PRODUCTO_CREADO),
             
             # Acciones de facturación
             '/facturacion/facturas/crear/': ('factura_crear', 'Factura creada'),
@@ -198,13 +204,13 @@ class HistorialCambiosMiddleware(MiddlewareMixin):
     def _determinar_accion_crear(self, path):
         """Determina la acción de creación basada en la ruta"""
         if '/terceros/' in path:
-            return ('tercero_crear', 'Tercero creado')
+            return ('tercero_crear', DESC_TERCERO_CREADO)
         elif '/impuestos/' in path:
-            return ('configuracion_cambiar', 'Impuesto creado')
+            return ('configuracion_cambiar', DESC_IMPUESTO_CREADO)
         elif '/metodos-pago/' in path:
-            return ('configuracion_cambiar', 'Método de pago creado')
+            return ('configuracion_cambiar', DESC_METODO_PAGO_CREADO)
         elif '/productos/' in path:
-            return ('producto_crear', 'Producto creado')
+            return ('producto_crear', DESC_PRODUCTO_CREADO)
         elif '/facturas/' in path:
             return ('factura_crear', 'Factura creada')
         elif '/pagos/' in path:

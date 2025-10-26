@@ -15,6 +15,11 @@ from facturacion.models import Factura
 from tesoreria.models import Pago
 from contabilidad.models import Asiento
 
+# Constantes para evitar duplicación de literales
+MSG_NO_PERMISOS = 'No tienes permisos para acceder a esta sección.'
+URL_LOGIN = 'accounts:login'
+URL_GESTIONAR_USUARIOS = 'empresas:admin_gestionar_usuarios'
+
 
 def es_administrador_holding(user):
     """Verifica si el usuario es administrador del holding"""
@@ -29,8 +34,8 @@ def es_administrador_holding(user):
 def dashboard_admin(request):
     """Dashboard principal del administrador del holding"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     # Métricas generales
     total_empresas = Empresa.objects.filter(activa=True).count()
@@ -102,8 +107,8 @@ def dashboard_admin(request):
 def gestionar_empresas(request):
     """Vista para gestionar todas las empresas del holding"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     # Filtros
     busqueda = request.GET.get('busqueda', '')
@@ -147,8 +152,8 @@ def gestionar_empresas(request):
 def gestionar_usuarios(request):
     """Vista para gestionar todos los usuarios del sistema"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     # Filtros
     busqueda = request.GET.get('busqueda', '')
@@ -205,7 +210,7 @@ def asignar_usuario_empresa(request, usuario_id):
     """Vista para asignar un usuario a una empresa con un rol específico"""
     if not es_administrador_holding(request.user):
         messages.error(request, 'No tienes permisos para realizar esta acción.')
-        return redirect('accounts:login')
+        return redirect(URL_LOGIN)
     
     usuario = get_object_or_404(User, id=usuario_id)
     
@@ -237,7 +242,7 @@ def asignar_usuario_empresa(request, usuario_id):
                 )
                 messages.success(request, f'Usuario {usuario.get_full_name() or usuario.username} asignado exitosamente')
             
-            return redirect('empresas:admin_gestionar_usuarios')
+            return redirect(URL_GESTIONAR_USUARIOS)
     
     # Obtener empresas disponibles
     empresas = Empresa.objects.filter(activa=True).order_by('razon_social')
@@ -263,22 +268,22 @@ def desactivar_asignacion(request, perfil_id):
     """Desactivar una asignación de usuario-empresa"""
     if not es_administrador_holding(request.user):
         messages.error(request, 'No tienes permisos para realizar esta acción.')
-        return redirect('accounts:login')
+        return redirect(URL_LOGIN)
     
     perfil = get_object_or_404(PerfilEmpresa, id=perfil_id)
     perfil.activo = False
     perfil.save()
     
     messages.success(request, f'Asignación desactivada para {perfil.usuario.get_full_name() or perfil.usuario.username}')
-    return redirect('empresas:admin_gestionar_usuarios')
+    return redirect(URL_GESTIONAR_USUARIOS)
 
 
 @login_required
 def estadisticas_holding(request):
     """Vista con estadísticas detalladas del holding"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     # Estadísticas por mes (últimos 6 meses)
     fecha_inicio = timezone.now() - timedelta(days=180)
@@ -380,8 +385,8 @@ def ajax_empresa_info(request, empresa_id):
 def crear_empresa(request):
     """Vista para crear una nueva empresa"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     if request.method == 'POST':
         try:
@@ -468,8 +473,8 @@ def crear_empresa(request):
 def editar_empresa(request, empresa_id):
     """Vista para editar una empresa existente"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     empresa = get_object_or_404(Empresa, id=empresa_id)
     
@@ -503,8 +508,8 @@ def editar_empresa(request, empresa_id):
 def ver_empresa(request, empresa_id):
     """Vista para ver detalles de una empresa"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     empresa = get_object_or_404(Empresa, id=empresa_id)
     
@@ -533,8 +538,8 @@ def ver_empresa(request, empresa_id):
 def eliminar_empresa(request, empresa_id):
     """Vista para eliminar una empresa"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     empresa = get_object_or_404(Empresa, id=empresa_id)
     
@@ -569,8 +574,8 @@ def eliminar_empresa(request, empresa_id):
 def crear_usuario(request):
     """Vista para crear un nuevo usuario"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     if request.method == 'POST':
         try:
@@ -648,7 +653,7 @@ def crear_usuario(request):
                 )
             
             messages.success(request, f'Usuario "{usuario.get_full_name() or usuario.username}" creado exitosamente.')
-            return redirect('empresas:admin_gestionar_usuarios')
+            return redirect(URL_GESTIONAR_USUARIOS)
             
         except Exception as e:
             messages.error(request, f'Error al crear el usuario: {str(e)}')
@@ -664,8 +669,8 @@ def crear_usuario(request):
 def editar_usuario(request, usuario_id):
     """Vista para editar un usuario existente"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     usuario = get_object_or_404(User, id=usuario_id)
     
@@ -739,7 +744,7 @@ def editar_usuario(request, usuario_id):
                 messages.info(request, 'Contraseña actualizada exitosamente.')
             
             messages.success(request, f'Usuario "{usuario.get_full_name() or usuario.username}" actualizado exitosamente.')
-            return redirect('empresas:admin_gestionar_usuarios')
+            return redirect(URL_GESTIONAR_USUARIOS)
             
         except Exception as e:
             messages.error(request, f'Error al actualizar el usuario: {str(e)}')
@@ -756,8 +761,8 @@ def editar_usuario(request, usuario_id):
 def ver_usuario(request, usuario_id):
     """Vista para ver detalles de un usuario"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     usuario = get_object_or_404(User, id=usuario_id)
     
@@ -788,8 +793,8 @@ def ver_usuario(request, usuario_id):
 def historial_cambios(request):
     """Vista para mostrar el historial de cambios de todos los usuarios"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     # Obtener parámetros de filtro
     usuario_id = request.GET.get('usuario')
@@ -897,8 +902,8 @@ def historial_cambios(request):
 def detalle_historial_cambio(request, cambio_id):
     """Vista para mostrar el detalle completo de un cambio"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     cambio = get_object_or_404(HistorialCambios, id=cambio_id)
     
@@ -913,8 +918,8 @@ def detalle_historial_cambio(request, cambio_id):
 def exportar_historial(request):
     """Vista para exportar el historial de cambios a CSV/Excel"""
     if not es_administrador_holding(request.user):
-        messages.error(request, 'No tienes permisos para acceder a esta sección.')
-        return redirect('accounts:login')
+        messages.error(request, MSG_NO_PERMISOS)
+        return redirect(URL_LOGIN)
     
     import csv
     from django.http import HttpResponse
