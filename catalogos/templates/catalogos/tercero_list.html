@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const filas = tabla.querySelectorAll('tbody tr');
         
-        filas.forEach(fila => {
+        for (const fila of filas) {
             const texto = fila.textContent.toLowerCase();
             const tipo = fila.dataset.tipo;
             const activo = fila.dataset.activo;
@@ -209,10 +209,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             fila.style.display = mostrar ? '' : 'none';
-        });
+        }
     }
     
-    buscar.addEventListener('input', filtrarTabla);
+    document.getElementById('buscar_tercero').addEventListener('input', filtrarTabla);
     filtroTipo.addEventListener('change', filtrarTabla);
     filtroEstado.addEventListener('change', filtrarTabla);
 });
@@ -224,7 +224,9 @@ function limpiarFiltros() {
     
     // Mostrar todas las filas
     const filas = document.querySelectorAll('#tabla-terceros tbody tr');
-    filas.forEach(fila => fila.style.display = '');
+    for (const fila of filas) {
+        fila.style.display = '';
+    }
 }
 
 function toggleEstado(terceroId, nuevoEstado) {
