@@ -8,6 +8,9 @@ from django.urls import reverse_lazy
 from empresas.middleware import EmpresaFilterMixin
 from .models import Tercero, Impuesto, MetodoPago, Producto
 
+# Constante para evitar duplicación del literal 'catalogos:tercero_list'
+TERCERO_LIST_URL = 'catalogos:tercero_list'
+
 # Vistas temporales básicas
 class CatalogosIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'catalogos/index.html'
@@ -33,7 +36,7 @@ class TerceroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
         'razon_social', 'nombre_comercial', 'direccion', 'ciudad',
         'telefono', 'email', 'regimen_tributario', 'observaciones', 'activo'
     ]
-    success_url = reverse_lazy('catalogos:tercero_list')
+    success_url = reverse_lazy(TERCERO_LIST_URL)
     
     def form_valid(self, form):
         form.instance.empresa = self.get_empresa_activa()
@@ -48,7 +51,7 @@ class TerceroUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
         'razon_social', 'nombre_comercial', 'direccion', 'ciudad',
         'telefono', 'email', 'regimen_tributario', 'observaciones', 'activo'
     ]
-    success_url = reverse_lazy('catalogos:tercero_list')
+    success_url = reverse_lazy(TERCERO_LIST_URL)
     
     def form_valid(self, form):
         messages.success(self.request, f'Tercero {form.instance.razon_social} actualizado exitosamente.')
@@ -57,7 +60,7 @@ class TerceroUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
 class TerceroDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = Tercero
     template_name = 'catalogos/tercero_confirm_delete.html'
-    success_url = reverse_lazy('catalogos:tercero_list')
+    success_url = reverse_lazy(TERCERO_LIST_URL)
 
 class ImpuestoListView(LoginRequiredMixin, ListView):
     model = Impuesto

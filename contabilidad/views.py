@@ -5,6 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .models import CuentaContable, Asiento, Partida
 
+# Constante para evitar duplicación del literal 'contabilidad:asientos_detalle'
+ASIENTOS_DETALLE_URL = 'contabilidad:asientos_detalle'
+
 # Vistas temporales básicas
 class ContabilidadIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'contabilidad/index.html'
@@ -86,11 +89,11 @@ def crear_plan_cuentas_basico(request):
 
 @login_required
 def confirmar_asiento(request, pk):
-    return redirect('contabilidad:asientos_detalle', pk=pk)
+    return redirect(ASIENTOS_DETALLE_URL, pk=pk)
 
 @login_required
 def anular_asiento(request, pk):
-    return redirect('contabilidad:asientos_detalle', pk=pk)
+    return redirect(ASIENTOS_DETALLE_URL, pk=pk)
 
 @login_required
 def duplicar_asiento(request, pk):
@@ -98,7 +101,7 @@ def duplicar_asiento(request, pk):
 
 @login_required
 def reversar_asiento(request, pk):
-    return redirect('contabilidad:asientos_detalle', pk=pk)
+    return redirect(ASIENTOS_DETALLE_URL, pk=pk)
 
 @login_required
 def obtener_siguiente_numero_asiento(request):
