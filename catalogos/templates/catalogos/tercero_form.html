@@ -253,10 +253,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Agregar clases de Bootstrap a los campos del formulario
     const formFields = document.querySelectorAll('input, select, textarea');
     for (const field of formFields) {
-        if (field.type !== 'checkbox') {
-            field.classList.add('form-control');
-        } else {
+        if (field.type === 'checkbox') {
             field.classList.add('form-check-input');
+        } else {
+            field.classList.add('form-control');
         }
     }
     

@@ -254,10 +254,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function validatePasswords() {
         if (password.value && passwordConfirm.value) {
-            if (password.value !== passwordConfirm.value) {
-                passwordConfirm.setCustomValidity('Las contraseñas no coinciden');
-            } else {
+            if (password.value === passwordConfirm.value) {
                 passwordConfirm.setCustomValidity('');
+            } else {
+                passwordConfirm.setCustomValidity('Las contraseñas no coinciden');
             }
         }
     }
