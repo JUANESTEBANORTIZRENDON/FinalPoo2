@@ -582,8 +582,8 @@ class HistorialCambios(models.Model):
             
             # Asegurarse de que el usuario sea una instancia de User
             from django.contrib.auth import get_user_model
-            User = get_user_model()
-            if not isinstance(usuario, User):
+            user_model = get_user_model()
+            if not isinstance(usuario, user_model):
                 raise ValueError("El usuario debe ser una instancia válida de User")
             
             # Obtener información del request si está disponible
