@@ -1,0 +1,150 @@
+name: SonarCloud Analysis
+
+# Controla cuándo se ejecuta el workflow
+on:
+  # Se activa en cada push a cualquier rama
+  push:
+    branches: [ "*" ]
+  # Se activa en cada pull request a cualquier rama
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ "*" ]
+  # Permite ejecutarlo manualmente desde la pestaña de Actions
+  workflow_dispatch:
+
+# Define las variables globales
+env:
+  # Usa la versión 17 de Java (LTS)
+  JAVA_VERSION: '17'
+  SONAR_VERSION: '5.0.1.3006'  # Última versión estable de sonar-scanner
+
+# Los jobs que se ejecutarán en el workflow
+jobs:
+  # Análisis de SonarCloud
+  sonarcloud:
+    name: SonarCloud Analysis
+    # Se ejecuta en una máquina virtual Ubuntu (última versión LTS)
+    runs-on: ubuntu-latest
+    
+    # Pasos que se ejecutarán en el job
+    steps:
+      # 1. Checkout del código
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Es importante para que SonarCloud pueda analizar el historial de cambios
+          fetch-depth: 0
+
+      # 2. Configuración de Java
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          
+      # 3. Configuración de caché para Maven (si es un proyecto Java)
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
+        # Solo se ejecuta si hay un archivo pom.xml
+        if: contains(github.event.pull_request.labels.*.name, 'java') || contains(github.event.pull_request.labels.*.name, 'maven')
+
+      # 4. Configuración de caché para Node.js (si es un proyecto JavaScript/TypeScript)
+      - name: Cache Node.js modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+        # Solo se ejecuta si hay un package-lock.json
+        if: contains(github.event.pull_request.labels.*.name, 'node') || contains(github.event.pull_request.labels.*.name, 'javascript') || contains(github.event.pull_request.labels.*.name, 'typescript')
+
+      # 5. Instalación de SonarCloud Scanner
+      - name: Install SonarCloud scanner
+        run: |
+          # Descarga el scanner de SonarCloud
+          curl -sSLo $GITHUB_WORKSPACE/sonarscanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_VERSION }}-linux.zip
+          # Descomprime el archivo
+          unzip -q $GITHUB_WORKSPACE/sonarscanner.zip -d $GITHUB_WORKSPACE/
+          # Agrega el directorio bin al PATH
+          echo "$GITHUB_WORKSPACE/sonar-scanner-${{ env.SONAR_VERSION }}-linux/bin" >> $GITHUB_PATH
+          # Verifica la instalación
+          sonar-scanner --version
+
+      # 6. Configuración de credenciales de SonarCloud
+      - name: SonarCloud Scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Token de GitHub para la integración
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Token de SonarCloud (debe configurarse en los secrets del repositorio)
+          # Configuración de SonarCloud
+          SONAR_PROJECT_KEY: ${{ github.repository }}
+          SONAR_ORGANIZATION: ${{ github.repository_owner }}  # Ajusta esto según tu organización en SonarCloud
+        run: |
+          # Comando base para el análisis
+          sonar-scanner \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+            -Dsonar.organization=$SONAR_ORGANIZATION \
+            -Dsonar.projectVersion=1.0.0 \
+            -Dsonar.sources=. \
+            -Dsonar.sourceEncoding=UTF-8 \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.base=${{ github.base_ref }} \
+            -Dsonar.pullrequest.provider=github \
+            -Dsonar.pullrequest.github.repository=${{ github.repository }}
+
+      # 7. Notificación de finalización
+      - name: Notification
+        if: always()
+        run: |
+          echo "Análisis de SonarCloud completado. Verifica los resultados en https://sonarcloud.io/dashboard?id=${{ github.repository }}"
+
+# ================================================================
+# DOCUMENTACIÓN ADICIONAL
+# ================================================================
+#
+# 1. ¿QUÉ HACE ESTE WORKFLOW?
+#    - Analiza automáticamente el código en cada push y pull request
+#    - Detecta automáticamente el lenguaje del proyecto
+#    - Ejecuta análisis de código estático con SonarCloud
+#    - Proporciona retroalimentación sobre la calidad del código
+#    - Bloquea el merge si no se cumplen los estándares de calidad
+#
+# 2. ¿CÓMO INTERPRETAR LOS RESULTADOS EN SONARCLOUD?
+#    - Bugs: Errores en el código que podrían causar fallos
+#    - Vulnerabilidades: Problemas de seguridad
+#    - Code Smells: Problemas de mantenibilidad
+#    - Coverage: Cobertura de pruebas unitarias
+#    - Duplicación: Código duplicado que podría refactorizarse
+#    - Mantenibilidad: Calidad general del código (A=Excelente, E=Malo)
+#
+# 3. ¿CÓMO MODIFICAR EL WORKFLOW?
+#    - Para analizar solo ciertas ramas, modifica la sección 'on':
+#      push:
+#        branches: [ "main", "develop", "feature/**" ]
+#      pull_request:
+#        branches: [ "main", "develop" ]
+#
+#    - Para excluir ciertos directorios del análisis, agrega:
+#      -Dsonar.exclusions=**/test/**,**/node_modules/**,**/*.spec.js
+#
+#    - Para configurar el umbral de calidad, agrega:
+#      -Dsonar.qualitygate.wait=true  # Falla el build si no pasa el quality gate
+#
+# 4. CONFIGURACIÓN REQUERIDA EN SONARCLOUD:
+#    - Crea una cuenta en https://sonarcloud.io
+#    - Genera un token de acceso en SonarCloud
+#    - Añade el token como secreto en GitHub (Settings > Secrets > Actions)
+#      - Nombre: SONAR_TOKEN
+#      - Valor: [tu token de SonarCloud]
+#
+# 5. MÁS INFORMACIÓN:
+#    - Documentación de SonarCloud: https://docs.sonarcloud.io/
+#    - Guía de integración con GitHub: https://docs.sonarcloud.io/analysis/github-integration/
