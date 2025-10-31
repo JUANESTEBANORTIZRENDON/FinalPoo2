@@ -72,7 +72,6 @@ def contador_dashboard_empresa(request, empresa_id):
     
     # Obtener estadísticas básicas
     hoy = timezone.now().date()
-    inicio_mes = hoy.replace(day=1)
     
     # Estadísticas de facturación
     facturas_mes = Factura.objects.filter(
