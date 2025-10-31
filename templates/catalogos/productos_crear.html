@@ -259,8 +259,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const precioCosto = document.querySelector('input[name="precio_costo"]');
     
     function calcularMargen() {
-        const venta = parseFloat(precioVenta.value) || 0;
-        const costo = parseFloat(precioCosto.value) || 0;
+        const venta = Number.parseFloat(precioVenta.value) || 0;
+        const costo = Number.parseFloat(precioCosto.value) || 0;
         
         if (costo > 0 && venta > 0) {
             const margen = ((venta - costo) / costo * 100).toFixed(2);

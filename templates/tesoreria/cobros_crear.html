@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const valorInput = document.querySelector('input[name="valor"]');
     if (valorInput) {
         valorInput.addEventListener('input', function() {
-            const valor = parseFloat(this.value);
+            const valor = Number.parseFloat(this.value);
             if (valor && valor > 0) {
                 this.classList.remove('is-invalid');
                 this.classList.add('is-valid');
