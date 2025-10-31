@@ -6,16 +6,114 @@ from django.http import JsonResponse, HttpResponse
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.utils import timezone
+from django.db.models import Prefetch, F, Sum, Value
+from django.db.models.functions import Concat
+from django.core.cache import cache
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Factura, FacturaDetalle
 
 # Vistas temporales básicas
 class FacturaListView(LoginRequiredMixin, ListView):
+    """
+    Vista para listar facturas con paginación y optimizaciones de rendimiento.
+    """
     model = Factura
     template_name = 'facturacion/lista.html'
+    context_object_name = 'facturas'
+    paginate_by = 20  # Número de facturas por página
+    
+    def get_queryset(self):
+        """
+        Optimiza las consultas para el listado de facturas.
+        """
+        cache_key = f'facturas_empresa_{self.request.user.empresa.id}'
+        queryset = cache.get(cache_key)
+        
+        if not queryset:
+            # Usamos select_related para las relaciones ForeignKey
+            # y only() para seleccionar solo los campos necesarios
+            queryset = Factura.objects.filter(
+                empresa=self.request.user.empresa
+            ).select_related(
+                'cliente', 'metodo_pago'
+            ).only(
+                'id', 'numero_factura', 'fecha_factura', 'fecha_vencimiento',
+                'tipo_venta', 'total', 'estado', 'cliente__razon_social',
+                'metodo_pago__nombre'
+            ).order_by('-fecha_factura', '-id')
+            
+            # Cacheamos los resultados por 5 minutos
+            cache.set(cache_key, queryset, 300)
+            
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        """
+        Agrega estadísticas y datos adicionales al contexto.
+        """
+        context = super().get_context_data(**kwargs)
+        
+        # Estadísticas básicas (cacheadas por 5 minutos)
+        cache_key = f'facturas_stats_{self.request.user.empresa.id}'
+        stats = cache.get(cache_key)
+        
+        if not stats:
+            queryset = self.get_queryset()
+            
+            stats = {
+                'total_facturas': queryset.count(),
+                'facturas_mes': queryset.filter(
+                    fecha_factura__month=timezone.now().month,
+                    fecha_factura__year=timezone.now().year
+                ).count(),
+                'total_ventas': queryset.aggregate(
+                    total=Sum('total')
+                )['total'] or 0
+            }
+            cache.set(cache_key, stats, 300)  # Cache por 5 minutos
+        
+        context.update({
+            'title': 'Listado de Facturas',
+            'stats': stats,
+            'hoy': timezone.now().date(),
+            'mes_actual': timezone.now().strftime('%B %Y')
+        })
+        
+        return context
 
 class FacturaDetailView(LoginRequiredMixin, DetailView):
+    """
+    Vista detallada de una factura con optimización de consultas relacionadas.
+    """
     model = Factura
     template_name = 'facturacion/detalle.html'
+    context_object_name = 'factura'
+    
+    def get_queryset(self):
+        """
+        Optimiza las consultas para el detalle de la factura.
+        """
+        return Factura.objects.select_related(
+            'cliente', 'metodo_pago'
+        ).prefetch_related(
+            Prefetch(
+                'detalles',
+                queryset=FacturaDetalle.objects.select_related('producto', 'impuesto')
+            )
+        ).only(
+            'id', 'numero_factura', 'fecha_factura', 'fecha_vencimiento',
+            'tipo_venta', 'subtotal', 'total_impuestos', 'total', 'observaciones',
+            'cliente__razon_social', 'cliente__direccion', 'cliente__telefono',
+            'cliente__email', 'metodo_pago__nombre', 'estado'
+        )
+    
+    def get_context_data(self, **kwargs):
+        """
+        Agrega datos adicionales al contexto.
+        """
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Factura #{self.object.numero_factura}'
+        return context
 
 class FacturaCreateView(LoginRequiredMixin, CreateView):
     """
