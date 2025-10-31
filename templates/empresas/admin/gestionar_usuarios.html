@@ -251,8 +251,11 @@ function toggleUsuario(usuarioId, activar) {
 }
 
 // Auto-completar búsqueda
-document.getElementById('busqueda').addEventListener('input', function(e) {
-    // Implementar auto-completar si es necesario
-});
+const busquedaInput = document.getElementById('busqueda');
+if (busquedaInput) {
+    busquedaInput.addEventListener('input', function(e) {
+        // Implementar auto-completar si es necesario
+    });
+}
 </script>
 {% endblock %}
