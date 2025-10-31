@@ -3,12 +3,11 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponseRedirect
-from django.urls import reverse_lazy, reverse, resolve, NoReverseMatch
+from django.http import JsonResponse
+from django.urls import reverse_lazy, resolve
 from django.utils import timezone
 from urllib.parse import urlparse
 from django.conf import settings
-import re
 
 # URL constants
 ACCOUNTS_DASHBOARD_URL = 'accounts:dashboard'
@@ -110,7 +109,6 @@ class CambiarEmpresaView(LoginRequiredMixin, TemplateView):
         })
         return context
 
-@login_required
 def is_safe_url(url, allowed_hosts=None, require_https=False):
     """
     Return `True` if the url is a safe redirection (i.e. it doesn't point to
