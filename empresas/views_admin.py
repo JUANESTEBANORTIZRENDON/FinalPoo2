@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Count, Q
@@ -37,6 +38,7 @@ def es_administrador_holding(user):
 
 
 @login_required
+@require_http_methods(["GET"])
 def dashboard_admin(request):
     """Dashboard principal del administrador del holding"""
     if not es_administrador_holding(request.user):
@@ -110,6 +112,7 @@ def dashboard_admin(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def gestionar_empresas(request):
     """Vista para gestionar todas las empresas del holding"""
     if not es_administrador_holding(request.user):
@@ -155,6 +158,7 @@ def gestionar_empresas(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def gestionar_usuarios(request):
     """Vista para gestionar todos los usuarios del sistema"""
     if not es_administrador_holding(request.user):
@@ -212,6 +216,7 @@ def gestionar_usuarios(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def asignar_usuario_empresa(request, usuario_id):
     """Vista para asignar un usuario a una empresa con un rol específico"""
     if not es_administrador_holding(request.user):
@@ -270,6 +275,7 @@ def asignar_usuario_empresa(request, usuario_id):
 
 
 @login_required
+@require_http_methods(["POST"])
 def desactivar_asignacion(request, perfil_id):
     """Desactivar una asignación de usuario-empresa"""
     if not es_administrador_holding(request.user):
@@ -285,6 +291,7 @@ def desactivar_asignacion(request, perfil_id):
 
 
 @login_required
+@require_http_methods(["GET"])
 def estadisticas_holding(request):
     """Vista con estadísticas detalladas del holding"""
     if not es_administrador_holding(request.user):
@@ -345,6 +352,7 @@ def estadisticas_holding(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def ajax_empresa_info(request, empresa_id):
     """Vista AJAX para obtener información de una empresa"""
     if not es_administrador_holding(request.user):
@@ -439,6 +447,7 @@ def _manejar_error_db_empresa(error_msg, nit):
         return f'Error al crear la empresa: {error_msg}'
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def crear_empresa(request):
     """Vista para crear una nueva empresa"""
     if not es_administrador_holding(request.user):
@@ -487,6 +496,7 @@ def crear_empresa(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def editar_empresa(request, empresa_id):
     """Vista para editar una empresa existente"""
     if not es_administrador_holding(request.user):
@@ -522,6 +532,7 @@ def editar_empresa(request, empresa_id):
 
 
 @login_required
+@require_http_methods(["GET"])
 def ver_empresa(request, empresa_id):
     """Vista para ver detalles de una empresa"""
     if not es_administrador_holding(request.user):
@@ -552,6 +563,7 @@ def ver_empresa(request, empresa_id):
 
 
 @login_required
+@require_http_methods(["POST"])
 def eliminar_empresa(request, empresa_id):
     """Vista para eliminar una empresa"""
     if not es_administrador_holding(request.user):
@@ -650,6 +662,7 @@ def _crear_perfil_usuario(usuario, request):
         )
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def crear_usuario(request):
     """Vista para crear un nuevo usuario"""
     if not es_administrador_holding(request.user):
@@ -738,6 +751,7 @@ def _cambiar_password_si_necesario(usuario, request):
     return True, None
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def editar_usuario(request, usuario_id):
     """Vista para editar un usuario existente"""
     if not es_administrador_holding(request.user):
@@ -806,6 +820,7 @@ def editar_usuario(request, usuario_id):
 
 
 @login_required
+@require_http_methods(["GET"])
 def ver_usuario(request, usuario_id):
     """Vista para ver detalles de un usuario"""
     if not es_administrador_holding(request.user):
@@ -838,6 +853,7 @@ def ver_usuario(request, usuario_id):
 # ===== VISTA DEL HISTORIAL DE CAMBIOS =====
 
 @login_required
+@require_http_methods(["GET"])
 def historial_cambios(request):
     """Vista para mostrar el historial de cambios de todos los usuarios"""
     if not es_administrador_holding(request.user):
@@ -947,6 +963,7 @@ def historial_cambios(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def detalle_historial_cambio(request, cambio_id):
     """Vista para mostrar el detalle completo de un cambio"""
     if not es_administrador_holding(request.user):
@@ -1022,6 +1039,8 @@ def _generar_fila_csv(cambio):
     ]
 
 
+@login_required
+@require_http_methods(["GET"])
 def exportar_historial(request):
     """Vista para exportar el historial de cambios a CSV/Excel"""
     if not es_administrador_holding(request.user):
@@ -1065,6 +1084,7 @@ def exportar_historial(request):
 # ===== DASHBOARDS PARA OTROS ROLES =====
 
 @login_required
+@require_http_methods(["GET"])
 def dashboard_contador(request):
     """Dashboard para usuarios con rol de contador"""
     # Verificar que el usuario tenga rol de contador
@@ -1091,6 +1111,7 @@ def dashboard_contador(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def dashboard_operador(request):
     """Dashboard para usuarios con rol de operador"""
     # Verificar que el usuario tenga rol de operador
@@ -1117,6 +1138,7 @@ def dashboard_operador(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def dashboard_observador(request):
     """Dashboard para usuarios con rol de observador"""
     # Verificar que el usuario tenga rol de observador
