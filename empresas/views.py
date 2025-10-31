@@ -1,3 +1,7 @@
+# Standard library imports
+from urllib.parse import urlparse, urljoin
+
+# Django imports
 from django.shortcuts import render, redirect, get_object_or_404, resolve_url
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -6,9 +10,11 @@ from django.contrib import messages
 from django.http import JsonResponse, HttpResponseRedirect
 from django.urls import reverse_lazy, resolve, reverse, NoReverseMatch
 from django.utils import timezone
-from urllib.parse import urlparse, urljoin
 from django.conf import settings
 from django.utils.http import url_has_allowed_host_and_scheme
+
+# Project imports
+from .models import Empresa, PerfilEmpresa, HistorialCambioEmpresa
 
 # URL constants
 ACCOUNTS_DASHBOARD_URL = 'accounts:dashboard'
