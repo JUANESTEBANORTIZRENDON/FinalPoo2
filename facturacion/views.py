@@ -1,3 +1,4 @@
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -15,6 +16,9 @@ from django.core.exceptions import PermissionDenied
 from django.core.cache import cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Factura, FacturaDetalle
+
+# Logger setup
+logger = logging.getLogger(__name__)
 
 # URL constants
 FACTURACION_LISTA_URL = 'facturacion:lista'
@@ -230,8 +234,15 @@ class FacturaCreateView(LoginRequiredMixin, EmpresaRequiredMixin, CreateView):
                 return response
                 
         except Exception as e:
-            # Registro del error (en producción, usar logging)
-            print(f"Error al crear factura: {str(e)}")
+            logger.error(
+                'Error al crear factura',
+                exc_info=True,
+                extra={
+                    'usuario_id': self.request.user.id,
+                    'empresa_id': getattr(self.request.user, 'empresa_id', None),
+                    'error': str(e)
+                }
+            )
             messages.error(
                 self.request,
                 'Ocurrió un error al procesar la factura. Por favor, intente nuevamente.'
@@ -331,6 +342,15 @@ def factura_pdf(request, pk):
         return response
         
     except Exception as e:
+        logger.error(
+            'Error al generar PDF de factura',
+            exc_info=True,
+            extra={
+                'usuario_id': request.user.id,
+                'factura_id': pk,
+                'error': str(e)
+            }
+        )
         messages.error(request, 'No se pudo generar el PDF de la factura')
         return redirect(FACTURACION_DETALLE_URL, pk=pk)
 
@@ -375,6 +395,14 @@ def exportar_facturas(request):
         return response
         
     except Exception as e:
+        logger.error(
+            'Error al exportar facturas',
+            exc_info=True,
+            extra={
+                'usuario_id': request.user.id,
+                'error': str(e)
+            }
+        )
         messages.error(request, 'Error al exportar las facturas')
         return redirect(FACTURACION_LISTA_URL)
 
