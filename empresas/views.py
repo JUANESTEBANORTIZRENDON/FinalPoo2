@@ -133,7 +133,7 @@ def seleccionar_empresa(request):
                 )
                 
                 # Actualizar o crear empresa activa
-                empresa_activa, created = EmpresaActiva.objects.update_or_create(
+                empresa_activa, _ = EmpresaActiva.objects.update_or_create(
                     usuario=request.user,
                     defaults={
                         'empresa': empresa,
