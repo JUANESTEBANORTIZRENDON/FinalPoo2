@@ -84,12 +84,17 @@ class EmpresaActivaMiddleware:
             # Redirigir a selección de empresa
             return redirect(CAMBIAR_EMPRESA_URL)
         
-        # Establecer empresa activa en el request
-        request.empresa_activa = empresa_activa
-        
         # Obtener perfil del usuario en la empresa activa
         try:
             perfil_empresa = perfiles_empresa.get(empresa=empresa_activa)
+            
+            # Actualizar la sesión con la información más reciente
+            request.session['empresa_activa_id'] = empresa_activa.id
+            request.session['empresa_activa_nombre'] = empresa_activa.razon_social
+            request.session['rol_empresa'] = perfil_empresa.rol
+            
+            # Establecer atributos en el request para acceso fácil
+            request.empresa_activa = empresa_activa
             request.perfil_empresa = perfil_empresa
             request.rol_empresa = perfil_empresa.rol
             

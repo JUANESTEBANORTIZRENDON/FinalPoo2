@@ -195,15 +195,22 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h4><i class="bi bi-calculator"></i> S_CONTABLE</h4>
-            {% if request.empresa_activa %}
+            {% if request.empresa_activa or request.session.empresa_activa_id %}
             <div class="empresa-info">
-                <div><strong>{{ request.empresa_activa.razon_social }}</strong></div>
-                <small>{{ request.empresa_activa.nit }}</small>
-                {% if request.rol_empresa %}
-                <div class="mt-1">
-                    <span class="badge bg-light text-dark">{{ request.perfil_empresa.get_rol_display }}</span>
+                <div class="fw-bold">
+                    {% if request.empresa_activa %}
+                        {{ request.empresa_activa.razon_social }}
+                    {% else %}
+                        {{ request.session.empresa_activa_nombre|default:'Empresa no seleccionada' }}
+                    {% endif %}
                 </div>
-                {% endif %}
+                <small>
+                    {% if request.empresa_activa %}
+                        NIT: {{ request.empresa_activa.nit }}
+                    {% else %}
+                        ID: {{ request.session.empresa_activa_id|default:'' }}
+                    {% endif %}
+                </small>
             </div>
             {% endif %}
         </div>

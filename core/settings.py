@@ -16,11 +16,11 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse, parse_qsl
 from datetime import timedelta
 
-# Cargar variables de entorno
-load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Cargar variables de entorno desde .env en la raíz del proyecto
+load_dotenv(dotenv_path=BASE_DIR / '.env', override=True)
 
 
 # Quick-start development settings - unsuitable for production

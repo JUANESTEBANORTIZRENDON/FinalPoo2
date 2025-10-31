@@ -571,38 +571,62 @@ class HistorialCambios(models.Model):
         """
         Método de conveniencia para registrar una acción
         """
-        # No registrar acciones de administradores del holding
-        if hasattr(usuario, 'is_superuser') and usuario.is_superuser:
+        try:
+            # No registrar acciones de administradores del holding
+            if hasattr(usuario, 'is_superuser') and usuario.is_superuser:
+                return None
+            
+            # Validar campos requeridos
+            if not descripcion or not tipo_accion:
+                raise ValueError("Descripción y tipo de acción son campos requeridos")
+            
+            # Asegurarse de que el usuario sea una instancia de User
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            if not isinstance(usuario, User):
+                raise ValueError("El usuario debe ser una instancia válida de User")
+            
+            # Obtener información del request si está disponible
+            ip_address = None
+            user_agent = ''
+            url_solicitada = ''
+            metodo_http = ''
+            
+            if request:
+                try:
+                    ip_address = cls._get_client_ip(request)
+                    user_agent = str(request.META.get('HTTP_USER_AGENT', ''))[:500]
+                    url_solicitada = str(request.build_absolute_uri())[:500]
+                    metodo_http = str(request.method)[:10]
+                except Exception as e:
+                    # Si hay un error al obtener la info del request, continuar sin ella
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f'Error al obtener información del request: {str(e)}')
+            
+            # Crear el registro de historial
+            return cls.objects.create(
+                usuario=usuario,
+                empresa=empresa,
+                tipo_accion=tipo_accion[:50],  # Asegurar que no exceda el límite
+                descripcion=str(descripcion)[:1000],  # Asegurar que no exceda el límite
+                modelo_afectado=str(modelo_afectado)[:100] if modelo_afectado else '',
+                objeto_id=objeto_id,
+                datos_anteriores=datos_anteriores,
+                datos_nuevos=datos_nuevos,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                url_solicitada=url_solicitada,
+                metodo_http=metodo_http,
+                exitosa=bool(exitosa),
+                mensaje_error=str(mensaje_error)[:500] if mensaje_error else ''
+            )
+        except Exception as e:
+            # Registrar el error pero no romper el flujo de la aplicación
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error al registrar acción en el historial: {str(e)}', exc_info=True)
             return None
-        
-        # Obtener información del request si está disponible
-        ip_address = None
-        user_agent = None
-        url_solicitada = None
-        metodo_http = None
-        
-        if request:
-            ip_address = cls._get_client_ip(request)
-            user_agent = request.META.get('HTTP_USER_AGENT', '')[:500]  # Limitar longitud
-            url_solicitada = request.build_absolute_uri()[:500]  # Limitar longitud
-            metodo_http = request.method
-        
-        return cls.objects.create(
-            usuario=usuario,
-            empresa=empresa,
-            tipo_accion=tipo_accion,
-            descripcion=descripcion,
-            modelo_afectado=modelo_afectado,
-            objeto_id=objeto_id,
-            datos_anteriores=datos_anteriores,
-            datos_nuevos=datos_nuevos,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            url_solicitada=url_solicitada,
-            metodo_http=metodo_http,
-            exitosa=exitosa,
-            mensaje_error=mensaje_error
-        )
     
     @staticmethod
     def _get_client_ip(request):

@@ -1,0 +1,127 @@
+{% extends 'empresas/contador/base_contador.html' %}
+
+{% block header_title %}Dashboard de {{ empresa.razon_social }}{% endblock %}
+
+{% block content_title %}{{ empresa.razon_social }} - Resumen{% endblock %}
+
+{% block header_buttons %}
+<div class="btn-group me-2">
+    <a href="{% url 'empresas:contador_dashboard' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Cambiar Empresa
+    </a>
+</div>
+{% endblock %}
+
+{% block content_main %}
+<div class="row">
+    <!-- Tarjeta de Resumen de Facturación -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h6 class="card-title mb-0">Facturación del Mes</h6>
+            </div>
+            <div class="card-body text-center">
+                <h2 class="display-6">${{ total_facturado|floatformat:2 }}</h2>
+                <p class="text-muted">{{ cantidad_facturas }} factura{{ cantidad_facturas|pluralize }}</p>
+                <a href="#" class="btn btn-sm btn-outline-primary">Ver Detalles</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tarjeta de Próximos Vencimientos -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="card-title mb-0">Próximos Vencimientos</h6>
+            </div>
+            <div class="card-body">
+                {% if proximos_vencimientos %}
+                <ul class="list-group list-group-flush">
+                    {% for vencimiento in proximos_vencimientos %}
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">{{ vencimiento.descripcion }}</h6>
+                            <small class="text-muted">Vence: {{ vencimiento.fecha_vencimiento|date:"d/m/Y" }}</small>
+                        </div>
+                        <span class="badge bg-{{ vencimiento.estado == 'pendiente' ? 'warning' : 'info' }}">
+                            {{ vencimiento.get_estado_display }}
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted mb-0">No hay vencimientos próximos</p>
+                {% endif %}
+                <div class="mt-3 text-center">
+                    <a href="#" class="btn btn-sm btn-outline-warning">Ver Todos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tarjeta de Últimos Asientos -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h6 class="card-title mb-0">Últimos Asientos</h6>
+            </div>
+            <div class="card-body">
+                {% if ultimos_asientos %}
+                <div class="list-group list-group-flush">
+                    {% for asiento in ultimos_asientos %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">#{{ asiento.numero }}</h6>
+                            <small>{{ asiento.fecha|date:"d/m/Y" }}</small>
+                        </div>
+                        <p class="mb-1">{{ asiento.descripcion|truncatechars:50 }}</p>
+                        <small class="text-muted">{{ asiento.get_tipo_display }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No hay asientos recientes</p>
+                {% endif %}
+                <div class="mt-3 text-center">
+                    <a href="#" class="btn btn-sm btn-outline-success">Ver Todos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Otras secciones del dashboard -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 col-6 mb-3">
+                        <a href="#" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-plus-circle"></i> Nuevo Asiento
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <a href="#" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-file-invoice"></i> Nueva Factura
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="#" class="btn btn-outline-info w-100">
+                            <i class="fas fa-file-export"></i> Exportar Datos
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="#" class="btn btn-outline-dark w-100">
+                            <i class="fas fa-cog"></i> Configuración
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

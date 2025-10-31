@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from . import views_admin
 from . import views_dev_auth
+from . import views_contador
 
 app_name = 'empresas'
 
@@ -43,4 +44,8 @@ urlpatterns = [
     
     # Verificación de desarrollador
     path('dev-auth/', views_dev_auth.dev_auth_required, name='dev_auth_required'),
+    
+    # URLs del módulo contador
+    path('contador/dashboard/', views_contador.contador_dashboard, name='contador_dashboard'),
+    path('contador/empresa/<int:empresa_id>/', views_contador.contador_dashboard_empresa, name='contador_dashboard_empresa'),
 ]

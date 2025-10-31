@@ -5,7 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse_lazy
-from .models import Empresa, PerfilEmpresa, EmpresaActiva
+from django.utils import timezone
+from .models import Empresa, PerfilEmpresa, EmpresaActiva, HistorialCambios
 
 
 class EmpresaListView(LoginRequiredMixin, ListView):
@@ -108,6 +109,7 @@ class CambiarEmpresaView(LoginRequiredMixin, TemplateView):
 def seleccionar_empresa(request):
     if request.method == 'POST':
         empresa_id = request.POST.get('empresa_id')
+        next_url = request.POST.get('next', 'accounts:dashboard')
         
         if empresa_id:
             try:
@@ -119,24 +121,59 @@ def seleccionar_empresa(request):
                     perfiles__activo=True
                 )
                 
-                # Actualizar o crear empresa activa
-                empresa_activa, created = EmpresaActiva.objects.get_or_create(
+                # Obtener o crear el perfil de empresa
+                perfil = get_object_or_404(
+                    PerfilEmpresa,
+                    empresa=empresa,
                     usuario=request.user,
-                    defaults={'empresa': empresa}
+                    activo=True
                 )
                 
-                if not created:
-                    empresa_activa.empresa = empresa
-                    empresa_activa.save()
+                # Actualizar o crear empresa activa
+                empresa_activa, created = EmpresaActiva.objects.update_or_create(
+                    usuario=request.user,
+                    defaults={
+                        'empresa': empresa,
+                        'fecha_actualizacion': timezone.now()
+                    }
+                )
+                
+                # Actualizar la sesión
+                request.session['empresa_activa_id'] = empresa.id
+                request.session['empresa_activa_nombre'] = empresa.razon_social
+                request.session['rol_empresa'] = perfil.rol
+                
+                # Asegurarse de que los cambios se guarden en la sesión
+                request.session.modified = True
+                
+                # Registrar el cambio de empresa en el historial
+                try:
+                    HistorialCambios.registrar_accion(
+                        usuario=request.user,
+                        tipo_accion='usuario_cambio_empresa',
+                        descripcion=f'Cambio de empresa activa a: {empresa.razon_social}',
+                        empresa=empresa,
+                        request=request
+                    )
+                except Exception as e:
+                    # Si hay un error al registrar en el historial, solo mostrarlo en consola
+                    # para no interrumpir el flujo principal
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f'Error al registrar cambio de empresa en el historial: {str(e)}', exc_info=True)
                 
                 messages.success(
                     request, 
                     f'Empresa activa cambiada a: {empresa.razon_social}'
                 )
                 
-            except Empresa.DoesNotExist:
+                # Redirigir al dashboard específico del rol o a la URL de origen
+                return redirect(next_url or 'accounts:dashboard')
+                
+            except (Empresa.DoesNotExist, PerfilEmpresa.DoesNotExist):
                 messages.error(request, 'No tienes acceso a esta empresa.')
         else:
             messages.error(request, 'Empresa no especificada.')
     
+    # Redirigir al dashboard por defecto si algo falla
     return redirect('accounts:dashboard')

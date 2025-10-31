@@ -198,8 +198,8 @@ class HistorialCambiosMiddleware(MiddlewareMixin):
             elif response.status_code >= 500:
                 return ('error_sistema', f'Error del sistema en: {path}')
         
-        # Si no se puede determinar una acción específica, no registrar
-        return None, None
+        # Si no se puede determinar una acción específica, devolver una acción genérica
+        return ('otro', f'Acción {method} en {path}')
     
     def _determinar_accion_crear(self, path):
         """Determina la acción de creación basada en la ruta"""
