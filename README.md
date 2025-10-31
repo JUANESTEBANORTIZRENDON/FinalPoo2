@@ -20,7 +20,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser.\env\Script
 
 ### 2️⃣ Crear Entorno Virtual (si no existe)```bash
 
-```bashpip install -r requirements.txt
+```bash pip install -r requirements.txt
 
 python -m venv env```
 

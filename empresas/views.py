@@ -8,6 +8,9 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from .models import Empresa, PerfilEmpresa, EmpresaActiva, HistorialCambios
 
+# URL constants
+ACCOUNTS_DASHBOARD_URL = 'accounts:dashboard'
+
 
 class EmpresaListView(LoginRequiredMixin, ListView):
     model = Empresa
@@ -109,7 +112,7 @@ class CambiarEmpresaView(LoginRequiredMixin, TemplateView):
 def seleccionar_empresa(request):
     if request.method == 'POST':
         empresa_id = request.POST.get('empresa_id')
-        next_url = request.POST.get('next', 'accounts:dashboard')
+        next_url = request.POST.get('next', ACCOUNTS_DASHBOARD_URL)
         
         if empresa_id:
             try:
@@ -168,7 +171,7 @@ def seleccionar_empresa(request):
                 )
                 
                 # Redirigir al dashboard específico del rol o a la URL de origen
-                return redirect(next_url or 'accounts:dashboard')
+                return redirect(next_url or ACCOUNTS_DASHBOARD_URL)
                 
             except (Empresa.DoesNotExist, PerfilEmpresa.DoesNotExist):
                 messages.error(request, 'No tienes acceso a esta empresa.')
@@ -176,4 +179,4 @@ def seleccionar_empresa(request):
             messages.error(request, 'Empresa no especificada.')
     
     # Redirigir al dashboard por defecto si algo falla
-    return redirect('accounts:dashboard')
+    return redirect(ACCOUNTS_DASHBOARD_URL)
