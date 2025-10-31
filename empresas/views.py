@@ -158,69 +158,70 @@ def seleccionar_empresa(request):
     # Validate next_url - only allow relative URLs or URLs in ALLOWED_HOSTS
     next_url = is_safe_url(next_url, allowed_hosts=set(settings.ALLOWED_HOSTS)) or ACCOUNTS_DASHBOARD_URL
     
-    if empresa_id:
+    if not empresa_id:
+        messages.error(request, 'Empresa no especificada.')
+        return redirect(ACCOUNTS_DASHBOARD_URL)
+    
+    try:
+        # Verificar que el usuario tiene acceso a esta empresa
+        empresa = get_object_or_404(
+            Empresa,
+            id=empresa_id,
+            perfiles__usuario=request.user,
+            perfiles__activo=True
+        )
+        
+        # Obtener el perfil de empresa
+        perfil = get_object_or_404(
+            PerfilEmpresa,
+            empresa=empresa,
+            usuario=request.user,
+            activo=True
+        )
+        
+        # Actualizar o crear empresa activa
+        empresa_activa, _ = EmpresaActiva.objects.update_or_create(
+            usuario=request.user,
+            defaults={
+                'empresa': empresa,
+                'fecha_actualizacion': timezone.now()
+            }
+        )
+        
+        # Actualizar la sesión
+        request.session['empresa_activa_id'] = empresa.id
+        request.session['empresa_activa_nombre'] = empresa.razon_social
+        request.session['rol_empresa'] = perfil.rol
+        
+        # Asegurarse de que los cambios se guarden en la sesión
+        request.session.modified = True
+        
+        # Registrar el cambio de empresa en el historial
         try:
-                # Verificar que el usuario tiene acceso a esta empresa
-                empresa = get_object_or_404(
-                    Empresa,
-                    id=empresa_id,
-                    perfiles__usuario=request.user,
-                    perfiles__activo=True
-                )
-                
-                # Obtener o crear el perfil de empresa
-                perfil = get_object_or_404(
-                    PerfilEmpresa,
-                    empresa=empresa,
-                    usuario=request.user,
-                    activo=True
-                )
-                
-                # Actualizar o crear empresa activa
-                empresa_activa, _ = EmpresaActiva.objects.update_or_create(
-                    usuario=request.user,
-                    defaults={
-                        'empresa': empresa,
-                        'fecha_actualizacion': timezone.now()
-                    }
-                )
-                
-                # Actualizar la sesión
-                request.session['empresa_activa_id'] = empresa.id
-                request.session['empresa_activa_nombre'] = empresa.razon_social
-                request.session['rol_empresa'] = perfil.rol
-                
-                # Asegurarse de que los cambios se guarden en la sesión
-                request.session.modified = True
-                
-                # Registrar el cambio de empresa en el historial
-                try:
-                    HistorialCambios.registrar_accion(
-                        usuario=request.user,
-                        tipo_accion='usuario_cambio_empresa',
-                        descripcion=f'Cambio de empresa activa a: {empresa.razon_social}',
-                        empresa=empresa,
-                        request=request
-                    )
-                except Exception as e:
-                    # Si hay un error al registrar en el historial, solo mostrarlo en consola
-                    # para no interrumpir el flujo principal
-                    import logging
-                    logger = logging.getLogger(__name__)
-                    logger.error(f'Error al registrar cambio de empresa en el historial: {str(e)}', exc_info=True)
-                
-                messages.success(
-                    request, 
-                    f'Empresa activa cambiada a: {empresa.razon_social}'
-                )
-                
-                # Redirigir al dashboard específico del rol o a la URL de origen
-                return redirect(next_url or ACCOUNTS_DASHBOARD_URL)
-                
-            except (Empresa.DoesNotExist, PerfilEmpresa.DoesNotExist):
-                messages.error(request, 'No tienes acceso a esta empresa.')
-        else:
-            messages.error(request, 'Empresa no especificada.')
+            HistorialCambios.registrar_accion(
+                usuario=request.user,
+                tipo_accion='usuario_cambio_empresa',
+                descripcion=f'Cambio de empresa activa a: {empresa.razon_social}',
+                empresa=empresa,
+                request=request
+            )
+        except Exception as e:
+            # Si hay un error al registrar en el historial, solo mostrarlo en consola
+            # para no interrumpir el flujo principal
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error al registrar cambio de empresa en el historial: {str(e)}', exc_info=True)
+        
+        messages.success(
+            request, 
+            f'Empresa activa cambiada a: {empresa.razon_social}'
+        )
+        
+        # Redirigir al dashboard específico del rol o a la URL de origen
+        return redirect(next_url or ACCOUNTS_DASHBOARD_URL)
+        
+    except (Empresa.DoesNotExist, PerfilEmpresa.DoesNotExist):
+        messages.error(request, 'No tienes acceso a esta empresa.')
     
     # Redirigir al dashboard por defecto si algo falla
     return redirect(ACCOUNTS_DASHBOARD_URL)
