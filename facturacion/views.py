@@ -15,9 +15,33 @@ class FacturaDetailView(LoginRequiredMixin, DetailView):
     template_name = 'facturacion/detalle.html'
 
 class FacturaCreateView(LoginRequiredMixin, CreateView):
+    """
+    View para crear una nueva factura.
+    """
     model = Factura
     template_name = 'facturacion/crear.html'
-    fields = '__all__'
+    fields = [
+        'cliente', 'fecha_emision', 'fecha_vencimiento', 'metodo_pago',
+        'forma_pago', 'plazo', 'observaciones', 'detalles'
+    ]
+    success_url = reverse_lazy('facturacion:lista')
+
+    def form_valid(self, form):
+        """
+        Add success message and set the created_by field to the current user.
+        """
+        form.instance.creado_por = self.request.user
+        messages.success(
+            self.request,
+            'La factura se ha creado correctamente.'
+        )
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        """Add additional context to the template."""
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Crear Nueva Factura'
+        return context
 
 class FacturaUpdateView(LoginRequiredMixin, UpdateView):
     model = Factura
