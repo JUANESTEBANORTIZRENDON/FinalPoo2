@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
@@ -28,6 +29,7 @@ def es_contador(user, empresa_id=None):
     ).exists()
 
 @login_required
+@require_http_methods(["GET"])
 def contador_dashboard(request):
     """
     Dashboard principal del contador
@@ -56,6 +58,7 @@ def contador_dashboard(request):
     return render(request, 'empresas/contador/contador_dashboard.html', context)
 
 @login_required
+@require_http_methods(["GET"])
 def contador_dashboard_empresa(request, empresa_id):
     """
     Dashboard del contador para una empresa específica
