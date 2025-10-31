@@ -3,10 +3,12 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
-from django.urls import reverse_lazy
+from django.http import JsonResponse, HttpResponseRedirect
+from django.urls import reverse_lazy, reverse, resolve, NoReverseMatch
 from django.utils import timezone
-from .models import Empresa, PerfilEmpresa, EmpresaActiva, HistorialCambios
+from urllib.parse import urlparse
+from django.conf import settings
+import re
 
 # URL constants
 ACCOUNTS_DASHBOARD_URL = 'accounts:dashboard'
@@ -109,11 +111,67 @@ class CambiarEmpresaView(LoginRequiredMixin, TemplateView):
         return context
 
 @login_required
+def is_safe_url(url, allowed_hosts=None, require_https=False):
+    """
+    Return `True` if the url is a safe redirection (i.e. it doesn't point to
+    a different host).
+    """
+    if url is None:
+        return False
+        
+    if allowed_hosts is None:
+        allowed_hosts = set(settings.ALLOWED_HOSTS)
+        if settings.SESSION_COOKIE_DOMAIN:
+            allowed_hosts.add(settings.SESSION_COOKIE_DOMAIN)
+    
+    # Remove any whitespace and check for empty string
+    url = url.strip()
+    if not url:
+        return False
+    
+    # Check if the URL is a relative path
+    if url.startswith('/'):
+        # Check if it's a valid URL pattern
+        try:
+            resolve(url)
+            return True
+        except:
+            return False
+    
+    # For absolute URLs, check the domain
+    try:
+        url_info = urlparse(url)
+        
+        # Check scheme
+        if require_https and url_info.scheme != 'https':
+            return False
+            
+        # Check if the domain is allowed
+        domain = url_info.netloc
+        if not domain:
+            return False
+            
+        # Remove port if present
+        domain = domain.split(':')[0]
+        
+        # Check against allowed hosts
+        for pattern in allowed_hosts:
+            if pattern == '*' or domain == pattern or domain.endswith('.' + pattern):
+                return True
+                
+        return False
+    except:
+        return False
+
+@login_required
 def seleccionar_empresa(request):
     if request.method == 'POST':
         empresa_id = request.POST.get('empresa_id')
-        next_url = request.POST.get('next', ACCOUNTS_DASHBOARD_URL)
+        next_url = request.POST.get('next', '')
         
+        # Validate next_url
+        if not is_safe_url(next_url):
+            next_url = ACCOUNTS_DASHBOARD_URL
         if empresa_id:
             try:
                 # Verificar que el usuario tiene acceso a esta empresa
