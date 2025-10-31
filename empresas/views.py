@@ -1,4 +1,5 @@
 # Standard library imports
+import logging
 from urllib.parse import urlparse, urljoin
 
 # Django imports
@@ -12,12 +13,17 @@ from django.urls import reverse_lazy, resolve, reverse, NoReverseMatch
 from django.utils import timezone
 from django.conf import settings
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.db import transaction
+from django.views.decorators.http import require_http_methods
 
 # Project imports
-from .models import Empresa, PerfilEmpresa, HistorialCambioEmpresa
+from .models import Empresa, PerfilEmpresa, HistorialCambioEmpresa, EmpresaActiva, HistorialCambios
 
 # URL constants
 ACCOUNTS_DASHBOARD_URL = 'accounts:dashboard'
+
+# Logger setup
+logger = logging.getLogger(__name__)
 
 
 class EmpresaListView(LoginRequiredMixin, ListView):
@@ -189,12 +195,11 @@ def seleccionar_empresa(request):
         
         # Usar transacción atómica para garantizar consistencia
         with transaction.atomic():
-            # Actualizar o crear empresa activa (usando F() para evitar condiciones de carrera)
-            empresa_activa, created = EmpresaActiva.objects.update_or_create(
+            # Actualizar o crear empresa activa
+            empresa_activa, _ = EmpresaActiva.objects.update_or_create(
                 usuario=request.user,
                 defaults={
-                    'empresa': empresa,
-                    'fecha_actualizacion': timezone.now()
+                    'empresa': empresa
                 }
             )
             
@@ -207,22 +212,18 @@ def seleccionar_empresa(request):
             }
             request.session.update(session_data)
             
-            # Registrar el cambio de empresa en el historial (asíncrono para mejor rendimiento)
+            # Registrar el cambio de empresa en el historial
             try:
-                from .tasks import registrar_cambio_empresa_async
-                registrar_cambio_empresa_async.delay(
-                    user_id=request.user.id,
-                    empresa_id=empresa.id,
-                    razon_social=empresa.razon_social,
-                    request_meta={
-                        'REMOTE_ADDR': request.META.get('REMOTE_ADDR'),
-                        'HTTP_USER_AGENT': request.META.get('HTTP_USER_AGENT'),
-                    }
+                HistorialCambios.registrar_accion(
+                    usuario=request.user,
+                    tipo_accion='usuario_cambio_empresa',
+                    descripcion=f'Cambió de empresa activa a: {empresa.razon_social}',
+                    empresa=empresa,
+                    request=request
                 )
             except Exception as e:
-                logger = logging.getLogger(__name__)
                 logger.error(
-                    'Error al registrar cambio de empresa de forma asíncrona: %s', 
+                    'Error al registrar cambio de empresa: %s', 
                     str(e), 
                     exc_info=True,
                     extra={
