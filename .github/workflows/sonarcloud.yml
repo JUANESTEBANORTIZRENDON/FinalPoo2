@@ -80,31 +80,37 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Token de GitHub para la integración
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Token de SonarCloud (debe configurarse en los secrets del repositorio)
-          # Configuración de SonarCloud
+          # Configuración de SonarCloud - Usando variables de entorno para evitar inyección de scripts
           SONAR_PROJECT_KEY: ${{ github.repository }}
-          SONAR_ORGANIZATION: ${{ github.repository_owner }}  # Ajusta esto según tu organización en SonarCloud
+          SONAR_ORGANIZATION: ${{ github.repository_owner }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BRANCH: ${{ github.head_ref }}
+          PR_BASE: ${{ github.base_ref }}
+          REPO_NAME: ${{ github.repository }}
         run: |
           # Comando base para el análisis
           sonar-scanner \
             -Dsonar.qualitygate.wait=true \
-            -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-            -Dsonar.organization=$SONAR_ORGANIZATION \
+            -Dsonar.projectKey="${SONAR_PROJECT_KEY}" \
+            -Dsonar.organization="${SONAR_ORGANIZATION}" \
             -Dsonar.projectVersion=1.0.0 \
             -Dsonar.sources=. \
             -Dsonar.sourceEncoding=UTF-8 \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
-            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-            -Dsonar.pullrequest.base=${{ github.base_ref }} \
+            -Dsonar.login="${SONAR_TOKEN}" \
+            -Dsonar.pullrequest.key="${PR_NUMBER}" \
+            -Dsonar.pullrequest.branch="${PR_BRANCH}" \
+            -Dsonar.pullrequest.base="${PR_BASE}" \
             -Dsonar.pullrequest.provider=github \
-            -Dsonar.pullrequest.github.repository=${{ github.repository }}
+            -Dsonar.pullrequest.github.repository="${REPO_NAME}"
 
       # 7. Notificación de finalización
       - name: Notification
         if: always()
+        env:
+          REPO_NAME: ${{ github.repository }}
         run: |
-          echo "Análisis de SonarCloud completado. Verifica los resultados en https://sonarcloud.io/dashboard?id=${{ github.repository }}"
+          echo "Análisis de SonarCloud completado. Verifica los resultados en https://sonarcloud.io/dashboard?id=${REPO_NAME}"
 
 # ================================================================
 # DOCUMENTACIÓN ADICIONAL
