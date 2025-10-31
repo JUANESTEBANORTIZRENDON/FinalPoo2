@@ -119,17 +119,19 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div class="btn-group btn-group-sm" role="toolbar" aria-label="Acciones del cobro">
+                                            <div class="btn-group btn-group-sm" aria-label="Acciones del cobro">
                                                 <a href="{% url 'tesoreria:pagos_detalle' cobro.pk %}" 
                                                    class="btn btn-outline-primary" 
-                                                   title="Ver detalles">
-                                                    <i class="fas fa-eye"></i>
+                                                   title="Ver detalles"
+                                                   aria-label="Ver detalles del cobro">
+                                                    <i class="fas fa-eye" aria-hidden="true"></i>
                                                 </a>
                                                 {% if cobro.estado == 'borrador' %}
                                                 <a href="{% url 'tesoreria:pagos_editar' cobro.pk %}" 
                                                    class="btn btn-outline-warning" 
-                                                   title="Editar">
-                                                    <i class="fas fa-edit"></i>
+                                                   title="Editar"
+                                                   aria-label="Editar cobro">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
                                                 </a>
                                                 {% endif %}
                                             </div>

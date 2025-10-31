@@ -150,21 +150,24 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div class="btn-group btn-group-sm" role="toolbar" aria-label="Acciones del producto">
+                                            <div class="btn-group btn-group-sm" aria-label="Acciones del producto">
                                                 <a href="{% url 'catalogos:producto_detail' producto.pk %}" 
                                                    class="btn btn-outline-primary" 
-                                                   title="Ver detalles">
-                                                    <i class="fas fa-eye"></i>
+                                                   title="Ver detalles"
+                                                   aria-label="Ver detalles del producto">
+                                                    <i class="fas fa-eye" aria-hidden="true"></i>
                                                 </a>
                                                 <a href="{% url 'catalogos:producto_update' producto.pk %}" 
                                                    class="btn btn-outline-warning" 
-                                                   title="Editar">
-                                                    <i class="fas fa-edit"></i>
+                                                   title="Editar"
+                                                   aria-label="Editar producto">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
                                                 </a>
                                                 <a href="{% url 'catalogos:producto_delete' producto.pk %}" 
                                                    class="btn btn-outline-danger" 
-                                                   title="Eliminar">
-                                                    <i class="fas fa-trash"></i>
+                                                   title="Eliminar"
+                                                   aria-label="Eliminar producto">
+                                                    <i class="fas fa-trash" aria-hidden="true"></i>
                                                 </a>
                                             </div>
                                         </td>
