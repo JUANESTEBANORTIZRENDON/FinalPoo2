@@ -196,7 +196,7 @@ def seleccionar_empresa(request):
         # Usar transacción atómica para garantizar consistencia
         with transaction.atomic():
             # Actualizar o crear empresa activa
-            empresa_activa, _ = EmpresaActiva.objects.update_or_create(
+            EmpresaActiva.objects.update_or_create(
                 usuario=request.user,
                 defaults={
                     'empresa': empresa

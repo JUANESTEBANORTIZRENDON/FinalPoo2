@@ -310,31 +310,37 @@ def estadisticas_holding(request):
     
     empresas_por_mes.reverse()
     
-    # Rendimiento por contador
+    # Rendimiento por contador (optimizado con annotate para evitar N+1 queries)
+    fecha_inicio_mes = timezone.now() - timedelta(days=30)
+    
     contadores = User.objects.filter(
         perfilempresa__rol='contador',
         perfilempresa__activo=True,
         is_active=True
+    ).annotate(
+        empresas_asignadas=Count(
+            'perfilempresa',
+            filter=Q(
+                perfilempresa__rol='contador',
+                perfilempresa__activo=True
+            ),
+            distinct=True
+        ),
+        facturas_mes=Count(
+            'factura_creadas',
+            filter=Q(factura_creadas__fecha_creacion__gte=fecha_inicio_mes),
+            distinct=True
+        )
     ).distinct()
     
-    rendimiento_contadores = []
-    for contador in contadores:
-        empresas_asignadas = PerfilEmpresa.objects.filter(
-            usuario=contador,
-            rol='contador',
-            activo=True
-        ).count()
-        
-        facturas_mes = Factura.objects.filter(
-            creado_por=contador,
-            fecha_creacion__gte=timezone.now() - timedelta(days=30)
-        ).count()
-        
-        rendimiento_contadores.append({
+    rendimiento_contadores = [
+        {
             'contador': contador,
-            'empresas_asignadas': empresas_asignadas,
-            'facturas_mes': facturas_mes
-        })
+            'empresas_asignadas': contador.empresas_asignadas,
+            'facturas_mes': contador.facturas_mes
+        }
+        for contador in contadores
+    ]
     
     context = {
         'empresas_por_mes': empresas_por_mes,
