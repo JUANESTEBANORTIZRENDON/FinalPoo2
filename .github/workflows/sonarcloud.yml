@@ -28,7 +28,7 @@ jobs:
       # Check out the repository with full history (fetch-depth: 0) so SonarCloud
       # can compute blame information and analyze issues across history.
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           fetch-depth: 0
 
@@ -36,7 +36,7 @@ jobs:
       # SonarCloud auto-detects languages (Python, JavaScript/TypeScript, Java, etc.).
       # For Java projects, the scanner requires a JDK. We install a modern LTS JDK (Temurin 17).
       - name: Set up Temurin JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4.0.0
         with:
           distribution: temurin
           java-version: "17"
@@ -44,7 +44,7 @@ jobs:
       # --------------------------------- Caching ----------------------------------
       # Cache the SonarCloud scanner artifacts to speed up repeated runs.
       - name: Cache SonarCloud packages
-        uses: actions/cache@v4
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -54,7 +54,7 @@ jobs:
       # These accelerate builds for multi-language repos without failing when files are missing.
       - name: Cache pip (Python)
         if: ${{ hashFiles('**/requirements*.txt') != '' }}
-        uses: actions/cache@v4
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -62,7 +62,7 @@ jobs:
 
       - name: Cache npm (Node.js)
         if: ${{ hashFiles('**/package-lock.json') != '' || hashFiles('**/pnpm-lock.yaml') != '' || hashFiles('**/yarn.lock') != '' }}
-        uses: actions/cache@v4
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
         with:
           path: |
             ~/.npm
@@ -73,7 +73,7 @@ jobs:
 
       - name: Cache Maven (Java)
         if: ${{ hashFiles('**/pom.xml') != '' }}
-        uses: actions/cache@v4
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -81,7 +81,7 @@ jobs:
 
       - name: Cache Gradle (Java/Kotlin)
         if: ${{ hashFiles('**/gradle.*', '**/gradle/wrapper/gradle-wrapper.properties') != '' }}
-        uses: actions/cache@v4
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
         with:
           path: |
             ~/.gradle/caches
@@ -103,7 +103,7 @@ jobs:
       #   - SONAR_TOKEN: SonarCloud user token with "Execute analysis" permission
       #   - GITHUB_TOKEN: Automatically provided by GitHub; grant PR decoration rights
       - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@v2
+        uses: sonarsource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # v2.3.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
