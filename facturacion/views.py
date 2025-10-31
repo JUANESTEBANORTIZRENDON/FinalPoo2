@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.utils import timezone
 from .models import Factura, FacturaDetalle
 
 # Vistas temporales básicas
@@ -18,7 +19,7 @@ class FacturaDetailView(LoginRequiredMixin, DetailView):
 
 class FacturaCreateView(LoginRequiredMixin, CreateView):
     """
-    View para crear una nueva factura.
+    Vista para crear una nueva factura.
     """
     model = Factura
     template_name = 'facturacion/crear.html'
@@ -27,23 +28,68 @@ class FacturaCreateView(LoginRequiredMixin, CreateView):
         'metodo_pago', 'observaciones'
     ]
     success_url = reverse_lazy('facturacion:lista')
+    
+    def get_initial(self):
+        """
+        Establece valores iniciales para el formulario.
+        """
+        initial = super().get_initial()
+        initial['fecha_factura'] = timezone.now().date()
+        return initial
 
     def form_valid(self, form):
         """
-        Set the empresa field and show success message.
+        Valida el formulario y asigna la empresa y número de factura.
         """
-        # Set the empresa field to the user's active company
-        # Assuming you have a method to get the active company
-        # form.instance.empresa = self.request.user.empresa_activa
-        
-        # Set the numero_factura (you might want to generate this automatically)
-        # form.instance.numero_factura = self.generar_numero_factura()
-        
-        messages.success(
-            self.request,
-            'La factura se ha creado correctamente.'
-        )
-        return super().form_valid(form)
+        try:
+            # Obtener la empresa del usuario o lanzar excepción si no tiene
+            if hasattr(self.request.user, 'empresa'):
+                empresa = self.request.user.empresa
+            else:
+                raise ValueError("El usuario no tiene una empresa asignada.")
+            
+            # Asignar la empresa a la factura
+            form.instance.empresa = empresa
+            
+            # Generar número de factura
+            if not form.instance.numero_factura:
+                ultima_factura = Factura.objects.filter(
+                    empresa=empresa,
+                    fecha_factura__year=timezone.now().year
+                ).order_by('-numero_factura').first()
+                
+                if ultima_factura and ultima_factura.numero_factura:
+                    try:
+                        ultimo_numero = int(ultima_factura.numero_factura.split('-')[-1])
+                        nuevo_numero = f"FACT-{timezone.now().year}{str(timezone.now().month).zfill(2)}-{str(ultimo_numero + 1).zfill(6)}"
+                    except (IndexError, ValueError):
+                        # Si hay un error al parsear el número, empezar desde 1
+                        nuevo_numero = f"FACT-{timezone.now().year}{str(timezone.now().month).zfill(2)}-000001"
+                else:
+                    nuevo_numero = f"FACT-{timezone.now().year}{str(timezone.now().month).zfill(2)}-000001"
+                
+                form.instance.numero_factura = nuevo_numero
+            
+            # Validar fechas
+            if form.instance.fecha_vencimiento and form.instance.fecha_vencimiento < form.instance.fecha_factura:
+                form.add_error('fecha_vencimiento', 'La fecha de vencimiento debe ser posterior a la fecha de factura')
+                return self.form_invalid(form)
+            
+            # Guardar la factura
+            response = super().form_valid(form)
+            
+            messages.success(
+                self.request,
+                'La factura se ha creado correctamente.'
+            )
+            return response
+            
+        except Exception as e:
+            messages.error(
+                self.request,
+                f'Error al crear la factura: {str(e)}'
+            )
+            return self.form_invalid(form)
 
     def get_context_data(self, **kwargs):
         """Add additional context to the template."""
