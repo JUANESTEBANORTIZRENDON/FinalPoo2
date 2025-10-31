@@ -23,16 +23,22 @@ class FacturaCreateView(LoginRequiredMixin, CreateView):
     model = Factura
     template_name = 'facturacion/crear.html'
     fields = [
-        'cliente', 'fecha_emision', 'fecha_vencimiento', 'metodo_pago',
-        'forma_pago', 'plazo', 'observaciones', 'detalles'
+        'cliente', 'fecha_factura', 'fecha_vencimiento', 'tipo_venta',
+        'metodo_pago', 'observaciones'
     ]
     success_url = reverse_lazy('facturacion:lista')
 
     def form_valid(self, form):
         """
-        Add success message and set the created_by field to the current user.
+        Set the empresa field and show success message.
         """
-        form.instance.creado_por = self.request.user
+        # Set the empresa field to the user's active company
+        # Assuming you have a method to get the active company
+        # form.instance.empresa = self.request.user.empresa_activa
+        
+        # Set the numero_factura (you might want to generate this automatically)
+        # form.instance.numero_factura = self.generar_numero_factura()
+        
         messages.success(
             self.request,
             'La factura se ha creado correctamente.'
