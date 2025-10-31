@@ -5,6 +5,7 @@ Requiere contraseña adicional de desarrollador para mayor seguridad.
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.conf import settings
 from django.http import HttpResponseForbidden
@@ -27,6 +28,7 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def dev_auth_required(request):
     """
     Vista que solicita contraseña de desarrollador antes de acceder al Django Admin.

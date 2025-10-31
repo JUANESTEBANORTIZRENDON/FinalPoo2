@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse_lazy
@@ -197,13 +198,16 @@ class ProductoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     success_url = reverse_lazy('catalogos:producto_list')
 
 @login_required
+@require_http_methods(["GET"])
 def buscar_terceros(request):
     return JsonResponse({'results': []})
 
 @login_required
+@require_http_methods(["GET"])
 def buscar_productos(request):
     return JsonResponse({'results': []})
 
 @login_required
+@require_http_methods(["GET"])
 def info_producto(request, pk):
     return JsonResponse({'producto': {}})

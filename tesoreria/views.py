@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse_lazy
@@ -152,21 +153,26 @@ class PagosPeriodoView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/pagos_periodo.html'
 
 @login_required
+@require_http_methods(["POST"])
 def confirmar_pago(request, pk):
     return redirect('tesoreria:pagos_detalle', pk=pk)
 
 @login_required
+@require_http_methods(["POST"])
 def anular_pago(request, pk):
     return redirect('tesoreria:pagos_detalle', pk=pk)
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def cobrar_factura(request, factura_pk):
     return redirect('tesoreria:cobros_crear')
 
 @login_required
+@require_http_methods(["GET"])
 def obtener_siguiente_numero_pago(request):
     return JsonResponse({'numero': '000001'})
 
 @login_required
+@require_http_methods(["GET"])
 def facturas_pendientes_tercero(request, tercero_pk):
     return JsonResponse({'facturas': []})

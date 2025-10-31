@@ -979,7 +979,6 @@ def detalle_historial_cambio(request, cambio_id):
     return render(request, 'empresas/admin/detalle_historial_cambio.html', context)
 
 
-@login_required
 def _aplicar_filtros_historial_exportar(historial, request):
     """Aplicar filtros básicos al queryset de historial"""
     usuario_id = request.GET.get('usuario')
