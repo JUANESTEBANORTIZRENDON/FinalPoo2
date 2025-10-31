@@ -18,6 +18,7 @@ from .models import Factura, FacturaDetalle
 
 # URL constants
 FACTURACION_LISTA_URL = 'facturacion:lista'
+FACTURACION_DETALLE_URL = 'facturacion:detalle'
 
 # Decorador personalizado para verificar permisos de empresa
 def empresa_required(view_func):
@@ -299,11 +300,11 @@ class FacturaReporteView(LoginRequiredMixin, TemplateView):
 
 @login_required
 def confirmar_factura(request, pk):
-    return redirect('facturacion:detalle', pk=pk)
+    return redirect(FACTURACION_DETALLE_URL, pk=pk)
 
 @login_required
 def anular_factura(request, pk):
-    return redirect('facturacion:detalle', pk=pk)
+    return redirect(FACTURACION_DETALLE_URL, pk=pk)
 
 @login_required
 def duplicar_factura(request, pk):
@@ -331,7 +332,7 @@ def factura_pdf(request, pk):
         
     except Exception as e:
         messages.error(request, 'No se pudo generar el PDF de la factura')
-        return redirect('facturacion:detalle', pk=pk)
+        return redirect(FACTURACION_DETALLE_URL, pk=pk)
 
 @login_required
 def factura_imprimir(request, pk):
