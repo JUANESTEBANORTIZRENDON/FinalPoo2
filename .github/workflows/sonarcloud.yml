@@ -1,0 +1,145 @@
+# Name of the workflow as shown in the GitHub Actions UI
+name: SonarCloud Analysis
+
+#
+# Triggers: run on every push and on every pull request to any branch
+# This ensures quality gates are evaluated on feature branches and before merging to main/master
+on:
+  push:
+    branches: ["**"]  # all branches
+  pull_request:
+    branches: ["**"]  # all branches
+
+#
+# Minimal permissions for the workflow. SonarCloud needs to read repository
+# contents and PR metadata to decorate pull requests with analysis results.
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  sonarcloud:
+    #
+    # Use the latest Ubuntu image. Runners come with common build tools preinstalled.
+    runs-on: ubuntu-latest
+
+    steps:
+      # --------------------------------- Checkout ---------------------------------
+      # Check out the repository with full history (fetch-depth: 0) so SonarCloud
+      # can compute blame information and analyze issues across history.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ------------------------------- Toolchains ---------------------------------
+      # SonarCloud auto-detects languages (Python, JavaScript/TypeScript, Java, etc.).
+      # For Java projects, the scanner requires a JDK. We install a modern LTS JDK (Temurin 17).
+      - name: Set up Temurin JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # --------------------------------- Caching ----------------------------------
+      # Cache the SonarCloud scanner artifacts to speed up repeated runs.
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      # Optional language-specific caches (used only if the corresponding files exist).
+      # These accelerate builds for multi-language repos without failing when files are missing.
+      - name: Cache pip (Python)
+        if: ${{ hashFiles('**/requirements*.txt') != '' }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Cache npm (Node.js)
+        if: ${{ hashFiles('**/package-lock.json') != '' || hashFiles('**/pnpm-lock.yaml') != '' || hashFiles('**/yarn.lock') != '' }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/pnpm
+            ~/.yarn
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml', '**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      - name: Cache Maven (Java)
+        if: ${{ hashFiles('**/pom.xml') != '' }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Cache Gradle (Java/Kotlin)
+        if: ${{ hashFiles('**/gradle.*', '**/gradle/wrapper/gradle-wrapper.properties') != '' }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      # ---------------------------- (Optional) Build -------------------------------
+      # If your project needs a build or tests before analysis (e.g., Java, TS),
+      # add those steps here. SonarCloud will pick up coverage reports if present.
+      # - name: Build project
+      #   run: |
+      #     echo "Add your build/test commands here if needed"
+
+      # --------------------------------- Scan -------------------------------------
+      # Run the SonarCloud analysis. The action detects the language(s) automatically
+      # and uses your repository configuration (sonar-project.properties or defaults).
+      # Required secrets:
+      #   - SONAR_TOKEN: SonarCloud user token with "Execute analysis" permission
+      #   - GITHUB_TOKEN: Automatically provided by GitHub; grant PR decoration rights
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        # You can override defaults with explicit arguments if you don't use
+        # sonar-project.properties. Example:
+        # with:
+        #   args: >-
+        #     -Dsonar.projectKey=your_org_your_project
+        #     -Dsonar.organization=your_org
+
+# -------------------------------------------------------------------------------
+# Documentation
+# -------------------------------------------------------------------------------
+# 1) ¿Qué hace este workflow?
+#    - Ejecuta un análisis de SonarCloud en cada push y pull request.
+#    - Detecta automáticamente el/los lenguajes presentes (Python, JS/TS, Java, etc.).
+#    - Decora los PRs con resultados de calidad (bugs, vulnerabilidades, code smells,
+#      duplicaciones, cobertura) para ayudar a decidir antes de fusionar.
+#
+# 2) ¿Cómo interpretar los resultados en SonarCloud?
+#    - Quality Gate: Estado global (PASSED/FAILED) basado en umbrales de calidad.
+#    - Issues: Lista de Bugs, Vulnerabilities y Code Smells con severidad y ubicación.
+#    - Security Hotspots: Lugares potencialmente sensibles para revisión manual.
+#    - Coverage & Duplications: Métricas de pruebas y código duplicado por archivo y módulo.
+#    - PR Decoration: Comentarios/resumen en el PR con cambios nuevos introducidos.
+#
+# 3) ¿Cómo modificar el workflow para analizar solo ciertas ramas?
+#    - Cambia los patrones en la sección "on:". Ejemplo, solo main y develop:
+#        on:
+#          push:
+#            branches: [ "main", "develop" ]
+#          pull_request:
+#            branches: [ "main", "develop" ]
+#    - También puedes excluir ramas usando negaciones (por ejemplo, "!docs/**").
+#
+# Notas:
+# - Asegúrate de configurar tu proyecto en SonarCloud y definir SONAR_TOKEN en los
+#   secretos del repositorio/organización. Para repos multi-lenguaje, añade pasos de
+#   build/test si necesitas generar artefactos o reportes de cobertura.
