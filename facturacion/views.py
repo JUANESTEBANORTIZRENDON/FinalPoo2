@@ -16,6 +16,9 @@ from django.core.cache import cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Factura, FacturaDetalle
 
+# URL constants
+FACTURACION_LISTA_URL = 'facturacion:lista'
+
 # Decorador personalizado para verificar permisos de empresa
 def empresa_required(view_func):
     """
@@ -152,7 +155,7 @@ class FacturaCreateView(LoginRequiredMixin, EmpresaRequiredMixin, CreateView):
         'cliente', 'fecha_factura', 'fecha_vencimiento', 'tipo_venta',
         'metodo_pago', 'observaciones'
     ]
-    success_url = reverse_lazy('facturacion:lista')
+    success_url = reverse_lazy(FACTURACION_LISTA_URL)
     
     @method_decorator(csrf_protect)
     @method_decorator(transaction.atomic)
@@ -354,7 +357,7 @@ def exportar_facturas(request):
                 fecha_hasta = timezone.datetime.strptime(fecha_hasta, '%Y-%m-%d').date()
         except ValueError:
             messages.error(request, 'Formato de fecha inválido. Use YYYY-MM-DD')
-            return redirect('facturacion:lista')
+            return redirect(FACTURACION_LISTA_URL)
         
         # Construir consulta con filtros
         facturas = Factura.objects.filter(empresa=request.user.empresa)
@@ -372,7 +375,7 @@ def exportar_facturas(request):
         
     except Exception as e:
         messages.error(request, 'Error al exportar las facturas')
-        return redirect('facturacion:lista')
+        return redirect(FACTURACION_LISTA_URL)
 
 @login_required
 def obtener_siguiente_numero(request):
