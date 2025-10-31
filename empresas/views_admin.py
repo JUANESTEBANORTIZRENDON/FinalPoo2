@@ -216,7 +216,6 @@ def gestionar_usuarios(request):
 
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def asignar_usuario_empresa(request, usuario_id):
     """Vista para asignar un usuario a una empresa con un rol específico"""
     if not es_administrador_holding(request.user):
