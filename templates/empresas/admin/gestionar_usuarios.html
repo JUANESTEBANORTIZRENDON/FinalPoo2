@@ -170,14 +170,14 @@
                             </a>
                             {% if usuario.is_active %}
                                 <button type="button" class="btn btn-sm btn-outline-warning" 
-                                        onclick="toggleUsuario({{ usuario.id }}, false)"
-                                        aria-label="Desactivar usuario {{ usuario.get_full_name|default:usuario.username }}">
+                                        onclick="toggleUsuario('{{ usuario.id|escapejs }}', false)"
+                                        aria-label="Desactivar usuario {{ usuario.get_full_name|default:usuario.username|escapejs }}">
                                     🚫 Desactivar
                                 </button>
                             {% else %}
                                 <button type="button" class="btn btn-sm btn-outline-success" 
-                                        onclick="toggleUsuario({{ usuario.id }}, true)"
-                                        aria-label="Activar usuario {{ usuario.get_full_name|default:usuario.username }}">
+                                        onclick="toggleUsuario('{{ usuario.id|escapejs }}', true)"
+                                        aria-label="Activar usuario {{ usuario.get_full_name|default:usuario.username|escapejs }}">
                                     ✅ Activar
                                 </button>
                             {% endif %}
