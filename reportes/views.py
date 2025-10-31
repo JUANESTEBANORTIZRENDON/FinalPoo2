@@ -62,7 +62,6 @@ class ReporteGeneradoDetailView(LoginRequiredMixin, DetailView):
     template_name = 'reportes/historial_detalle.html'
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def generar_libro_diario(request):
     return redirect('reportes:diario')
 
@@ -72,7 +71,6 @@ def exportar_libro_diario(request):
     return HttpResponse("CSV")
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def generar_libro_mayor(request):
     return redirect('reportes:mayor')
 
@@ -82,7 +80,6 @@ def exportar_libro_mayor(request):
     return HttpResponse("CSV")
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def generar_balance_comprobacion(request):
     return redirect('reportes:balance_comprobacion')
 
@@ -92,7 +89,6 @@ def exportar_balance_comprobacion(request):
     return HttpResponse("CSV")
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def generar_estado_resultados(request):
     return redirect('reportes:estado_resultados')
 
@@ -102,7 +98,6 @@ def exportar_estado_resultados(request):
     return HttpResponse("CSV")
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def generar_balance_general(request):
     return redirect('reportes:balance_general')
 
@@ -112,7 +107,6 @@ def exportar_balance_general(request):
     return HttpResponse("CSV")
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def generar_flujo_efectivo(request):
     return redirect('reportes:flujo_efectivo')
 
@@ -137,6 +131,5 @@ def validar_periodo_reporte(request):
     return JsonResponse({'valido': True})
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def preview_reporte(request):
     return JsonResponse({'preview': {}})

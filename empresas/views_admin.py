@@ -446,7 +446,6 @@ def _manejar_error_db_empresa(error_msg, nit):
         return f'Error al crear la empresa: {error_msg}'
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def crear_empresa(request):
     """Vista para crear una nueva empresa"""
     if not es_administrador_holding(request.user):
@@ -495,7 +494,6 @@ def crear_empresa(request):
 
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def editar_empresa(request, empresa_id):
     """Vista para editar una empresa existente"""
     if not es_administrador_holding(request.user):
@@ -661,7 +659,6 @@ def _crear_perfil_usuario(usuario, request):
         )
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def crear_usuario(request):
     """Vista para crear un nuevo usuario"""
     if not es_administrador_holding(request.user):
@@ -750,7 +747,6 @@ def _cambiar_password_si_necesario(usuario, request):
     return True, None
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def editar_usuario(request, usuario_id):
     """Vista para editar un usuario existente"""
     if not es_administrador_holding(request.user):

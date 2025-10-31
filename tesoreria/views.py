@@ -163,7 +163,6 @@ def anular_pago(request, pk):
     return redirect('tesoreria:pagos_detalle', pk=pk)
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def cobrar_factura(request, factura_pk):
     return redirect('tesoreria:cobros_crear')
 
