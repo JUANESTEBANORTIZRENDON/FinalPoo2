@@ -129,6 +129,10 @@ def seleccionar_empresa(request):
                     empresa_activa.empresa = empresa
                     empresa_activa.save()
                 
+                # IMPORTANTE: Actualizar la sesión para que el cambio sea inmediato
+                request.session['empresa_activa_id'] = empresa.id
+                request.session.modified = True
+                
                 messages.success(
                     request, 
                     f'Empresa activa cambiada a: {empresa.razon_social}'

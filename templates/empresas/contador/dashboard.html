@@ -1,0 +1,169 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Dashboard Contador - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="mb-1">
+                        <i class="fas fa-calculator text-primary"></i>
+                        Dashboard Contador
+                    </h2>
+                    <p class="text-muted mb-0">Panel de control para gestión contable</p>
+                    {% if empresa_activa %}
+                        <div class="mt-3">
+                            <span class="badge bg-primary">
+                                <i class="fas fa-building"></i> {{ empresa_activa.nombre }}
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Facturas del Mes</h6>
+                            <h3 class="mb-0">0</h3>
+                        </div>
+                        <i class="fas fa-file-invoice fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Asientos Contables</h6>
+                            <h3 class="mb-0">0</h3>
+                        </div>
+                        <i class="fas fa-book fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Pendientes</h6>
+                            <h3 class="mb-0">0</h3>
+                        </div>
+                        <i class="fas fa-clock fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Reportes</h6>
+                            <h3 class="mb-0">0</h3>
+                        </div>
+                        <i class="fas fa-chart-line fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt text-warning"></i>
+                        Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{% url 'facturacion:factura_list' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-file-invoice fa-2x d-block mb-2"></i>
+                                <span>Facturas</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'contabilidad:asiento_list' %}" class="btn btn-outline-success w-100 py-3">
+                                <i class="fas fa-book fa-2x d-block mb-2"></i>
+                                <span>Asientos Contables</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'tesoreria:pago_list' %}" class="btn btn-outline-info w-100 py-3">
+                                <i class="fas fa-money-bill-wave fa-2x d-block mb-2"></i>
+                                <span>Tesorería</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'reportes:reporte_list' %}" class="btn btn-outline-warning w-100 py-3">
+                                <i class="fas fa-chart-bar fa-2x d-block mb-2"></i>
+                                <span>Reportes</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle text-info"></i>
+                        Información
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Usuario:</strong> {{ user.get_full_name|default:user.username }}</p>
+                    <p class="mb-2"><strong>Rol:</strong> <span class="badge bg-primary">Contador</span></p>
+                    {% if empresa_activa %}
+                        <p class="mb-0"><strong>Empresa:</strong> {{ empresa_activa.nombre }}</p>
+                    {% else %}
+                        <p class="mb-0 text-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            No hay empresa activa seleccionada
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tasks text-success"></i>
+                        Tareas Pendientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle"></i>
+                        No hay tareas pendientes en este momento.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,277 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Crear Producto - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-plus-circle text-primary"></i>
+                                Crear Producto
+                            </h2>
+                            <p class="text-muted mb-0">Registra un nuevo producto o servicio para {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="{% url 'catalogos:producto_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt"></i>
+                        Información del Producto
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Información Básica -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-info-circle"></i>
+                                    Información Básica
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.codigo.id_for_label }}" class="form-label">
+                                    Código <span class="text-danger">*</span>
+                                </label>
+                                {{ form.codigo }}
+                                {% if form.codigo.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.codigo.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Código único del producto</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.nombre.id_for_label }}" class="form-label">
+                                    Nombre <span class="text-danger">*</span>
+                                </label>
+                                {{ form.nombre }}
+                                {% if form.nombre.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.nombre.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.tipo_producto.id_for_label }}" class="form-label">
+                                    Tipo <span class="text-danger">*</span>
+                                </label>
+                                {{ form.tipo_producto }}
+                                {% if form.tipo_producto.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.tipo_producto.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.descripcion.id_for_label }}" class="form-label">
+                                    Descripción
+                                </label>
+                                {{ form.descripcion }}
+                                {% if form.descripcion.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.descripcion.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Precios e Impuestos -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    Precios e Impuestos
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.precio_venta.id_for_label }}" class="form-label">
+                                    Precio de Venta <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.precio_venta }}
+                                </div>
+                                {% if form.precio_venta.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.precio_venta.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.precio_costo.id_for_label }}" class="form-label">
+                                    Precio de Costo
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.precio_costo }}
+                                </div>
+                                {% if form.precio_costo.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.precio_costo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.impuesto.id_for_label }}" class="form-label">
+                                    Impuesto
+                                </label>
+                                {{ form.impuesto }}
+                                {% if form.impuesto.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.impuesto.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">IVA, ICA, etc.</small>
+                            </div>
+                        </div>
+
+                        <!-- Inventario -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-warehouse"></i>
+                                    Control de Inventario
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    {{ form.inventariable }}
+                                    <label class="form-check-label" for="{{ form.inventariable.id_for_label }}">
+                                        Maneja Inventario
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">Marcar si el producto maneja stock</small>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.stock_actual.id_for_label }}" class="form-label">
+                                    Stock Actual
+                                </label>
+                                {{ form.stock_actual }}
+                                {% if form.stock_actual.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.stock_actual.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.stock_minimo.id_for_label }}" class="form-label">
+                                    Stock Mínimo
+                                </label>
+                                {{ form.stock_minimo }}
+                                {% if form.stock_minimo.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.stock_minimo.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Alerta de reposición</small>
+                            </div>
+                        </div>
+
+                        <!-- Estado -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-toggle-on"></i>
+                                    Estado
+                                </h6>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <div class="form-check">
+                                    {{ form.activo }}
+                                    <label class="form-check-label" for="{{ form.activo.id_for_label }}">
+                                        Producto Activo
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">Los productos inactivos no aparecerán en las ventas</small>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="row">
+                            <div class="col-12">
+                                <hr class="my-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'catalogos:producto_list' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save"></i> Crear Producto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Nota:</strong> Los campos marcados con <span class="text-danger">*</span> son obligatorios.
+                        El producto será registrado para la empresa <strong>{{ request.empresa_activa.razon_social }}</strong>.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle de campos de inventario
+document.addEventListener('DOMContentLoaded', function() {
+    const inventariableCheck = document.querySelector('input[name="inventariable"]');
+    const stockActual = document.querySelector('input[name="stock_actual"]');
+    const stockMinimo = document.querySelector('input[name="stock_minimo"]');
+    
+    function toggleInventario() {
+        const enabled = inventariableCheck.checked;
+        stockActual.disabled = !enabled;
+        stockMinimo.disabled = !enabled;
+        
+        if (!enabled) {
+            stockActual.value = '0';
+            stockMinimo.value = '0';
+        }
+    }
+    
+    if (inventariableCheck) {
+        inventariableCheck.addEventListener('change', toggleInventario);
+        toggleInventario(); // Ejecutar al cargar
+    }
+    
+    // Calcular margen de utilidad
+    const precioVenta = document.querySelector('input[name="precio_venta"]');
+    const precioCosto = document.querySelector('input[name="precio_costo"]');
+    
+    function calcularMargen() {
+        const venta = parseFloat(precioVenta.value) || 0;
+        const costo = parseFloat(precioCosto.value) || 0;
+        
+        if (costo > 0 && venta > 0) {
+            const margen = ((venta - costo) / costo * 100).toFixed(2);
+            console.log('Margen de utilidad:', margen + '%');
+        }
+    }
+    
+    if (precioVenta && precioCosto) {
+        precioVenta.addEventListener('input', calcularMargen);
+        precioCosto.addEventListener('input', calcularMargen);
+    }
+});
+</script>
+{% endblock %}

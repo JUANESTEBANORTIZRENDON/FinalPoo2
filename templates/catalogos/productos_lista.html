@@ -1,0 +1,234 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Productos - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-box text-primary"></i>
+                                Productos y Servicios
+                            </h2>
+                            <p class="text-muted mb-0">Gestión de productos de {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="{% url 'catalogos:producto_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Nuevo Producto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Buscar</label>
+                            <input type="text" name="buscar" class="form-control" 
+                                   placeholder="Buscar por nombre o código..." 
+                                   value="{{ request.GET.buscar }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tipo</label>
+                            <select name="tipo" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="producto" {% if request.GET.tipo == 'producto' %}selected{% endif %}>Producto</option>
+                                <option value="servicio" {% if request.GET.tipo == 'servicio' %}selected{% endif %}>Servicio</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                            <a href="{% url 'catalogos:producto_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo"></i> Limpiar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Productos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i>
+                        Listado de Productos
+                        {% if productos %}
+                            <span class="badge bg-primary">{{ productos|length }}</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if productos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Tipo</th>
+                                        <th>Precio Venta</th>
+                                        <th>Precio Costo</th>
+                                        <th>Stock</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for producto in productos %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ producto.codigo }}</strong>
+                                        </td>
+                                        <td>
+                                            <div>{{ producto.nombre }}</div>
+                                            {% if producto.impuesto %}
+                                                <small class="text-muted">
+                                                    <i class="fas fa-percent"></i> {{ producto.impuesto.nombre }}
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if producto.tipo_producto == 'producto' %}
+                                                <span class="badge bg-info">Producto</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Servicio</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong class="text-success">${{ producto.precio_venta|floatformat:2 }}</strong>
+                                            {% if producto.impuesto %}
+                                                <br>
+                                                <small class="text-muted">
+                                                    Con IVA: ${{ producto.precio_con_impuesto|floatformat:2 }}
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if producto.precio_costo > 0 %}
+                                                ${{ producto.precio_costo|floatformat:2 }}
+                                                <br>
+                                                <small class="text-success">
+                                                    Margen: {{ producto.margen_utilidad|floatformat:1 }}%
+                                                </small>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if producto.inventariable %}
+                                                <div>{{ producto.stock_actual|floatformat:0 }}</div>
+                                                {% if producto.requiere_reposicion %}
+                                                    <small class="text-danger">
+                                                        <i class="fas fa-exclamation-triangle"></i> Bajo stock
+                                                    </small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if producto.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{% url 'catalogos:producto_detail' producto.pk %}" 
+                                                   class="btn btn-outline-primary" 
+                                                   title="Ver detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'catalogos:producto_update' producto.pk %}" 
+                                                   class="btn btn-outline-warning" 
+                                                   title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'catalogos:producto_delete' producto.pk %}" 
+                                                   class="btn btn-outline-danger" 
+                                                   title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay productos registrados.</p>
+                            <a href="{% url 'catalogos:producto_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Crear Primer Producto
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen -->
+    {% if productos %}
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Total Productos</h6>
+                    <h3 class="text-primary mb-0">{{ productos|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-info">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Productos Físicos</h6>
+                    <h3 class="text-info mb-0">
+                        {% for p in productos %}{% if p.tipo_producto == 'producto' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% endfor %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-secondary">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Servicios</h6>
+                    <h3 class="text-secondary mb-0">
+                        {% for p in productos %}{% if p.tipo_producto == 'servicio' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% endfor %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Requieren Reposición</h6>
+                    <h3 class="text-warning mb-0">
+                        {% for p in productos %}{% if p.requiere_reposicion %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% endfor %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

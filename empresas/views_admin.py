@@ -1060,3 +1060,83 @@ def exportar_historial(request):
         writer.writerow(_generar_fila_csv(cambio))
     
     return response
+
+
+# ===== DASHBOARDS PARA OTROS ROLES =====
+
+@login_required
+def dashboard_contador(request):
+    """Dashboard para usuarios con rol de contador"""
+    # Verificar que el usuario tenga rol de contador
+    perfil = PerfilEmpresa.objects.filter(
+        usuario=request.user,
+        rol='contador',
+        activo=True
+    ).first()
+    
+    if not perfil:
+        messages.error(request, 'No tienes permisos de contador.')
+        return redirect('accounts:dashboard')
+    
+    # Obtener empresa activa
+    empresa_activa = getattr(request, 'empresa_activa', None)
+    
+    context = {
+        'perfil': perfil,
+        'empresa_activa': empresa_activa,
+        'titulo': 'Dashboard Contador'
+    }
+    
+    return render(request, 'empresas/contador/dashboard.html', context)
+
+
+@login_required
+def dashboard_operador(request):
+    """Dashboard para usuarios con rol de operador"""
+    # Verificar que el usuario tenga rol de operador
+    perfil = PerfilEmpresa.objects.filter(
+        usuario=request.user,
+        rol='operador',
+        activo=True
+    ).first()
+    
+    if not perfil:
+        messages.error(request, 'No tienes permisos de operador.')
+        return redirect('accounts:dashboard')
+    
+    # Obtener empresa activa
+    empresa_activa = getattr(request, 'empresa_activa', None)
+    
+    context = {
+        'perfil': perfil,
+        'empresa_activa': empresa_activa,
+        'titulo': 'Dashboard Operador'
+    }
+    
+    return render(request, 'empresas/operador/dashboard.html', context)
+
+
+@login_required
+def dashboard_observador(request):
+    """Dashboard para usuarios con rol de observador"""
+    # Verificar que el usuario tenga rol de observador
+    perfil = PerfilEmpresa.objects.filter(
+        usuario=request.user,
+        rol='observador',
+        activo=True
+    ).first()
+    
+    if not perfil:
+        messages.error(request, 'No tienes permisos de observador.')
+        return redirect('accounts:dashboard')
+    
+    # Obtener empresa activa
+    empresa_activa = getattr(request, 'empresa_activa', None)
+    
+    context = {
+        'perfil': perfil,
+        'empresa_activa': empresa_activa,
+        'titulo': 'Dashboard Observador'
+    }
+    
+    return render(request, 'empresas/observador/dashboard.html', context)
