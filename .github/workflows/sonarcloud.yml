@@ -1,0 +1,213 @@
+# ==============================================================================
+# WORKFLOW: SonarCloud Analysis
+# ==============================================================================
+# Propósito: Analizar automáticamente la calidad del código con SonarCloud
+#            en cada push o pull request a cualquier rama del repositorio.
+#
+# ¿Qué hace este workflow?
+# 1. Se ejecuta cuando haces push o creas un pull request en cualquier rama
+# 2. Clona el repositorio completo (historial incluido)
+# 3. Configura el entorno Java necesario para SonarScanner
+# 4. Usa caché para acelerar ejecuciones futuras
+# 5. Ejecuta el análisis de SonarCloud y envía los resultados
+# 6. Los resultados aparecen en: https://sonarcloud.io
+#
+# Requisitos previos:
+# - Token generado en SonarCloud (My Account > Security > Generate Token)
+# - Token guardado en GitHub (Settings > Secrets > Actions > SONAR_TOKEN)
+# - Proyecto vinculado en SonarCloud con tu organización
+# ==============================================================================
+
+name: SonarCloud Analysis
+
+# ==============================================================================
+# EVENTOS QUE DISPARAN EL WORKFLOW
+# ==============================================================================
+# Este workflow se ejecuta automáticamente en dos situaciones:
+on:
+  # 1. PUSH: Cuando subes cambios (commit + push) a cualquier rama
+  push:
+    branches:
+      - '**'  # '**' significa "todas las ramas" (master, Gabo, wiki, etc.)
+              # Si quieres limitar a ramas específicas, usa:
+              # - master
+              # - main
+              # - develop
+
+  # 2. PULL REQUEST: Cuando creas o actualizas un PR hacia cualquier rama
+  pull_request:
+    branches:
+      - '**'  # Analiza PRs que apunten a cualquier rama
+              # Esto permite ver la calidad del código ANTES de fusionar
+
+# ==============================================================================
+# JOBS: TAREAS QUE SE EJECUTAN
+# ==============================================================================
+jobs:
+  # Job principal: análisis de código con SonarCloud
+  sonarcloud-analysis:
+    name: 🔍 Análisis de Código con SonarCloud
+    runs-on: ubuntu-latest  # Ejecuta en un servidor Ubuntu (gratis en GitHub)
+
+    steps:
+      # ========================================================================
+      # PASO 1: Clonar el repositorio completo
+      # ========================================================================
+      # Descarga todo el código fuente del repositorio a la máquina virtual
+      - name: 📥 Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 descarga TODO el historial de commits
+          # ¿Por qué? SonarCloud necesita el historial para:
+          # - Detectar qué archivos cambiaron en el PR
+          # - Calcular métricas de código nuevo vs código existente
+          # - Analizar la evolución de la calidad del código
+          fetch-depth: 0
+
+      # ========================================================================
+      # PASO 2: Configurar Java (requerido por SonarScanner)
+      # ========================================================================
+      # SonarScanner necesita Java para ejecutarse (aunque tu proyecto sea Python)
+      - name: ☕ Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'  # Distribución OpenJDK recomendada
+          java-version: '17'       # Versión LTS (Long Term Support)
+
+      # ========================================================================
+      # PASO 3: Configurar caché de SonarCloud
+      # ========================================================================
+      # Guarda archivos temporales para que las próximas ejecuciones sean más rápidas
+      - name: 💾 Caché de SonarCloud
+        uses: actions/cache@v4
+        with:
+          # Ubicación de archivos temporales de SonarCloud
+          path: ~/.sonar/cache
+          # Clave única para esta caché (si cambia el OS o archivos, se regenera)
+          key: ${{ runner.os }}-sonar
+          # Si no existe la clave exacta, usa esta como respaldo
+          restore-keys: ${{ runner.os }}-sonar
+
+      # ========================================================================
+      # PASO 4: Ejecutar análisis de SonarCloud
+      # ========================================================================
+      # Acción oficial de SonarSource que ejecuta el análisis
+      - name: 🚀 Análisis con SonarCloud
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          # SONAR_TOKEN: Token de autenticación (guardado en GitHub Secrets)
+          # ¿Cómo obtenerlo?
+          # 1. Ir a https://sonarcloud.io
+          # 2. My Account > Security > Generate Token
+          # 3. Copiar el token
+          # 4. GitHub: Settings > Secrets and variables > Actions > New secret
+          # 5. Name: SONAR_TOKEN, Value: <tu token>
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+          # GITHUB_TOKEN: Token automático de GitHub (no necesitas crearlo)
+          # Permite a SonarCloud:
+          # - Comentar en PRs con el resumen de análisis
+          # - Actualizar el estado del PR (✅ passed / ❌ failed)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        # Configuración del análisis (argumentos para SonarScanner)
+        with:
+          args: >
+            -Dsonar.projectKey=JEYomboy_FinalPoo2
+            -Dsonar.organization=jeyomboy
+
+      # ========================================================================
+      # INFORMACIÓN ADICIONAL (Opcional)
+      # ========================================================================
+      # Si el análisis falla, puedes añadir este paso para ver más detalles:
+      #
+      # - name: 📋 Mostrar logs de análisis
+      #   if: failure()
+      #   run: cat .scannerwork/report-task.txt
+
+# ==============================================================================
+# DOCUMENTACIÓN: CÓMO USAR ESTE WORKFLOW
+# ==============================================================================
+#
+# 1. ¿QUÉ HACE ESTE WORKFLOW?
+#    - Se ejecuta automáticamente en cada push o pull request
+#    - Analiza tu código en busca de bugs, vulnerabilidades, code smells
+#    - Mide cobertura de tests, duplicación de código, complejidad
+#    - Envía resultados a SonarCloud para visualización
+#    - Comenta en PRs con el resumen de calidad (si está habilitado)
+#
+# 2. ¿CÓMO INTERPRETAR LOS RESULTADOS EN SONARCLOUD?
+#    Abre tu proyecto en https://sonarcloud.io y verás:
+#
+#    A) QUALITY GATE (Puerta de Calidad):
+#       - ✅ Passed: El código cumple los estándares mínimos de calidad
+#       - ❌ Failed: Hay problemas críticos que deben corregirse
+#
+#    B) MÉTRICAS PRINCIPALES:
+#       - Bugs: Errores que pueden causar fallos en producción
+#       - Vulnerabilities: Problemas de seguridad (ej: SQL injection)
+#       - Code Smells: Código que funciona pero es difícil de mantener
+#       - Coverage: % de código cubierto por tests
+#       - Duplications: % de código duplicado
+#       - Security Hotspots: Código que requiere revisión de seguridad
+#
+#    C) PESTAÑA "BRANCHES & PULL REQUESTS":
+#       - Aquí ves el análisis de cada rama (master, Gabo, wiki, etc.)
+#       - Para PRs: verás análisis del código nuevo (no todo el proyecto)
+#       - Click en una rama para ver detalles e issues específicos
+#
+#    D) PESTAÑA "ISSUES":
+#       - Lista todos los problemas encontrados
+#       - Filtros: severidad, tipo, archivo, asignado a...
+#       - Click en un issue para ver dónde está y cómo corregirlo
+#
+# 3. ¿CÓMO MODIFICAR EL WORKFLOW?
+#
+#    A) Analizar sólo ciertas ramas:
+#       on:
+#         push:
+#           branches:
+#             - master      # Sólo rama master
+#             - develop     # Y rama develop
+#             - 'feature/*' # Y ramas que empiecen con "feature/"
+#
+#    B) Excluir archivos del análisis:
+#       Añade en el bloque "with: args:" de SonarCloud:
+#         -Dsonar.exclusions=**/migrations/**,**/static/**,**/tests/**
+#
+#    C) Añadir cobertura de tests:
+#       Antes del paso de SonarCloud, añade:
+#         - name: Ejecutar tests con cobertura
+#           run: |
+#             pip install pytest pytest-cov
+#             pytest --cov=. --cov-report=xml:coverage.xml
+#       Y en los args de SonarCloud añade:
+#         -Dsonar.python.coverage.reportPaths=coverage.xml
+#
+#    D) Cambiar versión de Java (si es necesario):
+#       En "Configurar Java 17", cambia:
+#         java-version: '21'  # Para Java 21 (más reciente)
+#
+# 4. SOLUCIÓN DE PROBLEMAS COMUNES:
+#
+#    ❌ "SONAR_TOKEN not found":
+#       - Verifica que creaste el secret en GitHub
+#       - Settings > Secrets and variables > Actions > SONAR_TOKEN
+#
+#    ❌ "Project not found in SonarCloud":
+#       - Verifica sonar.projectKey y sonar.organization
+#       - Deben coincidir con tu proyecto en SonarCloud
+#
+#    ❌ "Shallow clone detected":
+#       - Asegúrate de tener fetch-depth: 0 en el checkout
+#
+#    ❌ El análisis se ejecuta pero no veo resultados:
+#       - Espera 1-2 minutos (el procesamiento toma tiempo)
+#       - Revisa la pestaña "Background Tasks" en SonarCloud
+#
+# 5. RECURSOS ADICIONALES:
+#    - Documentación oficial: https://docs.sonarcloud.io
+#    - GitHub Action: https://github.com/SonarSource/sonarcloud-github-action
+#    - Configuración avanzada: https://docs.sonarcloud.io/advanced-setup/analysis-parameters/
+#
+# ==============================================================================
