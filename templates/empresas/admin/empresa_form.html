@@ -170,24 +170,9 @@
     </div>
 </div>
 
-<script>
-// Validación del formulario
-(function() {
-    'use strict';
-    globalThis.addEventListener('load', function() {
-        const forms = document.getElementsByClassName('needs-validation');
-        Array.prototype.filter.call(forms, function(form) {
-            form.addEventListener('submit', function(event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
-        });
-    }, false);
-})();
+{% include 'empresas/admin/includes/form_validation.html' %}
 
+<script>
 // Formatear NIT mientras se escribe
 document.getElementById('nit').addEventListener('input', function(e) {
     let value = e.target.value.replaceAll(/\D/g, '');
