@@ -210,13 +210,13 @@
 <script>
 function confirmarCobro() {
     if (confirm('¿Estás seguro de confirmar este cobro? Una vez confirmado no podrá ser editado.')) {
-        window.location.href = "{% url 'tesoreria:pagos_confirmar' object.pk %}";
+        globalThis.location.href = "{% url 'tesoreria:pagos_confirmar' object.pk %}";
     }
 }
 
 function anularCobro() {
     if (confirm('¿Estás seguro de anular este cobro? Esta acción no se puede deshacer.')) {
-        window.location.href = "{% url 'tesoreria:pagos_anular' object.pk %}";
+        globalThis.location.href = "{% url 'tesoreria:pagos_anular' object.pk %}";
     }
 }
 </script>
