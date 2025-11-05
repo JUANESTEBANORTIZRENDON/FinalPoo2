@@ -10,6 +10,9 @@ from .models import Pago, CuentaBancaria
 from .forms import CobroForm
 from empresas.middleware import EmpresaFilterMixin
 
+# Constante para evitar duplicación del literal de URL
+PAGOS_DETALLE_URL = 'tesoreria:pagos_detalle'
+
 # Vistas temporales básicas
 class TesoreriaIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/index.html'
@@ -155,12 +158,12 @@ class PagosPeriodoView(LoginRequiredMixin, TemplateView):
 @login_required
 @require_http_methods(["POST"])
 def confirmar_pago(request, pk):
-    return redirect('tesoreria:pagos_detalle', pk=pk)
+    return redirect(PAGOS_DETALLE_URL, pk=pk)
 
 @login_required
 @require_http_methods(["POST"])
 def anular_pago(request, pk):
-    return redirect('tesoreria:pagos_detalle', pk=pk)
+    return redirect(PAGOS_DETALLE_URL, pk=pk)
 
 @login_required
 def cobrar_factura(request, factura_pk):

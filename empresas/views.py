@@ -8,6 +8,9 @@ from django.http import JsonResponse
 from django.urls import reverse_lazy
 from .models import Empresa, PerfilEmpresa, EmpresaActiva
 
+# Constante para evitar duplicación del literal de URL
+EMPRESA_LIST_URL = 'empresas:empresa_list'
+
 
 class EmpresaListView(LoginRequiredMixin, ListView):
     model = Empresa
@@ -29,7 +32,7 @@ class EmpresaCreateView(LoginRequiredMixin, CreateView):
     model = Empresa
     template_name = 'empresas/empresa_form.html'
     fields = ['nit', 'razon_social', 'tipo_empresa', 'direccion', 'ciudad', 'telefono', 'email']
-    success_url = reverse_lazy('empresas:empresa_list')
+    success_url = reverse_lazy(EMPRESA_LIST_URL)
     
     def form_valid(self, form):
         form.instance.propietario = self.request.user
@@ -50,7 +53,7 @@ class EmpresaUpdateView(LoginRequiredMixin, UpdateView):
     model = Empresa
     template_name = 'empresas/empresa_form.html'
     fields = ['nit', 'razon_social', 'tipo_empresa', 'direccion', 'ciudad', 'telefono', 'email']
-    success_url = reverse_lazy('empresas:empresa_list')
+    success_url = reverse_lazy(EMPRESA_LIST_URL)
 
 class PerfilEmpresaListView(LoginRequiredMixin, ListView):
     model = PerfilEmpresa

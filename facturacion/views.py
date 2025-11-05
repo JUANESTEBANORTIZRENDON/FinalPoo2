@@ -6,6 +6,9 @@ from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse, HttpResponse
 from .models import Factura, FacturaDetalle
 
+# Constante para evitar duplicación del literal de URL
+FACTURA_DETALLE_URL = 'facturacion:detalle'
+
 # Vistas temporales básicas
 class FacturaListView(LoginRequiredMixin, ListView):
     model = Factura
@@ -53,12 +56,12 @@ class FacturaReporteView(LoginRequiredMixin, TemplateView):
 @login_required
 @require_http_methods(["POST"])
 def confirmar_factura(request, pk):
-    return redirect('facturacion:detalle', pk=pk)
+    return redirect(FACTURA_DETALLE_URL, pk=pk)
 
 @login_required
 @require_http_methods(["POST"])
 def anular_factura(request, pk):
-    return redirect('facturacion:detalle', pk=pk)
+    return redirect(FACTURA_DETALLE_URL, pk=pk)
 
 @login_required
 @require_http_methods(["POST"])

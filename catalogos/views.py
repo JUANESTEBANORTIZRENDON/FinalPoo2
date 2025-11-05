@@ -10,8 +10,9 @@ from django.db import models
 from empresas.middleware import EmpresaFilterMixin
 from .models import Tercero, Impuesto, MetodoPago, Producto
 
-# Constante para evitar duplicación del literal 'catalogos:tercero_list'
+# Constantes para evitar duplicación de literales de URL
 TERCERO_LIST_URL = 'catalogos:tercero_list'
+PRODUCTO_LIST_URL = 'catalogos:producto_list'
 
 # Vistas temporales básicas
 class CatalogosIndexView(LoginRequiredMixin, TemplateView):
@@ -144,7 +145,7 @@ class ProductoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
         'precio_venta', 'precio_costo', 'impuesto',
         'inventariable', 'stock_actual', 'stock_minimo', 'activo'
     ]
-    success_url = reverse_lazy('catalogos:producto_list')
+    success_url = reverse_lazy(PRODUCTO_LIST_URL)
     
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -186,7 +187,7 @@ class ProductoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
         'precio_venta', 'precio_costo', 'impuesto',
         'inventariable', 'stock_actual', 'stock_minimo', 'activo'
     ]
-    success_url = reverse_lazy('catalogos:producto_list')
+    success_url = reverse_lazy(PRODUCTO_LIST_URL)
     
     def form_valid(self, form):
         messages.success(self.request, f'Producto "{form.instance.nombre}" actualizado exitosamente.')
@@ -195,7 +196,7 @@ class ProductoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
 class ProductoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = Producto
     template_name = 'catalogos/productos_eliminar.html'
-    success_url = reverse_lazy('catalogos:producto_list')
+    success_url = reverse_lazy(PRODUCTO_LIST_URL)
 
 @login_required
 @require_http_methods(["GET"])

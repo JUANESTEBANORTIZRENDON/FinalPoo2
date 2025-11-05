@@ -19,6 +19,7 @@ from contabilidad.models import Asiento
 # Constantes para evitar duplicación de literales
 MSG_NO_PERMISOS = 'No tienes permisos para acceder a esta sección.'
 URL_LOGIN = 'accounts:login'
+URL_DASHBOARD = 'accounts:dashboard'
 URL_GESTIONAR_USUARIOS = 'empresas:admin_gestionar_usuarios'
 URL_GESTIONAR_EMPRESAS = 'empresas:admin_gestionar_empresas'
 TEMPLATE_EMPRESA_FORM = 'empresas/admin/empresa_form.html'
@@ -1090,7 +1091,7 @@ def dashboard_contador(request):
     
     if not perfil:
         messages.error(request, 'No tienes permisos de contador.')
-        return redirect('accounts:dashboard')
+        return redirect(URL_DASHBOARD)
     
     # Obtener empresa activa
     empresa_activa = getattr(request, 'empresa_activa', None)
@@ -1117,7 +1118,7 @@ def dashboard_operador(request):
     
     if not perfil:
         messages.error(request, 'No tienes permisos de operador.')
-        return redirect('accounts:dashboard')
+        return redirect(URL_DASHBOARD)
     
     # Obtener empresa activa
     empresa_activa = getattr(request, 'empresa_activa', None)
@@ -1144,7 +1145,7 @@ def dashboard_observador(request):
     
     if not perfil:
         messages.error(request, 'No tienes permisos de observador.')
-        return redirect('accounts:dashboard')
+        return redirect(URL_DASHBOARD)
     
     # Obtener empresa activa
     empresa_activa = getattr(request, 'empresa_activa', None)
