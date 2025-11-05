@@ -47,18 +47,18 @@
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="text-muted small">Número de Cobro</label>
+                            <span class="text-muted small d-block">Número de Cobro</span>
                             <p class="mb-0"><strong>{{ object.numero_pago }}</strong></p>
                         </div>
                         <div class="col-md-6">
-                            <label class="text-muted small">Fecha</label>
+                            <span class="text-muted small d-block">Fecha</span>
                             <p class="mb-0">{{ object.fecha_pago|date:"d/m/Y" }}</p>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="text-muted small">Cliente</label>
+                            <span class="text-muted small d-block">Cliente</span>
                             <p class="mb-0">
                                 <i class="fas fa-user text-primary"></i>
                                 <strong>{{ object.tercero.razon_social }}</strong>
@@ -67,18 +67,18 @@
                             </p>
                         </div>
                         <div class="col-md-6">
-                            <label class="text-muted small">Método de Pago</label>
+                            <span class="text-muted small d-block">Método de Pago</span>
                             <p class="mb-0">{{ object.metodo_pago.nombre }}</p>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="text-muted small">Valor</label>
+                            <span class="text-muted small d-block">Valor</span>
                             <h4 class="text-success mb-0">${{ object.valor|floatformat:2 }}</h4>
                         </div>
                         <div class="col-md-6">
-                            <label class="text-muted small">Estado</label>
+                            <span class="text-muted small d-block">Estado</span>
                             <p class="mb-0">
                                 {% if object.estado == 'borrador' %}
                                     <span class="badge bg-warning fs-6">Borrador</span>
@@ -94,7 +94,7 @@
                     {% if object.referencia %}
                     <div class="row mb-3">
                         <div class="col-12">
-                            <label class="text-muted small">Referencia</label>
+                            <span class="text-muted small d-block">Referencia</span>
                             <p class="mb-0">{{ object.referencia }}</p>
                         </div>
                     </div>
@@ -103,7 +103,7 @@
                     {% if object.observaciones %}
                     <div class="row">
                         <div class="col-12">
-                            <label class="text-muted small">Observaciones</label>
+                            <span class="text-muted small d-block">Observaciones</span>
                             <p class="mb-0">{{ object.observaciones }}</p>
                         </div>
                     </div>
@@ -122,13 +122,13 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Creado Por</label>
+                            <span class="text-muted small d-block">Creado Por</span>
                             <p class="mb-0">{{ object.creado_por.get_full_name|default:object.creado_por.username }}</p>
                             <small class="text-muted">{{ object.fecha_creacion|date:"d/m/Y H:i" }}</small>
                         </div>
                         {% if object.confirmado_por %}
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Confirmado Por</label>
+                            <span class="text-muted small d-block">Confirmado Por</span>
                             <p class="mb-0">{{ object.confirmado_por.get_full_name|default:object.confirmado_por.username }}</p>
                             <small class="text-muted">{{ object.fecha_confirmacion|date:"d/m/Y H:i" }}</small>
                         </div>
