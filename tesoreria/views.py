@@ -96,7 +96,7 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
             try:
                 ultimo_numero = int(ultimo_cobro.numero_pago.replace('COB-', ''))
                 nuevo_numero = f'COB-{(ultimo_numero + 1):06d}'
-            except:
+            except (ValueError, AttributeError):
                 nuevo_numero = 'COB-000001'
         else:
             nuevo_numero = 'COB-000001'
