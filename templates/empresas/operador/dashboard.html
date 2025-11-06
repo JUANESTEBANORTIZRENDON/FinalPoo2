@@ -1,0 +1,189 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Dashboard Operador - S_CONTABLE{% endblock %}
+
+{% block page_title %}Dashboard Operador{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">Dashboard Operador</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+
+<!-- Empresa Activa -->
+{% if empresa_activa %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-warning shadow-sm">
+            <div class="card-body text-center">
+                <h2 class="text-warning mb-2">
+                    <i class="bi bi-person-gear me-2"></i>
+                    {{ empresa_activa.razon_social }}
+                </h2>
+                <p class="text-muted mb-0">{{ empresa_activa.nit_formateado }}</p>
+                <span class="badge bg-warning text-dark">Rol: Operador</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Operacionales -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h6><i class="bi bi-cart-check"></i> Ventas</h6>
+                <h3>{{ ventas_mes|default:0 }}</h3>
+                <small>Registradas este mes</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h6><i class="bi bi-receipt"></i> Facturas</h6>
+                <h3>{{ facturas_mes|default:0 }}</h3>
+                <small>Emitidas este mes</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h6><i class="bi bi-people"></i> Clientes</h6>
+                <h3>{{ total_clientes|default:0 }}</h3>
+                <small>Activos</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accesos Rápidos Operador -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="mb-3"><i class="bi bi-speedometer2"></i> Operaciones Diarias</h4>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'ventas:crear' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-plus-circle display-4 text-success mb-2"></i>
+                <h5>Nueva Venta</h5>
+                <p class="text-muted">Registrar operación</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'facturacion:crear' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-file-earmark-text display-4 text-primary mb-2"></i>
+                <h5>Nueva Factura</h5>
+                <p class="text-muted">Emitir documento</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'ventas:lista' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-list-check display-4 text-info mb-2"></i>
+                <h5>Consultar Ventas</h5>
+                <p class="text-muted">Ver registros</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'facturacion:lista' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-receipt-cutoff display-4 text-warning mb-2"></i>
+                <h5>Facturas Emitidas</h5>
+                <p class="text-muted">Historial completo</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'catalogos:clientes_lista' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-person-lines-fill display-4 text-primary mb-2"></i>
+                <h5>Clientes</h5>
+                <p class="text-muted">Gestionar terceros</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'catalogos:productos_lista' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-box-seam display-4 text-success mb-2"></i>
+                <h5>Productos</h5>
+                <p class="text-muted">Inventario</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'tesoreria:ingresos' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-arrow-down-circle display-4 text-info mb-2"></i>
+                <h5>Registrar Ingreso</h5>
+                <p class="text-muted">Pagos recibidos</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'reportes:ventas' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up display-4 text-danger mb-2"></i>
+                <h5>Reportes</h5>
+                <p class="text-muted">Análisis de ventas</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Actividad Reciente -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Últimas Operaciones</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Registros más recientes del sistema</p>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'ventas:lista' %}" class="btn btn-primary">Ver Ventas</a>
+                    <a href="{% url 'facturacion:lista' %}" class="btn btn-success">Ver Facturas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Sin empresa -->
+<div class="alert alert-warning">
+    <h5><i class="bi bi-exclamation-triangle"></i> Empresa Requerida</h5>
+    <p>Necesitas seleccionar una empresa para acceder al dashboard.</p>
+    <a href="{% url 'empresas:cambiar_empresa' %}" class="btn btn-primary">Seleccionar Empresa</a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hover-shadow:hover {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}
