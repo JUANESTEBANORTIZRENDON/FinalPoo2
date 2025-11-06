@@ -14,22 +14,20 @@
        ============================================ */
     
     :root {
-        /* Paleta de colores más profesional */
-        --admin-primary: #6366f1;
-        --admin-secondary: #4f46e5;
-        --admin-accent: #818cf8;
-        --admin-success: #34d399;
-        --admin-warning: #f43f5e;
-        --admin-dark: #1e293b;
-        --admin-gray: #64748b;
-        --admin-light: #f8fafc;
-        --admin-sidebar-width: 280px;
+        /* Tema Negro/Azul/Verde Neón */
+        --neon-green: #39ff14;
+        --neon-blue: #00d4ff;
+        --dark-bg: #0a0e27;
+        --darker-bg: #060818;
+        --card-bg: #101428;
+        --text-primary: #ffffff;
+        --text-secondary: #a0aec0;
+        --admin-sidebar-width: 260px;
         
-        /* Sombras y bordes consistentes */
-        --admin-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-        --admin-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-        --admin-shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
-        --admin-border-radius: 0.5rem;
+        /* Efectos y sombras neón */
+        --glow-green: 0 0 10px rgba(57, 255, 20, 0.5);
+        --glow-blue: 0 0 10px rgba(0, 212, 255, 0.5);
+        --shadow-dark: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
 
     * {
@@ -40,7 +38,8 @@
 
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: var(--admin-light);
+        background: var(--dark-bg);
+        color: var(--text-primary);
         overflow-x: hidden;
     }
 
@@ -51,10 +50,11 @@
         position: sticky;
         top: 0;
         z-index: 1000;
-        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+        background: var(--darker-bg);
+        border-bottom: 2px solid var(--neon-blue);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
         color: white;
         padding: 1rem 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -318,12 +318,12 @@
 
     /* Módulos y cards */
     .module {
-        background: white;
-        border-radius: var(--admin-border-radius);
-        box-shadow: var(--admin-shadow-md);
+        background: var(--card-bg);
+        border-radius: 8px;
+        box-shadow: var(--shadow-dark);
         margin-bottom: 1.5rem;
         overflow: hidden;
-        border: 1px solid rgba(15, 23, 42, 0.1);
+        border: 1px solid rgba(0, 212, 255, 0.2);
         animation: slideIn 0.3s ease-out;
     }
     
@@ -339,20 +339,24 @@
     }
 
     .module h2 {
-        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
-        color: white;
+        background: var(--darker-bg);
+        color: var(--neon-blue);
+        border-bottom: 2px solid var(--neon-blue);
         padding: 1rem 1.25rem;
         margin: 0;
         font-weight: 600;
         font-size: 1.1rem;
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
     }
 
     .module caption {
-        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
-        color: white;
+        background: var(--darker-bg);
+        color: var(--neon-blue);
+        border-bottom: 2px solid var(--neon-blue);
         padding: 1rem 1.25rem;
         font-weight: 600;
         text-align: left;
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
     }
 
     /* ==================
@@ -370,8 +374,9 @@
     }
 
     thead th {
-        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
-        color: white;
+        background: var(--darker-bg);
+        color: var(--neon-green);
+        border-bottom: 2px solid var(--neon-green);
         font-weight: 600;
         padding: 1rem;
         text-align: left;
@@ -381,20 +386,22 @@
     }
 
     tbody tr {
-        border-bottom: 1px solid #e2e8f0;
-        transition: background 0.2s ease;
+        border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        transition: all 0.2s ease;
     }
 
     tbody tr:nth-child(even) {
-        background: rgba(102, 126, 234, 0.03);
+        background: rgba(16, 20, 40, 0.5);
     }
 
     tbody tr:hover {
-        background: rgba(102, 126, 234, 0.08);
+        background: rgba(0, 212, 255, 0.1);
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
     }
 
     tbody td {
         padding: 1rem;
+        color: var(--text-secondary);
     }
 
     /* ==================
@@ -501,60 +508,93 @@
     }
 
     /* ==================
-       SIDEBAR CARDS STYLE
+       SIDEBAR NEÓN STYLE
        ================== */
+    #nav-sidebar {
+        background: var(--darker-bg) !important;
+        border-right: 1px solid rgba(0, 212, 255, 0.3) !important;
+    }
+
+    /* Ocultar TODOS los enlaces de modelos individuales */
+    .model-list {
+        display: none !important;
+    }
+    
+    /* Solo mostrar el enlace principal de cada app como card */
     .app-label {
         display: flex;
         align-items: center;
-        padding: 1rem 1.5rem;
-        margin: 0.5rem 1rem;
-        color: var(--admin-dark);
+        padding: 1rem 1.25rem;
+        margin: 0.75rem 1rem;
+        color: var(--text-primary);
         font-weight: 600;
         text-decoration: none !important;
         transition: all 0.3s ease;
         font-size: 0.95rem;
-        border-radius: var(--admin-border-radius);
-        background: white;
-        box-shadow: var(--admin-shadow-sm);
+        border-radius: 8px;
+        background: var(--card-bg);
+        border: 1px solid rgba(0, 212, 255, 0.2);
+        cursor: pointer;
     }
 
     .app-label:hover {
-        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
-        color: white;
-        transform: translateY(-1px);
-        box-shadow: var(--admin-shadow-md);
+        background: var(--card-bg);
+        border-color: var(--neon-blue);
+        box-shadow: var(--glow-blue);
+        transform: translateX(4px);
+        color: var(--neon-blue);
     }
     
     .app-label::before {
         margin-right: 12px;
-        font-size: 1.1rem;
-        opacity: 0.9;
-        width: 24px;
+        font-size: 1.2rem;
+        width: 28px;
         text-align: center;
+        color: var(--neon-green);
+        filter: drop-shadow(0 0 3px var(--neon-green));
     }
 
-    .model-list {
-        display: none !important;  /* Ocultar lista de modelos */
+    /* Verde neón para algunos módulos específicos */
+    .app-accounts .app-label:hover,
+    .app-empresas .app-label:hover,
+    .app-catalogos .app-label:hover {
+        border-color: var(--neon-green);
+        box-shadow: var(--glow-green);
+        color: var(--neon-green);
     }
 
-    /* Estilos específicos para cada módulo */
-    .app-accounts .app-label { background: rgba(99, 102, 241, 0.1); }
-    .app-auth .app-label { background: rgba(79, 70, 229, 0.1); }
-    .app-empresas .app-label { background: rgba(129, 140, 248, 0.1); }
-    .app-catalogos .app-label { background: rgba(52, 211, 153, 0.1); }
-    .app-facturacion .app-label { background: rgba(244, 63, 94, 0.1); }
-    .app-tesoreria .app-label { background: rgba(244, 63, 94, 0.1); }
-    .app-contabilidad .app-label { background: rgba(99, 102, 241, 0.1); }
-    .app-reportes .app-label { background: rgba(79, 70, 229, 0.1); }
-    .app-ventas .app-label { background: rgba(129, 140, 248, 0.1); }
+    /* ==================
+       INPUTS Y FORMS NEÓN
+       ================== */
+    input[type="text"], input[type="password"], input[type="email"], 
+    input[type="number"], input[type="date"], textarea, select {
+        background: var(--card-bg) !important;
+        border: 1px solid rgba(0, 212, 255, 0.3) !important;
+        color: var(--text-primary) !important;
+        padding: 0.5rem !important;
+        border-radius: 4px !important;
+        transition: all 0.3s ease;
+    }
+    
+    input[type="text"]:focus, input[type="password"]:focus, 
+    input[type="email"]:focus, textarea:focus, select:focus {
+        border-color: var(--neon-blue) !important;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.4) !important;
+        outline: none !important;
+    }
+    
+    label {
+        color: var(--text-secondary) !important;
+        font-weight: 500;
+    }
 
     /* ==================
        BUTTONS & FORMS
        ================== */
     .button, input[type=submit], input[type=button], .submit-row input, button[type="submit"] {
-        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
-        border: none;
-        color: white;
+        background: var(--card-bg);
+        border: 2px solid var(--neon-blue);
+        color: var(--neon-blue);
         padding: 0.75rem 1.5rem;
         border-radius: 8px;
         font-weight: 600;
@@ -564,7 +604,14 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    }
+    
+    .button:hover, input[type=submit]:hover, input[type=button]:hover, button[type="submit"]:hover {
+        background: var(--neon-blue);
+        color: var(--darker-bg);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+        transform: translateY(-2px);
     }
 
     .button:hover, input[type=submit]:hover, input[type=button]:hover, button[type="submit"]:hover {
