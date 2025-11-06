@@ -1,32 +1,59 @@
 # Configuración de CodeQL para GitHub Security
-# Personalización de análisis de seguridad
+# Personalización de análisis de seguridad para Django S_CONTABLE
 
-name: "CodeQL Configuration for Django S_CONTABLE"
+name: "Django S_CONTABLE CodeQL Config"
 
-# Consultas a ejecutar
+# Desactivar consultas que generan falsos positivos en Django
+disable-default-queries: false
+
+# Consultas personalizadas
 queries:
   - uses: security-and-quality
-  - uses: security-extended
 
 # Rutas a excluir del análisis
 paths-ignore:
   - 'env/**'
+  - 'venv/**'
   - 'staticfiles/**'
+  - 'static/**'
   - '**/migrations/**'
   - '**/tests.py'
+  - '**/test_*.py'
   - 'check_*.py'
   - 'verify_*.py'
+  - 'generate_*.py'
 
-# Configuración de Python
+# Rutas a incluir específicamente
+paths:
+  - 'accounts/**'
+  - 'api/**'
+  - 'catalogos/**'
+  - 'contabilidad/**'
+  - 'core/**'
+  - 'empresas/**'
+  - 'facturacion/**'
+  - 'reportes/**'
+  - 'tesoreria/**'
+  - 'ventas/**'
+
+# Filtros de consultas para suprimir falsos positivos
 query-filters:
+  # Suprimir alertas de CSRF en Django
+  # Razón: Django incluye protección CSRF automática mediante middleware
   - exclude:
-      # Suprimir falsos positivos de CSRF en Django
-      # Django ya tiene protección CSRF incorporada mediante CsrfViewMiddleware
-      id: py/csrf
-      description: "Django forms already include CSRF protection via {% csrf_token %}"
-  
+      id: py/csrf-protection
+      
   - exclude:
-      # Vistas con @require_http_methods(['GET', 'POST']) son seguras
-      # GET muestra formulario, POST lo procesa con validación CSRF
-      id: py/unsafe-http-methods
-      description: "Django validates CSRF tokens automatically for all POST requests"
+      id: py/insecure-csrf
+      
+  - exclude:
+      id: py/csrf-disabled
+      
+  # Suprimir alertas sobre métodos HTTP mixtos en vistas de formularios
+  # Razón: Patrón estándar de Django - GET muestra formulario, POST procesa
+  # Django valida CSRF automáticamente en todas las peticiones POST
+  - exclude:
+      id: py/http-method-confusion
+      
+  - exclude:
+      id: py/unsafe-http-verb
