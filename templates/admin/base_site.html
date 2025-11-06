@@ -508,24 +508,42 @@
     }
 
     /* ==================
-       SIDEBAR NEÓN STYLE
+       SIDEBAR NEÓN STYLE - LIMPIO
        ================== */
     #nav-sidebar {
         background: var(--darker-bg) !important;
         border-right: 1px solid rgba(0, 212, 255, 0.3) !important;
+        padding: 1rem 0;
     }
 
-    /* Ocultar TODOS los enlaces de modelos individuales */
-    .model-list {
+    /* OCULTAR COMPLETAMENTE todos los elementos no deseados */
+    #nav-sidebar .model-list,
+    #nav-sidebar .addlink,
+    #nav-sidebar .changelink,
+    #nav-sidebar a[href*="add"],
+    #nav-sidebar a[href*="change"],
+    #nav-sidebar button,
+    #nav-sidebar .section-add {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Ocultar los botones verdes de "Añadir" */
+    #nav-sidebar a[class*="addlink"],
+    #nav-sidebar a[class*="add-link"],
+    #nav-sidebar .action-add,
+    #nav-sidebar span:contains("+"),
+    #nav-sidebar *:has(> .add),
+    #nav-sidebar ul li a[href$="/add/"] {
         display: none !important;
     }
     
-    /* Solo mostrar el enlace principal de cada app como card */
+    /* Solo mostrar el título principal de cada app como card */
     .app-label {
-        display: flex;
+        display: flex !important;
         align-items: center;
         padding: 1rem 1.25rem;
-        margin: 0.75rem 1rem;
+        margin: 0.5rem 1rem;
         color: var(--text-primary);
         font-weight: 600;
         text-decoration: none !important;
@@ -535,6 +553,7 @@
         background: var(--card-bg);
         border: 1px solid rgba(0, 212, 255, 0.2);
         cursor: pointer;
+        position: relative;
     }
 
     .app-label:hover {
@@ -561,6 +580,17 @@
         border-color: var(--neon-green);
         box-shadow: var(--glow-green);
         color: var(--neon-green);
+    }
+    
+    /* Ocultar iconos de flechas y otros elementos */
+    .app-label i:not(:first-child),
+    .app-label svg {
+        display: none !important;
+    }
+    
+    /* Espaciado entre cards */
+    #nav-sidebar > div {
+        margin-bottom: 0.5rem;
     }
 
     /* ==================
@@ -834,14 +864,45 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Toggle sidebar en móvil
-    const sidebarToggle = document.querySelector('.sidebar-toggle');
+    // LIMPIAR SIDEBAR - Eliminar todos los botones y enlaces no deseados
     const sidebar = document.getElementById('nav-sidebar');
+    if (sidebar) {
+        // Eliminar todos los botones de "Añadir"
+        const addButtons = sidebar.querySelectorAll('a[href*="/add/"], .addlink, .add-link, button, [class*="add"]');
+        addButtons.forEach(btn => btn.remove());
+        
+        // Eliminar todas las listas de modelos
+        const modelLists = sidebar.querySelectorAll('.model-list, ul');
+        modelLists.forEach(list => list.remove());
+        
+        // Eliminar elementos que contengan "+" o "Añadir"
+        const textNodes = sidebar.querySelectorAll('a, span');
+        textNodes.forEach(node => {
+            if (node.textContent.includes('+') || 
+                node.textContent.toLowerCase().includes('añadir') ||
+                node.textContent.toLowerCase().includes('add') ||
+                node.href && (node.href.includes('/add/') || node.href.includes('/change/'))) {
+                node.remove();
+            }
+        });
+        
+        // Mantener solo los app-label (títulos principales)
+        const allLinks = sidebar.querySelectorAll('a:not(.app-label)');
+        allLinks.forEach(link => {
+            if (!link.classList.contains('app-label')) {
+                link.remove();
+            }
+        });
+    }
     
-    if (sidebarToggle) {
+    // Toggle sidebar en móvil
+    const sidebarToggle = document.querySelector('.sidebar-toggle, .mobile-toggle');
+    
+    if (sidebarToggle && sidebar) {
         sidebarToggle.addEventListener('click', function() {
             sidebar.classList.toggle('show');
             document.body.classList.toggle('sidebar-open');
+            document.body.classList.toggle('nav-open');
         });
     }
 
@@ -853,19 +914,14 @@ document.addEventListener('DOMContentLoaded', function() {
             !sidebarToggle.contains(e.target)) {
             sidebar.classList.remove('show');
             document.body.classList.remove('sidebar-open');
+            document.body.classList.remove('nav-open');
         }
     });
-
-    // Hacer las secciones de app colapsables
-    const appLabels = document.querySelectorAll('.app-label');
-    appLabels.forEach(function(label) {
-        label.addEventListener('click', function() {
-            const modelList = this.nextElementSibling;
-            if (modelList && modelList.classList.contains('model-list')) {
-                modelList.classList.toggle('collapsed');
-                this.classList.toggle('collapsed');
-            }
-        });
+    
+    // Agregar espaciado visual
+    const appModules = sidebar.querySelectorAll('[class*="app-"]');
+    appModules.forEach(module => {
+        module.style.marginBottom = '0.5rem';
     });
 });
 </script>
