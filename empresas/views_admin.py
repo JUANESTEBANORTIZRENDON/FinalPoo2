@@ -1,3 +1,28 @@
+"""
+Vistas de Administración del Holding
+
+NOTA DE SEGURIDAD - HTTP METHODS:
+==================================
+Algunas vistas en este archivo usan @require_http_methods(['GET', 'POST'])
+Esto es el patrón estándar de Django para manejadores de formularios:
+
+✅ SEGURO porque:
+1. GET: Muestra formulario (solo lectura, no modifica estado)
+2. POST: Procesa formulario (protegido por CSRF middleware)
+3. Django's CsrfViewMiddleware verifica token automáticamente
+4. Todas las vistas requieren autenticación (@login_required)
+5. Verificación adicional de permisos (es_administrador_holding)
+
+Vistas afectadas:
+- asignar_usuario_empresa (línea ~216)
+- crear_empresa (línea ~226)
+- editar_empresa (línea ~236)
+- crear_usuario (línea ~340)
+- editar_usuario (línea ~350)
+
+📚 Documentación completa: SECURITY_HTTP_METHODS_REVIEWED.md
+"""
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
