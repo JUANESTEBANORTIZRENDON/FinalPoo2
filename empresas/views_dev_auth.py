@@ -50,10 +50,11 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 @login_required
-@require_http_methods(['GET', 'POST'])
+@require_http_methods(['GET', 'POST'])  # GET: muestra formulario, POST: procesa - CSRF protegido por Django
 def dev_auth_required(request):
     """
     Vista que solicita contraseña de desarrollador antes de acceder al Django Admin.
+    Seguridad: Requiere autenticación + contraseña adicional de desarrollador.
     """
     # Verificar que el usuario sea administrador del holding
     if not _es_admin_holding(request.user):

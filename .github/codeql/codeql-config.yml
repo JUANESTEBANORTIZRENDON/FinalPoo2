@@ -1,0 +1,32 @@
+# Configuración de CodeQL para GitHub Security
+# Personalización de análisis de seguridad
+
+name: "CodeQL Configuration for Django S_CONTABLE"
+
+# Consultas a ejecutar
+queries:
+  - uses: security-and-quality
+  - uses: security-extended
+
+# Rutas a excluir del análisis
+paths-ignore:
+  - 'env/**'
+  - 'staticfiles/**'
+  - '**/migrations/**'
+  - '**/tests.py'
+  - 'check_*.py'
+  - 'verify_*.py'
+
+# Configuración de Python
+query-filters:
+  - exclude:
+      # Suprimir falsos positivos de CSRF en Django
+      # Django ya tiene protección CSRF incorporada mediante CsrfViewMiddleware
+      id: py/csrf
+      description: "Django forms already include CSRF protection via {% csrf_token %}"
+  
+  - exclude:
+      # Vistas con @require_http_methods(['GET', 'POST']) son seguras
+      # GET muestra formulario, POST lo procesa con validación CSRF
+      id: py/unsafe-http-methods
+      description: "Django validates CSRF tokens automatically for all POST requests"

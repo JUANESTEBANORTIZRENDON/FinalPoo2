@@ -213,7 +213,7 @@ def gestionar_usuarios(request):
         'roles_choices': PerfilEmpresa.ROL_CHOICES,
     }
 @login_required
-@require_http_methods(['GET', 'POST'])
+@require_http_methods(['GET', 'POST'])  # GET: muestra formulario, POST: procesa - CSRF protegido por Django
 def asignar_usuario_empresa(request, usuario_id):
     """Vista para asignar un usuario a una empresa con un rol específico"""
     if not es_administrador_holding(request.user):
@@ -223,7 +223,7 @@ def asignar_usuario_empresa(request, usuario_id):
     # ... (rest of the function remains the same)
 
 @login_required
-@require_http_methods(['GET', 'POST'])
+@require_http_methods(['GET', 'POST'])  # GET: muestra formulario, POST: procesa - CSRF protegido por Django
 def crear_empresa(request):
     """Vista para crear una nueva empresa"""
     if not es_administrador_holding(request.user):
@@ -233,7 +233,7 @@ def crear_empresa(request):
     # ... (rest of the function remains the same)
 
 @login_required
-@require_http_methods(['GET', 'POST'])
+@require_http_methods(['GET', 'POST'])  # GET: muestra formulario, POST: procesa - CSRF protegido por Django
 def editar_empresa(request, empresa_id):
     """Vista para editar una empresa existente"""
     if not es_administrador_holding(request.user):
@@ -337,7 +337,7 @@ def ajax_empresa_info(request, empresa_id):
     })
 
 @login_required
-@require_http_methods(['GET', 'POST'])
+@require_http_methods(['GET', 'POST'])  # GET: muestra formulario, POST: procesa - CSRF protegido por Django
 def crear_usuario(request):
     """Vista para crear un nuevo usuario"""
     if not es_administrador_holding(request.user):
@@ -347,7 +347,7 @@ def crear_usuario(request):
     # ... (rest of the function remains the same)
 
 @login_required
-@require_http_methods(['GET', 'POST'])
+@require_http_methods(['GET', 'POST'])  # GET: muestra formulario, POST: procesa - CSRF protegido por Django
 def editar_usuario(request, usuario_id):
     """Vista para editar un usuario existente"""
     if not es_administrador_holding(request.user):
