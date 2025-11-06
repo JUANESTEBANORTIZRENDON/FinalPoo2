@@ -270,8 +270,17 @@
 
 {% block extra_js %}
 <script>
+// Función para escapar HTML y prevenir XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function verDetalleEmpresa(empresaId) {
     const modal = new bootstrap.Modal(document.getElementById('detalleEmpresaModal'));
+    modal.show();
+    
     const content = document.getElementById('detalleEmpresaContent');
     
     // Mostrar loading
@@ -283,8 +292,6 @@ function verDetalleEmpresa(empresaId) {
         </output>
     `;
     
-    modal.show();
-    
     // Cargar datos via AJAX
     fetch(`/empresas/admin/ajax/empresa/${empresaId}/`)
         .then(response => response.json())
@@ -293,10 +300,10 @@ function verDetalleEmpresa(empresaId) {
                 <div class="row">
                     <div class="col-md-6">
                         <h6>Información General</h6>
-                        <p><strong>Razón Social:</strong> ${data.empresa.razon_social}</p>
-                        <p><strong>NIT:</strong> ${data.empresa.nit}</p>
-                        <p><strong>Email:</strong> ${data.empresa.email}</p>
-                        <p><strong>Teléfono:</strong> ${data.empresa.telefono}</p>
+                        <p><strong>Razón Social:</strong> ${escapeHtml(data.empresa.razon_social)}</p>
+                        <p><strong>NIT:</strong> ${escapeHtml(data.empresa.nit)}</p>
+                        <p><strong>Email:</strong> ${escapeHtml(data.empresa.email)}</p>
+                        <p><strong>Teléfono:</strong> ${escapeHtml(data.empresa.telefono)}</p>
                         <p><strong>Estado:</strong> ${data.empresa.activa ? 'Activa' : 'Inactiva'}</p>
                     </div>
                     <div class="col-md-6">
@@ -304,8 +311,8 @@ function verDetalleEmpresa(empresaId) {
                         ${data.usuarios.length > 0 ? 
                             data.usuarios.map(usuario => `
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span>${usuario.nombre}</span>
-                                    <span class="badge badge-${usuario.rol}">${usuario.rol}</span>
+                                    <span>${escapeHtml(usuario.nombre)}</span>
+                                    <span class="badge badge-${escapeHtml(usuario.rol)}">${escapeHtml(usuario.rol)}</span>
                                 </div>
                             `).join('') :
                             '<p class="text-muted">No hay usuarios asignados</p>'

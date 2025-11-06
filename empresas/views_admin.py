@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Count, Q
@@ -18,6 +19,7 @@ from contabilidad.models import Asiento
 # Constantes para evitar duplicación de literales
 MSG_NO_PERMISOS = 'No tienes permisos para acceder a esta sección.'
 URL_LOGIN = 'accounts:login'
+URL_DASHBOARD = 'accounts:dashboard'
 URL_GESTIONAR_USUARIOS = 'empresas:admin_gestionar_usuarios'
 URL_GESTIONAR_EMPRESAS = 'empresas:admin_gestionar_empresas'
 TEMPLATE_EMPRESA_FORM = 'empresas/admin/empresa_form.html'
@@ -37,6 +39,7 @@ def es_administrador_holding(user):
 
 
 @login_required
+@require_http_methods(["GET"])
 def dashboard_admin(request):
     """Dashboard principal del administrador del holding"""
     if not es_administrador_holding(request.user):
@@ -110,6 +113,7 @@ def dashboard_admin(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def gestionar_empresas(request):
     """Vista para gestionar todas las empresas del holding"""
     if not es_administrador_holding(request.user):
@@ -155,6 +159,7 @@ def gestionar_empresas(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def gestionar_usuarios(request):
     """Vista para gestionar todos los usuarios del sistema"""
     if not es_administrador_holding(request.user):
@@ -270,6 +275,7 @@ def asignar_usuario_empresa(request, usuario_id):
 
 
 @login_required
+@require_http_methods(["POST"])
 def desactivar_asignacion(request, perfil_id):
     """Desactivar una asignación de usuario-empresa"""
     if not es_administrador_holding(request.user):
@@ -285,6 +291,7 @@ def desactivar_asignacion(request, perfil_id):
 
 
 @login_required
+@require_http_methods(["GET"])
 def estadisticas_holding(request):
     """Vista con estadísticas detalladas del holding"""
     if not es_administrador_holding(request.user):
@@ -345,6 +352,7 @@ def estadisticas_holding(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def ajax_empresa_info(request, empresa_id):
     """Vista AJAX para obtener información de una empresa"""
     if not es_administrador_holding(request.user):
@@ -522,6 +530,7 @@ def editar_empresa(request, empresa_id):
 
 
 @login_required
+@require_http_methods(["GET"])
 def ver_empresa(request, empresa_id):
     """Vista para ver detalles de una empresa"""
     if not es_administrador_holding(request.user):
@@ -552,6 +561,7 @@ def ver_empresa(request, empresa_id):
 
 
 @login_required
+@require_http_methods(["POST"])
 def eliminar_empresa(request, empresa_id):
     """Vista para eliminar una empresa"""
     if not es_administrador_holding(request.user):
@@ -806,6 +816,7 @@ def editar_usuario(request, usuario_id):
 
 
 @login_required
+@require_http_methods(["GET"])
 def ver_usuario(request, usuario_id):
     """Vista para ver detalles de un usuario"""
     if not es_administrador_holding(request.user):
@@ -838,6 +849,7 @@ def ver_usuario(request, usuario_id):
 # ===== VISTA DEL HISTORIAL DE CAMBIOS =====
 
 @login_required
+@require_http_methods(["GET"])
 def historial_cambios(request):
     """Vista para mostrar el historial de cambios de todos los usuarios"""
     if not es_administrador_holding(request.user):
@@ -947,6 +959,7 @@ def historial_cambios(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def detalle_historial_cambio(request, cambio_id):
     """Vista para mostrar el detalle completo de un cambio"""
     if not es_administrador_holding(request.user):
@@ -962,7 +975,6 @@ def detalle_historial_cambio(request, cambio_id):
     return render(request, 'empresas/admin/detalle_historial_cambio.html', context)
 
 
-@login_required
 def _aplicar_filtros_historial_exportar(historial, request):
     """Aplicar filtros básicos al queryset de historial"""
     usuario_id = request.GET.get('usuario')
@@ -1022,6 +1034,8 @@ def _generar_fila_csv(cambio):
     ]
 
 
+@login_required
+@require_http_methods(["GET"])
 def exportar_historial(request):
     """Vista para exportar el historial de cambios a CSV/Excel"""
     if not es_administrador_holding(request.user):
@@ -1060,3 +1074,86 @@ def exportar_historial(request):
         writer.writerow(_generar_fila_csv(cambio))
     
     return response
+
+
+# ===== DASHBOARDS PARA OTROS ROLES =====
+
+@login_required
+@require_http_methods(["GET"])
+def dashboard_contador(request):
+    """Dashboard para usuarios con rol de contador"""
+    # Verificar que el usuario tenga rol de contador
+    perfil = PerfilEmpresa.objects.filter(
+        usuario=request.user,
+        rol='contador',
+        activo=True
+    ).first()
+    
+    if not perfil:
+        messages.error(request, 'No tienes permisos de contador.')
+        return redirect(URL_DASHBOARD)
+    
+    # Obtener empresa activa
+    empresa_activa = getattr(request, 'empresa_activa', None)
+    
+    context = {
+        'perfil': perfil,
+        'empresa_activa': empresa_activa,
+        'titulo': 'Dashboard Contador'
+    }
+    
+    return render(request, 'empresas/contador/dashboard.html', context)
+
+
+@login_required
+@require_http_methods(["GET"])
+def dashboard_operador(request):
+    """Dashboard para usuarios con rol de operador"""
+    # Verificar que el usuario tenga rol de operador
+    perfil = PerfilEmpresa.objects.filter(
+        usuario=request.user,
+        rol='operador',
+        activo=True
+    ).first()
+    
+    if not perfil:
+        messages.error(request, 'No tienes permisos de operador.')
+        return redirect(URL_DASHBOARD)
+    
+    # Obtener empresa activa
+    empresa_activa = getattr(request, 'empresa_activa', None)
+    
+    context = {
+        'perfil': perfil,
+        'empresa_activa': empresa_activa,
+        'titulo': 'Dashboard Operador'
+    }
+    
+    return render(request, 'empresas/operador/dashboard.html', context)
+
+
+@login_required
+@require_http_methods(["GET"])
+def dashboard_observador(request):
+    """Dashboard para usuarios con rol de observador"""
+    # Verificar que el usuario tenga rol de observador
+    perfil = PerfilEmpresa.objects.filter(
+        usuario=request.user,
+        rol='observador',
+        activo=True
+    ).first()
+    
+    if not perfil:
+        messages.error(request, 'No tienes permisos de observador.')
+        return redirect(URL_DASHBOARD)
+    
+    # Obtener empresa activa
+    empresa_activa = getattr(request, 'empresa_activa', None)
+    
+    context = {
+        'perfil': perfil,
+        'empresa_activa': empresa_activa,
+        'titulo': 'Dashboard Observador'
+    }
+    
+    return render(request, 'empresas/observador/dashboard.html', context)

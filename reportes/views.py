@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse, HttpResponse
 from .models import ReporteGenerado, ConfiguracionReporte
 
@@ -65,6 +66,7 @@ def generar_libro_diario(request):
     return redirect('reportes:diario')
 
 @login_required
+@require_http_methods(["GET"])
 def exportar_libro_diario(request):
     return HttpResponse("CSV")
 
@@ -73,6 +75,7 @@ def generar_libro_mayor(request):
     return redirect('reportes:mayor')
 
 @login_required
+@require_http_methods(["GET"])
 def exportar_libro_mayor(request):
     return HttpResponse("CSV")
 
@@ -81,6 +84,7 @@ def generar_balance_comprobacion(request):
     return redirect('reportes:balance_comprobacion')
 
 @login_required
+@require_http_methods(["GET"])
 def exportar_balance_comprobacion(request):
     return HttpResponse("CSV")
 
@@ -89,6 +93,7 @@ def generar_estado_resultados(request):
     return redirect('reportes:estado_resultados')
 
 @login_required
+@require_http_methods(["GET"])
 def exportar_estado_resultados(request):
     return HttpResponse("CSV")
 
@@ -97,6 +102,7 @@ def generar_balance_general(request):
     return redirect('reportes:balance_general')
 
 @login_required
+@require_http_methods(["GET"])
 def exportar_balance_general(request):
     return HttpResponse("CSV")
 
@@ -105,18 +111,22 @@ def generar_flujo_efectivo(request):
     return redirect('reportes:flujo_efectivo')
 
 @login_required
+@require_http_methods(["GET"])
 def exportar_flujo_efectivo(request):
     return HttpResponse("CSV")
 
 @login_required
+@require_http_methods(["POST"])
 def usar_configuracion(request, pk):
     return redirect('reportes:index')
 
 @login_required
+@require_http_methods(["GET"])
 def descargar_reporte(request, pk):
     return HttpResponse("Archivo")
 
 @login_required
+@require_http_methods(["GET"])
 def validar_periodo_reporte(request):
     return JsonResponse({'valido': True})
 

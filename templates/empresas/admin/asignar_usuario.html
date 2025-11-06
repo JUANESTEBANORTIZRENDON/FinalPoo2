@@ -181,10 +181,13 @@
                         <small class="text-muted">
                             Asignado: {{ asignacion.fecha_asignacion|date:"d/m/Y" }}
                         </small>
-                        <button type="button" class="btn btn-sm btn-outline-danger" 
-                                onclick="desactivarAsignacion({{ asignacion.id }})">
-                            🗑️ Quitar
-                        </button>
+                        <form method="post" action="{% url 'empresas:admin_desactivar_asignacion' asignacion.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                    onclick="return confirm('¿Estás seguro de que deseas quitar esta asignación?');">
+                                🗑️ Quitar
+                            </button>
+                        </form>
                     </div>
                 </div>
                 {% empty %}
@@ -211,12 +214,6 @@
 
 {% block extra_js %}
 <script>
-function desactivarAsignacion(perfilId) {
-    if (confirm('¿Estás seguro de que deseas quitar esta asignación?')) {
-        globalThis.location.href = `/empresas/admin/desactivar-asignacion/${perfilId}/`;
-    }
-}
-
 // Validación del formulario
 document.querySelector('form').addEventListener('submit', function(e) {
     const empresa = document.getElementById('empresa_id').value;

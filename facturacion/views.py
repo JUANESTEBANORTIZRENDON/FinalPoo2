@@ -2,8 +2,12 @@ from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse, HttpResponse
 from .models import Factura, FacturaDetalle
+
+# Constante para evitar duplicación del literal de URL
+FACTURA_DETALLE_URL = 'facturacion:detalle'
 
 # Vistas temporales básicas
 class FacturaListView(LoginRequiredMixin, ListView):
@@ -50,33 +54,41 @@ class FacturaReporteView(LoginRequiredMixin, TemplateView):
     template_name = 'facturacion/reporte.html'
 
 @login_required
+@require_http_methods(["POST"])
 def confirmar_factura(request, pk):
-    return redirect('facturacion:detalle', pk=pk)
+    return redirect(FACTURA_DETALLE_URL, pk=pk)
 
 @login_required
+@require_http_methods(["POST"])
 def anular_factura(request, pk):
-    return redirect('facturacion:detalle', pk=pk)
+    return redirect(FACTURA_DETALLE_URL, pk=pk)
 
 @login_required
+@require_http_methods(["POST"])
 def duplicar_factura(request, pk):
     return redirect('facturacion:crear')
 
 @login_required
+@require_http_methods(["GET"])
 def factura_pdf(request, pk):
     return HttpResponse("PDF")
 
 @login_required
+@require_http_methods(["GET"])
 def factura_imprimir(request, pk):
     return HttpResponse("Imprimir")
 
 @login_required
+@require_http_methods(["GET"])
 def exportar_facturas(request):
     return HttpResponse("Exportar")
 
 @login_required
+@require_http_methods(["GET"])
 def obtener_siguiente_numero(request):
     return JsonResponse({'numero': '000001'})
 
 @login_required
+@require_http_methods(["POST"])
 def calcular_totales_factura(request):
     return JsonResponse({'totales': {}})

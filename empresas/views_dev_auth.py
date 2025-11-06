@@ -5,6 +5,7 @@ Requiere contraseña adicional de desarrollador para mayor seguridad.
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.conf import settings
 from django.http import HttpResponseForbidden

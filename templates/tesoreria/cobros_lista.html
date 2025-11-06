@@ -1,0 +1,201 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Lista de Cobros - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-hand-holding-usd text-success"></i>
+                                Cobros Registrados
+                            </h2>
+                            <p class="text-muted mb-0">Gestión de cobros a clientes de {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="{% url 'tesoreria:cobros_crear' %}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Nuevo Cobro
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="cliente" class="form-label">Cliente</label>
+                            <input type="text" id="cliente" name="cliente" class="form-control" placeholder="Buscar por cliente...">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="fecha_desde" class="form-label">Fecha Desde</label>
+                            <input type="date" id="fecha_desde" name="fecha_desde" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="fecha_hasta" class="form-label">Fecha Hasta</label>
+                            <input type="date" id="fecha_hasta" name="fecha_hasta" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="estado" class="form-label">Estado</label>
+                            <select id="estado" name="estado" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="borrador">Borrador</option>
+                                <option value="confirmado">Confirmado</option>
+                                <option value="anulado">Anulado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                            <a href="{% url 'tesoreria:cobros_lista' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo"></i> Limpiar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Cobros -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i>
+                        Cobros
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if object_list %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Fecha</th>
+                                        <th>Cliente</th>
+                                        <th>Método de Pago</th>
+                                        <th>Valor</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cobro in object_list %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ cobro.numero_pago }}</strong>
+                                        </td>
+                                        <td>{{ cobro.fecha_pago|date:"d/m/Y" }}</td>
+                                        <td>
+                                            <i class="fas fa-user text-primary"></i>
+                                            {{ cobro.tercero.razon_social }}
+                                            <br>
+                                            <small class="text-muted">{{ cobro.tercero.numero_documento }}</small>
+                                        </td>
+                                        <td>{{ cobro.metodo_pago.nombre }}</td>
+                                        <td>
+                                            <strong class="text-success">${{ cobro.valor|floatformat:2 }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if cobro.estado == 'borrador' %}
+                                                <span class="badge bg-warning">Borrador</span>
+                                            {% elif cobro.estado == 'confirmado' %}
+                                                <span class="badge bg-success">Confirmado</span>
+                                            {% elif cobro.estado == 'anulado' %}
+                                                <span class="badge bg-danger">Anulado</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" aria-label="Acciones del cobro">
+                                                <a href="{% url 'tesoreria:pagos_detalle' cobro.pk %}" 
+                                                   class="btn btn-outline-primary" 
+                                                   title="Ver detalles"
+                                                   aria-label="Ver detalles del cobro">
+                                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                                </a>
+                                                {% if cobro.estado == 'borrador' %}
+                                                <a href="{% url 'tesoreria:pagos_editar' cobro.pk %}" 
+                                                   class="btn btn-outline-warning" 
+                                                   title="Editar"
+                                                   aria-label="Editar cobro">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay cobros registrados.</p>
+                            <a href="{% url 'tesoreria:cobros_crear' %}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Registrar Primer Cobro
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen -->
+    {% if object_list %}
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-success">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Total Cobros</h6>
+                    <h3 class="text-success mb-0">{{ object_list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Valor Total</h6>
+                    <h3 class="text-primary mb-0">
+                        ${% widthratio object_list|length 1 1 as total %}
+                        {% for cobro in object_list %}
+                            {% if forloop.first %}
+                                {{ cobro.valor|floatformat:2 }}
+                            {% endif %}
+                        {% endfor %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Pendientes</h6>
+                    <h3 class="text-warning mb-0">
+                        {% for cobro in object_list %}
+                            {% if cobro.estado == 'borrador' %}
+                                {% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
