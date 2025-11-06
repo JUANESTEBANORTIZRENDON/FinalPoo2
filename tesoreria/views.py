@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_safe
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse_lazy
@@ -166,6 +166,7 @@ def anular_pago(request, pk):
     return redirect(PAGOS_DETALLE_URL, pk=pk)
 
 @login_required
+@require_safe
 def cobrar_factura(request, factura_pk):
     return redirect('tesoreria:cobros_crear')
 

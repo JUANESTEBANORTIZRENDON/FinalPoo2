@@ -50,6 +50,7 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 @login_required
+@require_http_methods(['GET', 'POST'])
 def dev_auth_required(request):
     """
     Vista que solicita contraseña de desarrollador antes de acceder al Django Admin.

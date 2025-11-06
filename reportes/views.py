@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_safe, require_POST
 from django.http import JsonResponse, HttpResponse
 from .models import ReporteGenerado, ConfiguracionReporte
 
@@ -62,6 +62,7 @@ class ReporteGeneradoDetailView(LoginRequiredMixin, DetailView):
     template_name = 'reportes/historial_detalle.html'
 
 @login_required
+@require_safe
 def generar_libro_diario(request):
     return redirect('reportes:diario')
 
@@ -71,6 +72,7 @@ def exportar_libro_diario(request):
     return HttpResponse("CSV")
 
 @login_required
+@require_safe
 def generar_libro_mayor(request):
     return redirect('reportes:mayor')
 
@@ -80,6 +82,7 @@ def exportar_libro_mayor(request):
     return HttpResponse("CSV")
 
 @login_required
+@require_safe
 def generar_balance_comprobacion(request):
     return redirect('reportes:balance_comprobacion')
 
@@ -89,6 +92,7 @@ def exportar_balance_comprobacion(request):
     return HttpResponse("CSV")
 
 @login_required
+@require_safe
 def generar_estado_resultados(request):
     return redirect('reportes:estado_resultados')
 
@@ -98,6 +102,7 @@ def exportar_estado_resultados(request):
     return HttpResponse("CSV")
 
 @login_required
+@require_safe
 def generar_balance_general(request):
     return redirect('reportes:balance_general')
 
@@ -107,6 +112,7 @@ def exportar_balance_general(request):
     return HttpResponse("CSV")
 
 @login_required
+@require_safe
 def generar_flujo_efectivo(request):
     return redirect('reportes:flujo_efectivo')
 
@@ -131,5 +137,6 @@ def validar_periodo_reporte(request):
     return JsonResponse({'valido': True})
 
 @login_required
+@require_safe
 def preview_reporte(request):
     return JsonResponse({'preview': {}})
