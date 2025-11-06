@@ -14,14 +14,22 @@
        ============================================ */
     
     :root {
-        --admin-primary: #667eea;
-        --admin-secondary: #764ba2;
-        --admin-accent: #f093fb;
-        --admin-success: #4facfe;
-        --admin-warning: #f5576c;
-        --admin-dark: #2d3748;
-        --admin-light: #f7fafc;
-        --admin-sidebar-width: 260px;
+        /* Paleta de colores más profesional */
+        --admin-primary: #6366f1;
+        --admin-secondary: #4f46e5;
+        --admin-accent: #818cf8;
+        --admin-success: #34d399;
+        --admin-warning: #f43f5e;
+        --admin-dark: #1e293b;
+        --admin-gray: #64748b;
+        --admin-light: #f8fafc;
+        --admin-sidebar-width: 280px;
+        
+        /* Sombras y bordes consistentes */
+        --admin-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+        --admin-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+        --admin-shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+        --admin-border-radius: 0.5rem;
     }
 
     * {
@@ -97,7 +105,35 @@
         background: rgba(255, 255, 255, 0.15);
     }
 
-    /* Toggle sidebar móvil */
+    /* Toggle sidebar móvil y backdrop */
+    .mobile-toggle {
+        display: none;
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        margin-right: 1rem;
+    }
+
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .sidebar-backdrop.show {
+        opacity: 1;
+    }
+
+    body.nav-open {
+        overflow: hidden;
+    }
     .sidebar-toggle {
         display: none;
         background: rgba(255,255,255,0.2);
@@ -243,26 +279,32 @@
         font-weight: 600;
     }
 
-    /* Iconos para cada modelo/app */
+    /* Iconos para cada modelo/app usando FontAwesome */
     #nav-sidebar a::before {
-        content: "📄";
-        font-size: 1.2rem;
+        font-family: "Font Awesome 6 Free";
+        content: "\f15b";  /* fa-file */
+        font-weight: 900;
+        font-size: 1rem;
+        width: 20px;
+        text-align: center;
+        margin-right: 8px;
+        opacity: 0.8;
     }
 
-    #nav-sidebar .addlink::before { content: "➕"; }
-    #nav-sidebar .changelink::before { content: "✏️"; }
-    #nav-sidebar .viewlink::before { content: "👁️"; }
+    #nav-sidebar .addlink::before { content: "\f067"; }  /* fa-plus */
+    #nav-sidebar .changelink::before { content: "\f304"; }  /* fa-pen */
+    #nav-sidebar .viewlink::before { content: "\f06e"; }  /* fa-eye */
     
-    /* Iconos por app */
-    .app-accounts .app-label::before { content: "👤 "; font-size: 1.2rem; }
-    .app-auth .app-label::before { content: "🔐 "; font-size: 1.2rem; }
-    .app-empresas .app-label::before { content: "🏢 "; font-size: 1.2rem; }
-    .app-catalogos .app-label::before { content: "📦 "; font-size: 1.2rem; }
-    .app-facturacion .app-label::before { content: "🧾 "; font-size: 1.2rem; }
-    .app-tesoreria .app-label::before { content: "💰 "; font-size: 1.2rem; }
-    .app-contabilidad .app-label::before { content: "📊 "; font-size: 1.2rem; }
-    .app-reportes .app-label::before { content: "📈 "; font-size: 1.2rem; }
-    .app-ventas .app-label::before { content: "🛒 "; font-size: 1.2rem; }
+    /* Iconos por app usando FontAwesome */
+    .app-accounts .app-label::before { font-family: "Font Awesome 6 Free"; content: "\f007"; font-weight: 900; }
+    .app-auth .app-label::before { font-family: "Font Awesome 6 Free"; content: "\f023"; font-weight: 900; }
+    .app-empresas .app-label::before { font-family: "Font Awesome 6 Free"; content: "\f1ad"; font-weight: 900; }
+    .app-catalogos .app-label::before { font-family: "Font Awesome 6 Free"; content: "\f466"; font-weight: 900; }
+    .app-facturacion .app-label::before { font-family: "Font Awesome 6 Free"; content: "\f571"; font-weight: 900; }
+    .app-tesoreria .app-label::before { font-family: "Font Awesome 6 Free"; content: "\f81d"; font-weight: 900; }
+    .app-contabilidad .app-label::before { font-family: "Font Awesome 6 Free"; content: "\f200"; font-weight: 900; }
+    .app-reportes .app-label::before { font-family: "Font Awesome 6 Free"; content: "\f201"; font-weight: 900; }
+    .app-ventas .app-label::before { font-family: "Font Awesome 6 Free"; content: "\f290"; font-weight: 900; }
 
     /* ==================
        CONTENT AREA
@@ -277,11 +319,23 @@
     /* Módulos y cards */
     .module {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        border-radius: var(--admin-border-radius);
+        box-shadow: var(--admin-shadow-md);
         margin-bottom: 1.5rem;
         overflow: hidden;
-        border: 1px solid rgba(0,0,0,0.05);
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .module h2 {
@@ -342,6 +396,157 @@
     tbody td {
         padding: 1rem;
     }
+
+    /* ==================
+       RESPONSIVE DESIGN
+       ================== */
+    @media (max-width: 992px) {
+        :root {
+            --admin-sidebar-width: 240px;
+        }
+        
+        .mobile-toggle {
+            display: block;
+        }
+        
+        #nav-sidebar {
+            transform: translateX(-100%);
+        }
+        
+        body.nav-open #nav-sidebar {
+            transform: translateX(0);
+        }
+        
+        body.nav-open .sidebar-backdrop {
+            display: block;
+        }
+        
+        #content {
+            margin-left: 0 !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        #header {
+            padding: 0.75rem 1rem;
+        }
+        
+        #header h1 {
+            font-size: 1.25rem;
+        }
+        
+        #user-tools {
+            font-size: 0.9rem;
+        }
+        
+        #content {
+            padding: 1rem;
+        }
+        
+        .module {
+            border-radius: var(--admin-border-radius);
+            margin-bottom: 1rem;
+        }
+        
+        .module h2,
+        .module caption {
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+        }
+        
+        thead th {
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        tbody td {
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        #header h1 {
+            font-size: 1.1rem;
+        }
+        
+        #user-tools {
+            display: none;
+        }
+        
+        #content {
+            padding: 0.75rem;
+        }
+        
+        .module {
+            border-radius: var(--admin-border-radius);
+            margin-bottom: 0.75rem;
+        }
+        
+        .button, input[type=submit], input[type=button] {
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .aligned label {
+            width: 100%;
+            padding: 0.5rem 0;
+        }
+        
+        form .aligned p.help {
+            margin-left: 0;
+            padding-left: 0;
+        }
+    }
+
+    /* ==================
+       SIDEBAR CARDS STYLE
+       ================== */
+    .app-label {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        margin: 0.5rem 1rem;
+        color: var(--admin-dark);
+        font-weight: 600;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        border-radius: var(--admin-border-radius);
+        background: white;
+        box-shadow: var(--admin-shadow-sm);
+    }
+
+    .app-label:hover {
+        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: var(--admin-shadow-md);
+    }
+    
+    .app-label::before {
+        margin-right: 12px;
+        font-size: 1.1rem;
+        opacity: 0.9;
+        width: 24px;
+        text-align: center;
+    }
+
+    .model-list {
+        display: none !important;  /* Ocultar lista de modelos */
+    }
+
+    /* Estilos específicos para cada módulo */
+    .app-accounts .app-label { background: rgba(99, 102, 241, 0.1); }
+    .app-auth .app-label { background: rgba(79, 70, 229, 0.1); }
+    .app-empresas .app-label { background: rgba(129, 140, 248, 0.1); }
+    .app-catalogos .app-label { background: rgba(52, 211, 153, 0.1); }
+    .app-facturacion .app-label { background: rgba(244, 63, 94, 0.1); }
+    .app-tesoreria .app-label { background: rgba(244, 63, 94, 0.1); }
+    .app-contabilidad .app-label { background: rgba(99, 102, 241, 0.1); }
+    .app-reportes .app-label { background: rgba(79, 70, 229, 0.1); }
+    .app-ventas .app-label { background: rgba(129, 140, 248, 0.1); }
 
     /* ==================
        BUTTONS & FORMS

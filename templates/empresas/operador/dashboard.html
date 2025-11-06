@@ -185,5 +185,96 @@
         transform: translateY(-2px);
         transition: all 0.3s ease;
     }
+
+    /* Responsive Dashboard Operador */
+    @media (max-width: 992px) {
+        .card h3 {
+            font-size: 1.75rem;
+        }
+        .card h6 {
+            font-size: 1rem;
+        }
+        .display-4 {
+            font-size: 2.5rem;
+        }
+        .d-flex.gap-2 {
+            flex-wrap: wrap;
+        }
+        .d-flex.gap-2 .btn {
+            flex: 1;
+            min-width: 150px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .row.mb-4 {
+            margin-bottom: 1rem !important;
+        }
+        .col-md-3, .col-md-4 {
+            margin-bottom: 1rem;
+        }
+        .card {
+            margin-bottom: 0;
+        }
+        .card-body {
+            padding: 1rem;
+        }
+        h5 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .text-muted {
+            font-size: 0.85rem;
+        }
+        .display-4 {
+            font-size: 2rem;
+            margin-bottom: 0.75rem !important;
+        }
+        .breadcrumb {
+            margin-bottom: 1rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        h2 {
+            font-size: 1.5rem;
+        }
+        .card h3 {
+            font-size: 1.25rem;
+        }
+        .card h6 {
+            font-size: 0.85rem;
+        }
+        small {
+            font-size: 0.75rem;
+        }
+        .display-4 {
+            font-size: 1.75rem;
+        }
+        h4 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem !important;
+        }
+        .card-body {
+            padding: 0.75rem;
+        }
+        .col-md-3, .col-md-4 {
+            padding: 0 0.5rem;
+        }
+        .badge {
+            font-size: 0.75rem;
+        }
+        .d-flex.gap-2 {
+            flex-direction: column;
+        }
+        .d-flex.gap-2 .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
 </style>
 {% endblock %}
