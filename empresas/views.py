@@ -6,6 +6,8 @@ from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse_lazy
+from django.db.models import Count, Sum
+from datetime import datetime
 from .models import Empresa, PerfilEmpresa, EmpresaActiva
 
 # Constante para evitar duplicación del literal de URL
@@ -149,3 +151,107 @@ def seleccionar_empresa(request):
             messages.error(request, 'Empresa no especificada.')
     
     return redirect('accounts:dashboard')
+
+
+@login_required
+def contador_dashboard(request):
+    """Dashboard específico para usuarios con rol contador"""
+    try:
+        empresa_activa = EmpresaActiva.objects.select_related('empresa').get(usuario=request.user).empresa
+        perfil = PerfilEmpresa.objects.get(usuario=request.user, empresa=empresa_activa, activo=True)
+        
+        # Verificar que el usuario tenga rol contador
+        if perfil.rol != 'contador':
+            messages.warning(request, 'No tienes permisos de contador para esta empresa.')
+            return redirect('accounts:dashboard')
+        
+        # Obtener estadísticas del mes actual
+        mes_actual = datetime.now().month
+        anio_actual = datetime.now().year
+        
+        context = {
+            'empresa_activa': empresa_activa,
+            'perfil': perfil,
+            'asientos_mes': 0,  # TODO: Implementar cuando exista el modelo
+            'total_cuentas': 0,  # TODO: Implementar cuando exista el modelo
+            'facturas_mes': 0,  # TODO: Implementar cuando exista el modelo
+            'cobros_mes': 0,  # TODO: Implementar cuando exista el modelo
+        }
+        
+    except EmpresaActiva.DoesNotExist:
+        messages.warning(request, 'Debes seleccionar una empresa primero.')
+        return redirect('empresas:cambiar_empresa')
+    except PerfilEmpresa.DoesNotExist:
+        messages.error(request, 'No tienes un perfil activo en esta empresa.')
+        return redirect('empresas:cambiar_empresa')
+    
+    return render(request, 'empresas/contador/dashboard.html', context)
+
+
+@login_required
+def operador_dashboard(request):
+    """Dashboard específico para usuarios con rol operador"""
+    try:
+        empresa_activa = EmpresaActiva.objects.select_related('empresa').get(usuario=request.user).empresa
+        perfil = PerfilEmpresa.objects.get(usuario=request.user, empresa=empresa_activa, activo=True)
+        
+        # Verificar que el usuario tenga rol operador
+        if perfil.rol != 'operador':
+            messages.warning(request, 'No tienes permisos de operador para esta empresa.')
+            return redirect('accounts:dashboard')
+        
+        # Obtener estadísticas del mes actual
+        mes_actual = datetime.now().month
+        anio_actual = datetime.now().year
+        
+        context = {
+            'empresa_activa': empresa_activa,
+            'perfil': perfil,
+            'ventas_mes': 0,  # TODO: Implementar cuando exista el modelo
+            'facturas_mes': 0,  # TODO: Implementar cuando exista el modelo
+            'total_clientes': 0,  # TODO: Implementar cuando exista el modelo
+        }
+        
+    except EmpresaActiva.DoesNotExist:
+        messages.warning(request, 'Debes seleccionar una empresa primero.')
+        return redirect('empresas:cambiar_empresa')
+    except PerfilEmpresa.DoesNotExist:
+        messages.error(request, 'No tienes un perfil activo en esta empresa.')
+        return redirect('empresas:cambiar_empresa')
+    
+    return render(request, 'empresas/operador/dashboard.html', context)
+
+
+@login_required
+def observador_dashboard(request):
+    """Dashboard específico para usuarios con rol observador (solo lectura)"""
+    try:
+        empresa_activa = EmpresaActiva.objects.select_related('empresa').get(usuario=request.user).empresa
+        perfil = PerfilEmpresa.objects.get(usuario=request.user, empresa=empresa_activa, activo=True)
+        
+        # Verificar que el usuario tenga rol observador
+        if perfil.rol != 'observador':
+            messages.warning(request, 'No tienes permisos de observador para esta empresa.')
+            return redirect('accounts:dashboard')
+        
+        # Obtener estadísticas generales
+        mes_actual = datetime.now().month
+        anio_actual = datetime.now().year
+        
+        context = {
+            'empresa_activa': empresa_activa,
+            'perfil': perfil,
+            'asientos_mes': 0,  # TODO: Implementar cuando existan los modelos
+            'facturas_mes': 0,
+            'ventas_mes': 0,
+            'total_mes': 0,
+        }
+        
+    except EmpresaActiva.DoesNotExist:
+        messages.warning(request, 'Debes seleccionar una empresa primero.')
+        return redirect('empresas:cambiar_empresa')
+    except PerfilEmpresa.DoesNotExist:
+        messages.error(request, 'No tienes un perfil activo en esta empresa.')
+        return redirect('empresas:cambiar_empresa')
+    
+    return render(request, 'empresas/observador/dashboard.html', context)

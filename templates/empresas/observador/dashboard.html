@@ -2,168 +2,254 @@
 
 {% block title %}Dashboard Observador - S_CONTABLE{% endblock %}
 
+{% block page_title %}Dashboard Observador{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">Dashboard Observador</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h2 class="mb-1">
-                        <i class="fas fa-eye text-info"></i>
-                        Dashboard Observador
-                    </h2>
-                    <p class="text-muted mb-0">Panel de consulta y visualización (Solo lectura)</p>
-                    {% if empresa_activa %}
-                        <div class="mt-3">
-                            <span class="badge bg-info">
-                                <i class="fas fa-building"></i> {{ empresa_activa.nombre }}
-                            </span>
-                        </div>
-                    {% endif %}
-                </div>
+
+<!-- Empresa Activa -->
+{% if empresa_activa %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-info shadow-sm">
+            <div class="card-body text-center">
+                <h2 class="text-info mb-2">
+                    <i class="bi bi-eye me-2"></i>
+                    {{ empresa_activa.razon_social }}
+                </h2>
+                <p class="text-muted mb-0">{{ empresa_activa.nit_formateado }}</p>
+                <span class="badge bg-info">Rol: Observador (Solo Lectura)</span>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Métricas principales -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-white bg-info shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white-50 mb-1">Facturas</h6>
-                            <h3 class="mb-0">0</h3>
-                        </div>
-                        <i class="fas fa-file-invoice fa-2x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-secondary shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white-50 mb-1">Asientos</h6>
-                            <h3 class="mb-0">0</h3>
-                        </div>
-                        <i class="fas fa-book fa-2x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-primary shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white-50 mb-1">Pagos</h6>
-                            <h3 class="mb-0">0</h3>
-                        </div>
-                        <i class="fas fa-money-bill-wave fa-2x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-dark shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white-50 mb-1">Reportes</h6>
-                            <h3 class="mb-0">0</h3>
-                        </div>
-                        <i class="fas fa-chart-line fa-2x opacity-50"></i>
-                    </div>
-                </div>
+<!-- Estadísticas Generales -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h6><i class="bi bi-journal-text"></i> Asientos</h6>
+                <h3>{{ asientos_mes|default:0 }}</h3>
+                <small>Este mes</small>
             </div>
         </div>
     </div>
-
-    <!-- Acciones de consulta -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-search text-primary"></i>
-                        Consultas Disponibles
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <a href="{% url 'facturacion:factura_list' %}" class="btn btn-outline-info w-100 py-3">
-                                <i class="fas fa-file-invoice fa-2x d-block mb-2"></i>
-                                <span>Ver Facturas</span>
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'contabilidad:asiento_list' %}" class="btn btn-outline-secondary w-100 py-3">
-                                <i class="fas fa-book fa-2x d-block mb-2"></i>
-                                <span>Ver Asientos</span>
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'tesoreria:pago_list' %}" class="btn btn-outline-primary w-100 py-3">
-                                <i class="fas fa-money-bill-wave fa-2x d-block mb-2"></i>
-                                <span>Ver Pagos</span>
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'reportes:reporte_list' %}" class="btn btn-outline-dark w-100 py-3">
-                                <i class="fas fa-chart-bar fa-2x d-block mb-2"></i>
-                                <span>Ver Reportes</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h6><i class="bi bi-receipt"></i> Facturas</h6>
+                <h3>{{ facturas_mes|default:0 }}</h3>
+                <small>Este mes</small>
             </div>
         </div>
     </div>
-
-    <!-- Información y permisos -->
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-info-circle text-info"></i>
-                        Información
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="mb-2"><strong>Usuario:</strong> {{ user.get_full_name|default:user.username }}</p>
-                    <p class="mb-2"><strong>Rol:</strong> <span class="badge bg-info">Observador</span></p>
-                    {% if empresa_activa %}
-                        <p class="mb-0"><strong>Empresa:</strong> {{ empresa_activa.nombre }}</p>
-                    {% else %}
-                        <p class="mb-0 text-warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            No hay empresa activa seleccionada
-                        </p>
-                    {% endif %}
-                </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h6><i class="bi bi-cart"></i> Ventas</h6>
+                <h3>{{ ventas_mes|default:0 }}</h3>
+                <small>Este mes</small>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm border-warning">
-                <div class="card-header bg-warning bg-opacity-10">
-                    <h5 class="mb-0 text-warning">
-                        <i class="fas fa-lock"></i>
-                        Permisos
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-warning mb-0">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Modo Solo Lectura:</strong> Como observador, puedes consultar información pero no realizar modificaciones.
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h6><i class="bi bi-cash"></i> Total</h6>
+                <h3>${{ total_mes|floatformat:0|default:0 }}</h3>
+                <small>Movimientos</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Consultas Disponibles -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Acceso de Solo Lectura:</strong> Puedes consultar toda la información pero no realizar modificaciones.
+        </div>
+    </div>
+    
+    <div class="col-12">
+        <h4 class="mb-3"><i class="bi bi-search"></i> Consultas Disponibles</h4>
+    </div>
+    
+    <!-- Reportes Contables -->
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'reportes:diario' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-book display-4 text-primary mb-2"></i>
+                <h5>Libro Diario</h5>
+                <p class="text-muted">Consultar asientos</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'reportes:mayor' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-list-nested display-4 text-info mb-2"></i>
+                <h5>Libro Mayor</h5>
+                <p class="text-muted">Por cuenta</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'reportes:balance_comprobacion' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-bar-chart display-4 text-success mb-2"></i>
+                <h5>Balance Comprobación</h5>
+                <p class="text-muted">Sumas y saldos</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'reportes:balance_general' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-pie-chart display-4 text-warning mb-2"></i>
+                <h5>Balance General</h5>
+                <p class="text-muted">Situación financiera</p>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Consulta de Documentos -->
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'facturacion:lista' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-file-earmark-text display-4 text-primary mb-2"></i>
+                <h5>Facturas</h5>
+                <p class="text-muted">Ver emitidas</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'ventas:lista' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-cart-check display-4 text-info mb-2"></i>
+                <h5>Ventas</h5>
+                <p class="text-muted">Historial</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'contabilidad:asientos_lista' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-journal-check display-4 text-success mb-2"></i>
+                <h5>Asientos</h5>
+                <p class="text-muted">Movimientos contables</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'reportes:index' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-file-earmark-pdf display-4 text-danger mb-2"></i>
+                <h5>Todos Reportes</h5>
+                <p class="text-muted">Ver y exportar</p>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Catálogos -->
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'catalogos:clientes_lista' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-people display-4 text-primary mb-2"></i>
+                <h5>Clientes</h5>
+                <p class="text-muted">Directorio</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'catalogos:productos_lista' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-box-seam display-4 text-info mb-2"></i>
+                <h5>Productos</h5>
+                <p class="text-muted">Catálogo</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'contabilidad:cuentas_lista' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-list-ul display-4 text-success mb-2"></i>
+                <h5>Plan Cuentas</h5>
+                <p class="text-muted">PUC</p>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'empresas:historial' %}" class="card text-decoration-none hover-shadow">
+            <div class="card-body text-center">
+                <i class="bi bi-clock-history display-4 text-warning mb-2"></i>
+                <h5>Historial</h5>
+                <p class="text-muted">Auditoría</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Información de la Empresa -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-building me-2"></i>Información de la Empresa</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Razón Social:</strong> {{ empresa_activa.razon_social }}</p>
+                        <p><strong>NIT:</strong> {{ empresa_activa.nit_formateado }}</p>
+                        <p><strong>Tipo:</strong> {{ empresa_activa.tipo_empresa_display }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Ubicación:</strong> {{ empresa_activa.municipio.nombre }}, {{ empresa_activa.departamento.nombre }}</p>
+                        <p><strong>Email:</strong> {{ empresa_activa.email|default:"No registrado" }}</p>
+                        <p><strong>Teléfono:</strong> {{ empresa_activa.telefono|default:"No registrado" }}</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+{% else %}
+<!-- Sin empresa -->
+<div class="alert alert-warning">
+    <h5><i class="bi bi-exclamation-triangle"></i> Empresa Requerida</h5>
+    <p>Necesitas seleccionar una empresa para acceder al dashboard.</p>
+    <a href="{% url 'empresas:cambiar_empresa' %}" class="btn btn-primary">Seleccionar Empresa</a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hover-shadow:hover {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+</style>
 {% endblock %}
