@@ -175,125 +175,107 @@
     }
 
     /* ==================
-       SIDEBAR
+       SIDEBAR NEÓN
        ================== */
     #nav-sidebar {
         position: fixed;
-        top: 65px; /* Altura del header */
+        top: 65px;
         left: 0;
         width: var(--admin-sidebar-width);
         height: calc(100vh - 65px);
-        background: white;
-        border-right: 1px solid #e2e8f0;
+        background: var(--darker-bg) !important;
+        border-right: 1px solid rgba(0, 212, 255, 0.3) !important;
         overflow-y: auto;
         overflow-x: hidden;
         transition: transform 0.3s ease;
         z-index: 999;
-        box-shadow: 2px 0 15px rgba(0,0,0,0.05);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
         -webkit-overflow-scrolling: touch;
+        padding: 1.5rem 0;
     }
 
     #nav-sidebar::-webkit-scrollbar {
         width: 6px;
     }
 
-    #nav-sidebar::-webkit-scrollbar-thumb {
-        background: rgba(102, 126, 234, 0.3);
-        border-radius: 10px;
+    #nav-sidebar::-webkit-scrollbar-track {
+        background: var(--darker-bg);
     }
 
-    /* App sections en sidebar */
+    #nav-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(0, 212, 255, 0.3);
+        border-radius: 3px;
+    }
+
+    #nav-sidebar::-webkit-scrollbar-thumb:hover {
+        background: var(--neon-blue);
+    }
+    
+    /* Estructura de apps en sidebar */
+    #nav-sidebar > div[class*="app-"] {
+        margin-bottom: 0.75rem;
+    }
+
+    /* Título de cada app como tarjeta */
     .app-label {
-        padding: 1rem 1rem 0.5rem 1rem;
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--admin-primary);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        cursor: pointer;
+        display: block !important;
+        padding: 1rem 1.5rem;
+        margin: 0.5rem 1rem;
+        color: var(--text-primary) !important;
+        font-weight: 600;
+        text-decoration: none !important;
         transition: all 0.3s ease;
-        border-bottom: 1px solid rgba(102, 126, 234, 0.1);
-        margin-top: 0.5rem;
+        font-size: 0.95rem;
+        border-radius: 8px;
+        background: var(--card-bg) !important;
+        border: 1px solid rgba(0, 212, 255, 0.2) !important;
+        cursor: pointer;
+        text-transform: none;
+        letter-spacing: normal;
     }
 
     .app-label:hover {
-        background: rgba(102, 126, 234, 0.05);
+        border-color: var(--neon-blue) !important;
+        box-shadow: var(--glow-blue) !important;
+        transform: translateX(4px);
+        color: var(--neon-blue) !important;
+        background: var(--card-bg) !important;
+    }
+    
+    /* Iconos FontAwesome para apps */
+    .app-label::before {
+        margin-right: 12px;
+        font-size: 1.2rem;
+        color: var(--neon-green);
+        filter: drop-shadow(0 0 3px var(--neon-green));
     }
 
-    .app-label i {
-        font-size: 1rem;
-        transition: transform 0.3s ease;
+    /* Hover verde para algunos módulos */
+    .app-accounts .app-label:hover,
+    .app-empresas .app-label:hover,
+    .app-catalogos .app-label:hover {
+        border-color: var(--neon-green) !important;
+        box-shadow: var(--glow-green) !important;
+        color: var(--neon-green) !important;
     }
 
-    .app-label.collapsed i {
-        transform: rotate(-90deg);
+    /* Ocultar listas de modelos */
+    #nav-sidebar .model-list,
+    #nav-sidebar ul {
+        display: none !important;
     }
 
-    .model-list {
-        max-height: 500px;
-        overflow: hidden;
-        transition: max-height 0.3s ease, opacity 0.3s ease;
-        opacity: 1;
+    /* Ocultar todos los enlaces que no sean app-label */
+    #nav-sidebar a:not(.app-label) {
+        display: none !important;
     }
 
-    .model-list.collapsed {
-        max-height: 0;
-        opacity: 0;
+    /* Ocultar iconos de toggle */
+    .app-label svg,
+    .app-label i.fa-angle-down,
+    .app-label i.fa-chevron-down {
+        display: none !important;
     }
-
-    #nav-sidebar a {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        color: var(--admin-dark);
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border-left: 3px solid transparent;
-        gap: 0.75rem;
-    }
-
-    #nav-sidebar a:hover {
-        background: rgba(102, 126, 234, 0.08);
-        border-left-color: var(--admin-primary);
-        color: var(--admin-primary);
-    }
-
-    #nav-sidebar .current-app {
-        background: rgba(102, 126, 234, 0.1);
-        border-radius: 0;
-    }
-
-    #nav-sidebar .current-app a {
-        color: var(--admin-primary);
-        font-weight: 600;
-    }
-
-    #nav-sidebar .current-model a,
-    #nav-sidebar a.current {
-        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
-        color: white;
-        border-left-color: var(--admin-success);
-        font-weight: 600;
-    }
-
-    /* Iconos para cada modelo/app usando FontAwesome */
-    #nav-sidebar a::before {
-        font-family: "Font Awesome 6 Free";
-        content: "\f15b";  /* fa-file */
-        font-weight: 900;
-        font-size: 1rem;
-        width: 20px;
-        text-align: center;
-        margin-right: 8px;
-        opacity: 0.8;
-    }
-
-    #nav-sidebar .addlink::before { content: "\f067"; }  /* fa-plus */
-    #nav-sidebar .changelink::before { content: "\f304"; }  /* fa-pen */
-    #nav-sidebar .viewlink::before { content: "\f06e"; }  /* fa-eye */
     
     /* Iconos por app usando FontAwesome */
     .app-accounts .app-label::before { font-family: "Font Awesome 6 Free"; content: "\f007"; font-weight: 900; }
@@ -508,41 +490,32 @@
     }
 
     /* ==================
-       SIDEBAR NEÓN STYLE - LIMPIO
+       SIDEBAR NEÓN STYLE - RECONSTRUIDO
        ================== */
     #nav-sidebar {
         background: var(--darker-bg) !important;
         border-right: 1px solid rgba(0, 212, 255, 0.3) !important;
-        padding: 1rem 0;
+        padding: 1.5rem 0;
     }
 
-    /* OCULTAR COMPLETAMENTE todos los elementos no deseados */
-    #nav-sidebar .model-list,
-    #nav-sidebar .addlink,
-    #nav-sidebar .changelink,
-    #nav-sidebar a[href*="add"],
-    #nav-sidebar a[href*="change"],
-    #nav-sidebar button,
-    #nav-sidebar .section-add {
-        display: none !important;
-        visibility: hidden !important;
+    /* Estructura de cada aplicación */
+    #nav-sidebar .app-auth,
+    #nav-sidebar .app-accounts,
+    #nav-sidebar .app-empresas,
+    #nav-sidebar .app-catalogos,
+    #nav-sidebar .app-facturacion,
+    #nav-sidebar .app-tesoreria,
+    #nav-sidebar .app-contabilidad,
+    #nav-sidebar .app-reportes,
+    #nav-sidebar .app-ventas,
+    #nav-sidebar .app-api {
+        margin-bottom: 1rem;
     }
     
-    /* Ocultar los botones verdes de "Añadir" */
-    #nav-sidebar a[class*="addlink"],
-    #nav-sidebar a[class*="add-link"],
-    #nav-sidebar .action-add,
-    #nav-sidebar span:contains("+"),
-    #nav-sidebar *:has(> .add),
-    #nav-sidebar ul li a[href$="/add/"] {
-        display: none !important;
-    }
-    
-    /* Solo mostrar el título principal de cada app como card */
+    /* Título de cada app como card neón */
     .app-label {
-        display: flex !important;
-        align-items: center;
-        padding: 1rem 1.25rem;
+        display: block;
+        padding: 1rem 1.5rem;
         margin: 0.5rem 1rem;
         color: var(--text-primary);
         font-weight: 600;
@@ -553,27 +526,24 @@
         background: var(--card-bg);
         border: 1px solid rgba(0, 212, 255, 0.2);
         cursor: pointer;
-        position: relative;
     }
 
     .app-label:hover {
-        background: var(--card-bg);
         border-color: var(--neon-blue);
         box-shadow: var(--glow-blue);
         transform: translateX(4px);
         color: var(--neon-blue);
     }
     
+    /* Iconos FontAwesome antes del texto */
     .app-label::before {
         margin-right: 12px;
         font-size: 1.2rem;
-        width: 28px;
-        text-align: center;
         color: var(--neon-green);
         filter: drop-shadow(0 0 3px var(--neon-green));
     }
 
-    /* Verde neón para algunos módulos específicos */
+    /* Hover verde para algunos módulos */
     .app-accounts .app-label:hover,
     .app-empresas .app-label:hover,
     .app-catalogos .app-label:hover {
@@ -582,15 +552,21 @@
         color: var(--neon-green);
     }
     
-    /* Ocultar iconos de flechas y otros elementos */
-    .app-label i:not(:first-child),
-    .app-label svg {
+    /* Ocultar la lista de modelos debajo de cada app */
+    #nav-sidebar .model-list {
         display: none !important;
     }
     
-    /* Espaciado entre cards */
-    #nav-sidebar > div {
-        margin-bottom: 0.5rem;
+    /* Ocultar enlaces individuales de modelos */
+    #nav-sidebar a:not(.app-label) {
+        display: none !important;
+    }
+    
+    /* Ocultar iconos de toggle */
+    .app-label .fa-angle-down,
+    .app-label .fa-chevron-down,
+    .app-label svg {
+        display: none !important;
     }
 
     /* ==================
@@ -864,64 +840,59 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // LIMPIAR SIDEBAR - Eliminar todos los botones y enlaces no deseados
     const sidebar = document.getElementById('nav-sidebar');
-    if (sidebar) {
-        // Eliminar todos los botones de "Añadir"
-        const addButtons = sidebar.querySelectorAll('a[href*="/add/"], .addlink, .add-link, button, [class*="add"]');
-        addButtons.forEach(btn => btn.remove());
-        
-        // Eliminar todas las listas de modelos
-        const modelLists = sidebar.querySelectorAll('.model-list, ul');
-        modelLists.forEach(list => list.remove());
-        
-        // Eliminar elementos que contengan "+" o "Añadir"
-        const textNodes = sidebar.querySelectorAll('a, span');
-        textNodes.forEach(node => {
-            if (node.textContent.includes('+') || 
-                node.textContent.toLowerCase().includes('añadir') ||
-                node.textContent.toLowerCase().includes('add') ||
-                node.href && (node.href.includes('/add/') || node.href.includes('/change/'))) {
-                node.remove();
-            }
-        });
-        
-        // Mantener solo los app-label (títulos principales)
-        const allLinks = sidebar.querySelectorAll('a:not(.app-label)');
-        allLinks.forEach(link => {
-            if (!link.classList.contains('app-label')) {
-                link.remove();
-            }
-        });
-    }
     
     // Toggle sidebar en móvil
     const sidebarToggle = document.querySelector('.sidebar-toggle, .mobile-toggle');
+    const backdrop = document.querySelector('.sidebar-backdrop');
     
-    if (sidebarToggle && sidebar) {
+    if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function() {
             sidebar.classList.toggle('show');
-            document.body.classList.toggle('sidebar-open');
             document.body.classList.toggle('nav-open');
+            if (backdrop) {
+                backdrop.classList.toggle('show');
+            }
         });
     }
 
+    // Cerrar sidebar con backdrop
+    if (backdrop) {
+        backdrop.addEventListener('click', function() {
+            sidebar.classList.remove('show');
+            document.body.classList.remove('nav-open');
+            backdrop.classList.remove('show');
+        });
+    }
+    
     // Cerrar sidebar al hacer clic fuera en móvil
     document.addEventListener('click', function(e) {
         if (window.innerWidth <= 992 && 
             sidebar && sidebar.classList.contains('show') &&
             !sidebar.contains(e.target) &&
-            !sidebarToggle.contains(e.target)) {
+            sidebarToggle && !sidebarToggle.contains(e.target)) {
             sidebar.classList.remove('show');
-            document.body.classList.remove('sidebar-open');
             document.body.classList.remove('nav-open');
+            if (backdrop) {
+                backdrop.classList.remove('show');
+            }
         }
     });
     
-    // Agregar espaciado visual
-    const appModules = sidebar.querySelectorAll('[class*="app-"]');
-    appModules.forEach(module => {
-        module.style.marginBottom = '0.5rem';
+    // Hacer clickeable cada app-label para navegar
+    const appLabels = document.querySelectorAll('.app-label');
+    appLabels.forEach(function(label) {
+        label.addEventListener('click', function(e) {
+            // Si hay un href, navegar
+            const parentDiv = this.closest('[class*="app-"]');
+            if (parentDiv) {
+                // Obtener el primer changelink si existe
+                const changeLink = parentDiv.querySelector('a[href*="changelist"]');
+                if (changeLink) {
+                    window.location.href = changeLink.href;
+                }
+            }
+        });
     });
 });
 </script>
