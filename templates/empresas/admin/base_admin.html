@@ -50,8 +50,6 @@
             border-right: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 1000;
             transition: all 0.3s ease;
-            overflow-y: auto; /* permitir scroll en sidebar cuando el contenido sobrepasa la altura */
-            -webkit-overflow-scrolling: touch;
         }
 
         .admin-sidebar.collapsed {
@@ -63,9 +61,7 @@
             background: var(--admin-gradient);
             color: white;
             text-align: center;
-            position: sticky; /* permanece visible mientras se hace scroll en el sidebar */
-            top: 0;
-            z-index: 5;
+            position: relative;
         }
 
         .sidebar-header h3 {
@@ -101,7 +97,14 @@
 
         .sidebar-nav {
             padding: 20px 0;
-            padding-bottom: 100px; /* espacio inferior para evitar solapar el logout en pantallas pequeñas */
+            /* Hacer el nav interno scrollable para pantallas pequeñas/medianas
+               y evitar que elementos queden fuera de la vista en resoluciones
+               con poca altura. */
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            /* Restar el alto del header del sidebar para calcular el max-height */
+            max-height: calc(100vh - 140px);
+            padding-bottom: 24px;
         }
 
         .nav-item {
@@ -335,31 +338,37 @@
                 position: fixed;
                 top: 20px;
                 left: 20px;
-                z-index: 1001;
+                z-index: 1101; /* por encima del sidebar */
                 background: var(--admin-gradient);
                 color: white;
                 border: none;
-                width: 50px;
-                height: 50px;
+                width: 48px;
+                height: 48px;
                 border-radius: 50%;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            /* Añadir backdrop cuando el sidebar esté mostrado en móvil */
+            .admin-sidebar.show + .admin-backdrop {
+                display: block;
             }
 
-            /* Backdrop para móvil */
-            .sidebar-backdrop {
+            .admin-backdrop {
                 display: none;
                 position: fixed;
                 inset: 0;
                 background: rgba(0,0,0,0.45);
-                z-index: 900;
-                transition: opacity 0.25s ease;
-                opacity: 0;
+                z-index: 1100;
             }
 
-            .sidebar-backdrop.show {
-                display: block;
-                opacity: 1;
+            /* Cuando el sidebar está abierto en móvil evitar scroll del body */
+            body.no-scroll {
+                overflow: hidden;
+                height: 100vh;
             }
+            
         }
 
         @media (min-width: 769px) {
@@ -569,8 +578,8 @@
         </div>
     </nav>
 
-    <!-- Backdrop para cerrar sidebar en móvil -->
-    <div id="adminSidebarBackdrop" class="sidebar-backdrop" tabindex="-1"></div>
+    <!-- Backdrop para móvil -->
+    <div class="admin-backdrop" id="adminBackdrop" onclick="toggleMobileSidebar()" style="display:none;" aria-hidden="true"></div>
 
     <!-- Main Content -->
     <main class="admin-main">
@@ -629,32 +638,17 @@
         // Mobile sidebar toggle
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('adminSidebar');
-            const backdrop = document.getElementById('adminSidebarBackdrop');
-            const isShown = sidebar.classList.toggle('show');
-            if (backdrop) {
-                backdrop.classList.toggle('show', isShown);
+            const backdrop = document.getElementById('adminBackdrop');
+            sidebar.classList.toggle('show');
+            if (sidebar.classList.contains('show')) {
+                // Mostrar backdrop y bloquear scroll
+                if (backdrop) backdrop.style.display = 'block';
+                document.body.classList.add('no-scroll');
+            } else {
+                if (backdrop) backdrop.style.display = 'none';
+                document.body.classList.remove('no-scroll');
             }
         }
-
-        // Cerrar sidebar al hacer click fuera (backdrop)
-        document.addEventListener('DOMContentLoaded', function() {
-            const backdrop = document.getElementById('adminSidebarBackdrop');
-            const sidebar = document.getElementById('adminSidebar');
-            if (backdrop && sidebar) {
-                backdrop.addEventListener('click', function() {
-                    sidebar.classList.remove('show');
-                    backdrop.classList.remove('show');
-                });
-
-                // Cerrar con Escape
-                document.addEventListener('keydown', function(ev) {
-                    if (ev.key === 'Escape') {
-                        sidebar.classList.remove('show');
-                        backdrop.classList.remove('show');
-                    }
-                });
-            }
-        });
 
         // Auto-hide alerts after 5 seconds
         setTimeout(function() {
