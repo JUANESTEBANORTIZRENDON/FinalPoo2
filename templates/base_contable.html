@@ -34,8 +34,10 @@
             background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
             color: white;
             overflow-y: auto;
+            overflow-x: hidden;
             z-index: 1000;
             transition: transform 0.3s ease;
+            -webkit-overflow-scrolling: touch;
         }
         
         .sidebar-header {
@@ -173,6 +175,29 @@
             color: var(--primary-color);
         }
         
+        /* Backdrop móvil */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar-backdrop.show {
+            display: block;
+            opacity: 1;
+        }
+        
+        /* Hacer tablas responsive por defecto */
+        .table-responsive {
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -180,10 +205,34 @@
             
             .sidebar.show {
                 transform: translateX(0);
+                box-shadow: 2px 0 20px rgba(0,0,0,0.3);
             }
             
             .main-content {
                 margin-left: 0;
+            }
+            
+            .content-area {
+                padding: 1rem;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            /* Ocultar info de empresa en navbar móvil (ya está en sidebar) */
+            .top-navbar .d-none.d-md-block {
+                display: none !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .content-area {
+                padding: 0.75rem;
+            }
+            
+            .card {
+                margin-bottom: 1rem;
             }
         }
     </style>
@@ -191,6 +240,9 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Backdrop móvil -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -415,21 +467,34 @@
     <!-- Custom JS -->
     <script>
         // Sidebar toggle for mobile
-        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('show');
-        });
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        const toggle = document.getElementById('sidebarToggle');
         
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const toggle = document.getElementById('sidebarToggle');
-            
-            if (globalThis.innerWidth <= 768 && 
-                !sidebar.contains(event.target) && 
-                !toggle?.contains(event.target)) {
-                sidebar.classList.remove('show');
+        function toggleSidebar() {
+            sidebar.classList.toggle('show');
+            backdrop.classList.toggle('show');
+            if (sidebar.classList.contains('show')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
             }
-        });
+        }
+        
+        toggle?.addEventListener('click', toggleSidebar);
+        backdrop?.addEventListener('click', toggleSidebar);
+        
+        // Close sidebar when clicking a link on mobile
+        if (globalThis.innerWidth <= 768) {
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            for (const link of navLinks) {
+                link.addEventListener('click', function() {
+                    sidebar.classList.remove('show');
+                    backdrop.classList.remove('show');
+                    document.body.style.overflow = '';
+                });
+            }
+        }
         
         // Active nav link
         const currentPath = globalThis.location.pathname;
