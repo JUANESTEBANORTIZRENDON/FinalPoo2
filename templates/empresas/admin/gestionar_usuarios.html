@@ -45,6 +45,34 @@
         border: none;
         border-radius: 10px;
     }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .usuario-card {
+            padding: 15px;
+        }
+        .search-box {
+            padding: 15px;
+        }
+        .btn-group {
+            flex-direction: column;
+            width: 100%;
+        }
+        .btn-group .btn {
+            border-radius: 6px !important;
+            margin-bottom: 5px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .usuario-card {
+            padding: 12px;
+        }
+        .badge-rol {
+            font-size: 0.7rem;
+            padding: 3px 6px;
+        }
+    }
 </style>
 {% endblock %}
 

@@ -231,6 +231,68 @@
 
 {% include 'empresas/admin/includes/form_validation.html' %}
 
+<style>
+/* Responsive adjustments for usuario form */
+@media (max-width: 768px) {
+    .card-header h4 {
+        font-size: 1.1rem;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    .d-flex.gap-2 {
+        flex-direction: column;
+        gap: 10px !important;
+    }
+    
+    .d-flex.gap-2 .btn {
+        width: 100%;
+    }
+    
+    h6.text-secondary {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 10px;
+    }
+    
+    .card-header .btn {
+        width: 100%;
+    }
+    
+    .card-header h4 {
+        font-size: 1rem;
+    }
+    
+    h5.text-primary {
+        font-size: 1rem;
+    }
+    
+    h6.text-secondary {
+        font-size: 0.9rem;
+    }
+    
+    .form-label {
+        font-size: 0.9rem;
+    }
+    
+    .form-control, .form-check-input {
+        font-size: 0.9rem;
+    }
+    
+    .form-text {
+        font-size: 0.8rem;
+    }
+}
+</style>
+
 <script>
 // Validación de contraseñas coincidentes
 document.addEventListener('DOMContentLoaded', function() {
