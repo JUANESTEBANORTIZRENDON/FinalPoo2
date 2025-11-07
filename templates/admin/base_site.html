@@ -792,7 +792,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // console.log('🚀 Inicializando Panel Desarrollador');
+    console.log('🚀 Inicializando Panel Desarrollador');
     
     const sidebar = document.getElementById('nav-sidebar');
     const sidebarToggle = document.querySelector('.sidebar-toggle, .mobile-toggle');
@@ -816,7 +816,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (backdrop) {
                 backdrop.classList.toggle('show');
             }
-            // console.log('📱 Sidebar toggled');
+            console.log('📱 Sidebar toggled');
         });
     }
 
@@ -826,7 +826,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sidebar.classList.remove('show');
             document.body.classList.remove('nav-open');
             backdrop.classList.remove('show');
-            // console.log('🚪 Sidebar cerrado por backdrop');
+            console.log('🚪 Sidebar cerrado por backdrop');
         });
     }
     
@@ -871,22 +871,22 @@ document.addEventListener('DOMContentLoaded', function() {
             label.style.visibility = 'visible';
         }
         
-        // console.log(`✅ Sidebar limpiado: ${modelLists.length} listas ocultas`);
+        console.log(`✅ Sidebar limpiado: ${modelLists.length} listas ocultas`);
     }
     
     // Hacer clickeable cada app-label para navegar a la lista de modelos
     const appLabels = document.querySelectorAll('#nav-sidebar .app-label');
-    // console.log(`📦 Encontradas ${appLabels.length} apps en el sidebar`);
+    console.log(`📦 Encontradas ${appLabels.length} apps en el sidebar`);
     
     for (const [index, label] of Array.from(appLabels).entries()) {
         const appName = label.textContent.trim();
-        // console.log(`  ${index + 1}. ${appName}`);
+        console.log(`  ${index + 1}. ${appName}`);
         
         label.style.cursor = 'pointer';
         
         label.addEventListener('click', function(e) {
             e.preventDefault();
-            // console.log(`🎯 Click en app: ${appName}`);
+            console.log(`🎯 Click en app: ${appName}`);
             
             // Obtener el contenedor padre de la app
             const parentDiv = this.closest('[class*="app-"]');
@@ -895,15 +895,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 const changeLink = parentDiv.querySelector('a[href*="/admin/"][href*="/"]');
                 
                 if (changeLink && changeLink.href) {
-                    // console.log(`  ➡️ Navegando a: ${changeLink.href}`);
+                    console.log(`  ➡️ Navegando a: ${changeLink.href}`);
                     globalThis.location.href = changeLink.href;
                 } else {
-                    // console.log('  ⚠️ No se encontró enlace changelist');
+                    console.log('  ⚠️ No se encontró enlace changelist');
                     // Intentar construir la URL basándose en el nombre de la app
                     const appClass = parentDiv.className.match(/app-(\w+)/);
                     if (appClass && appClass[1]) {
                         const appUrl = `/admin/${appClass[1]}/`;
-                        // console.log(`  ➡️ Navegando a URL construida: ${appUrl}`);
+                        console.log(`  ➡️ Navegando a URL construida: ${appUrl}`);
                         globalThis.location.href = appUrl;
                     }
                 }
@@ -911,7 +911,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // console.log('✨ Panel Desarrollador inicializado correctamente');
+    console.log('✨ Panel Desarrollador inicializado correctamente');
 });
 </script>
 {% endblock %}
