@@ -1,29 +1,23 @@
-# Standard library imports
-import logging
-from urllib.parse import urlparse, urljoin
-
-# Django imports
-from django.shortcuts import render, redirect, get_object_or_404, resolve_url
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods, require_safe
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponseRedirect
-from django.urls import reverse_lazy, resolve, reverse, NoReverseMatch
-from django.utils import timezone
-from django.conf import settings
-from django.utils.http import url_has_allowed_host_and_scheme
-from django.db import transaction
-from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
+from django.urls import reverse_lazy
+from django.db.models import Count, Sum
+from datetime import datetime
+from .models import Empresa, PerfilEmpresa, EmpresaActiva
 
-# Project imports
-from .models import Empresa, PerfilEmpresa, EmpresaActiva, HistorialCambios
-
-# URL constants
+# Constantes para evitar duplicación de literales de URL
+EMPRESA_LIST_URL = 'empresas:empresa_list'
 ACCOUNTS_DASHBOARD_URL = 'accounts:dashboard'
+CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
 
-# Logger setup
-logger = logging.getLogger(__name__)
+# Constantes para mensajes de error recurrentes
+MSG_NO_EMPRESA_SELECCIONADA = 'Debes seleccionar una empresa primero.'
+MSG_NO_PERFIL_ACTIVO = 'No tienes un perfil activo en esta empresa.'
 
 
 class EmpresaListView(LoginRequiredMixin, ListView):
@@ -46,7 +40,7 @@ class EmpresaCreateView(LoginRequiredMixin, CreateView):
     model = Empresa
     template_name = 'empresas/empresa_form.html'
     fields = ['nit', 'razon_social', 'tipo_empresa', 'direccion', 'ciudad', 'telefono', 'email']
-    success_url = reverse_lazy('empresas:empresa_list')
+    success_url = reverse_lazy(EMPRESA_LIST_URL)
     
     def form_valid(self, form):
         form.instance.propietario = self.request.user
@@ -67,7 +61,7 @@ class EmpresaUpdateView(LoginRequiredMixin, UpdateView):
     model = Empresa
     template_name = 'empresas/empresa_form.html'
     fields = ['nit', 'razon_social', 'tipo_empresa', 'direccion', 'ciudad', 'telefono', 'email']
-    success_url = reverse_lazy('empresas:empresa_list')
+    success_url = reverse_lazy(EMPRESA_LIST_URL)
 
 class PerfilEmpresaListView(LoginRequiredMixin, ListView):
     model = PerfilEmpresa
@@ -122,145 +116,139 @@ class CambiarEmpresaView(LoginRequiredMixin, TemplateView):
         })
         return context
 
-def is_safe_url(url, allowed_hosts=None, require_https=False):
-    """
-    Return the url if it's a safe redirection (i.e. it doesn't point to a different host).
-    Returns None if the URL is not safe.
-    """
-    if url is None or not isinstance(url, str):
-        return None
-        
-    # Remove any whitespace and check for empty string
-    url = url.strip()
-    if not url:
-        return None
-    
-    # If it's a relative URL, resolve it against the current host
-    if url.startswith('/'):
-        # Use Django's built-in resolver to check if it's a valid URL pattern
-        try:
-            # This will raise NoReverseMatch if the URL is not a valid pattern
-            resolve(url)
-            return url
-        except Exception:
-            return None
-    
-    # For absolute URLs, use Django's built-in security check
-    if url_has_allowed_host_and_scheme(
-        url=url,
-        allowed_hosts=allowed_hosts,
-        require_https=require_https
-    ):
-        return url
-        
-    return None
-
-@require_http_methods(["POST"])
 @login_required
+@require_http_methods(["POST"])
 def seleccionar_empresa(request):
-    """
-    Maneja el cambio de empresa activa para el usuario.
-    
-    Args:
-        request: HttpRequest con los parámetros:
-            - empresa_id: ID de la empresa a activar
-            - next: URL a redirigir después del cambio (opcional)
-            
-    Returns:
-        HttpResponseRedirect a la URL de destino o al dashboard por defecto
-    """
-    empresa_id = request.POST.get('empresa_id')
-    next_url = request.POST.get('next', '')
-    
-    # Validar y limpiar la URL de redirección
-    next_url = is_safe_url(next_url, allowed_hosts=set(settings.ALLOWED_HOSTS)) or ACCOUNTS_DASHBOARD_URL
-    
-    if not empresa_id:
-        messages.error(request, 'Empresa no especificada.')
-        return redirect(ACCOUNTS_DASHBOARD_URL)
-    
-    # Usar select_related y only para optimizar las consultas
-    try:
-        # Verificar acceso a la empresa en una sola consulta
-        perfil = PerfilEmpresa.objects.select_related('empresa').only(
-            'empresa__id', 'empresa__razon_social', 'rol'
-        ).get(
-            empresa_id=empresa_id,
-            usuario=request.user,
-            activo=True,
-            empresa__activa=True
-        )
+    if request.method == 'POST':
+        empresa_id = request.POST.get('empresa_id')
         
-        empresa = perfil.empresa
-        
-        # Usar transacción atómica para garantizar consistencia
-        with transaction.atomic():
-            # Actualizar o crear empresa activa
-            EmpresaActiva.objects.update_or_create(
-                usuario=request.user,
-                defaults={
-                    'empresa': empresa
-                }
-            )
-            
-            # Actualizar la sesión de manera atómica
-            session_data = {
-                'empresa_activa_id': empresa.id,
-                'empresa_activa_nombre': empresa.razon_social,
-                'rol_empresa': perfil.rol,
-                'session_updated': timezone.now().isoformat()
-            }
-            request.session.update(session_data)
-            
-            # Registrar el cambio de empresa en el historial
+        if empresa_id:
             try:
-                HistorialCambios.registrar_accion(
+                # Verificar que el usuario tiene acceso a esta empresa
+                empresa = get_object_or_404(
+                    Empresa,
+                    id=empresa_id,
+                    perfiles__usuario=request.user,
+                    perfiles__activo=True
+                )
+                
+                # Actualizar o crear empresa activa
+                empresa_activa, created = EmpresaActiva.objects.get_or_create(
                     usuario=request.user,
-                    tipo_accion='usuario_cambio_empresa',
-                    descripcion=f'Cambió de empresa activa a: {empresa.razon_social}',
-                    empresa=empresa,
-                    request=request
+                    defaults={'empresa': empresa}
                 )
-            except Exception as e:
-                logger.error(
-                    'Error al registrar cambio de empresa: %s', 
-                    str(e), 
-                    exc_info=True,
-                    extra={
-                        'usuario_id': request.user.id,
-                        'empresa_id': empresa.id
-                    }
+                
+                if not created:
+                    empresa_activa.empresa = empresa
+                    empresa_activa.save()
+                
+                # IMPORTANTE: Actualizar la sesión para que el cambio sea inmediato
+                request.session['empresa_activa_id'] = empresa.id
+                request.session.modified = True
+                
+                messages.success(
+                    request, 
+                    f'Empresa activa cambiada a: {empresa.razon_social}'
                 )
-        
-        # Mensaje de éxito
-        messages.success(
-            request, 
-            f'Empresa activa cambiada a: {empresa.razon_social}'
-        )
-        
-        # Redirigir al destino
-        return redirect(next_url)
-        
-    except PerfilEmpresa.DoesNotExist:
-        logger.warning(
-            'Intento de acceso no autorizado a empresa',
-            extra={
-                'usuario_id': request.user.id,
-                'empresa_id': empresa_id,
-                'ip': request.META.get('REMOTE_ADDR')
-            }
-        )
-        messages.error(request, 'No tienes acceso a esta empresa o la empresa no existe.')
-    except Exception as e:
-        logger.error(
-            'Error inesperado al cambiar de empresa',
-            exc_info=True,
-            extra={
-                'usuario_id': request.user.id,
-                'empresa_id': empresa_id,
-                'error': str(e)
-            }
-        )
-        messages.error(request, 'Ocurrió un error al cambiar de empresa. Por favor, inténtalo de nuevo.')
+                
+            except Empresa.DoesNotExist:
+                messages.error(request, 'No tienes acceso a esta empresa.')
+        else:
+            messages.error(request, 'Empresa no especificada.')
     
     return redirect(ACCOUNTS_DASHBOARD_URL)
+
+
+@login_required
+@require_safe
+def contador_dashboard(request):
+    """Dashboard específico para usuarios con rol contador"""
+    try:
+        empresa_activa = EmpresaActiva.objects.select_related('empresa').get(usuario=request.user).empresa
+        perfil = PerfilEmpresa.objects.get(usuario=request.user, empresa=empresa_activa, activo=True)
+        
+        # Verificar que el usuario tenga rol contador
+        if perfil.rol != 'contador':
+            messages.warning(request, 'No tienes permisos de contador para esta empresa.')
+            return redirect(ACCOUNTS_DASHBOARD_URL)
+        
+        context = {
+            'empresa_activa': empresa_activa,
+            'perfil': perfil,
+            'asientos_mes': 0,  # Pendiente: requiere modelo de Asientos Contables
+            'total_cuentas': 0,  # Pendiente: requiere modelo de Plan de Cuentas
+            'facturas_mes': 0,  # Pendiente: requiere modelo de Facturación
+            'cobros_mes': 0,  # Pendiente: requiere modelo de Cartera/Cobros
+        }
+        
+    except EmpresaActiva.DoesNotExist:
+        messages.warning(request, MSG_NO_EMPRESA_SELECCIONADA)
+        return redirect(CAMBIAR_EMPRESA_URL)
+    except PerfilEmpresa.DoesNotExist:
+        messages.error(request, MSG_NO_PERFIL_ACTIVO)
+        return redirect(CAMBIAR_EMPRESA_URL)
+    
+    return render(request, 'empresas/contador/dashboard.html', context)
+
+
+@login_required
+@require_safe
+def operador_dashboard(request):
+    """Dashboard específico para usuarios con rol operador"""
+    try:
+        empresa_activa = EmpresaActiva.objects.select_related('empresa').get(usuario=request.user).empresa
+        perfil = PerfilEmpresa.objects.get(usuario=request.user, empresa=empresa_activa, activo=True)
+        
+        # Verificar que el usuario tenga rol operador
+        if perfil.rol != 'operador':
+            messages.warning(request, 'No tienes permisos de operador para esta empresa.')
+            return redirect(ACCOUNTS_DASHBOARD_URL)
+        
+        context = {
+            'empresa_activa': empresa_activa,
+            'perfil': perfil,
+            'ventas_mes': 0,  # Pendiente: requiere modelo de Ventas
+            'facturas_mes': 0,  # Pendiente: requiere modelo de Facturación
+            'total_clientes': 0,  # Pendiente: requiere modelo de Clientes/Terceros con filtro
+        }
+        
+    except EmpresaActiva.DoesNotExist:
+        messages.warning(request, MSG_NO_EMPRESA_SELECCIONADA)
+        return redirect(CAMBIAR_EMPRESA_URL)
+    except PerfilEmpresa.DoesNotExist:
+        messages.error(request, MSG_NO_PERFIL_ACTIVO)
+        return redirect(CAMBIAR_EMPRESA_URL)
+    
+    return render(request, 'empresas/operador/dashboard.html', context)
+
+
+@login_required
+@require_safe
+def observador_dashboard(request):
+    """Dashboard específico para usuarios con rol observador (solo lectura)"""
+    try:
+        empresa_activa = EmpresaActiva.objects.select_related('empresa').get(usuario=request.user).empresa
+        perfil = PerfilEmpresa.objects.get(usuario=request.user, empresa=empresa_activa, activo=True)
+        
+        # Verificar que el usuario tenga rol observador
+        if perfil.rol != 'observador':
+            messages.warning(request, 'No tienes permisos de observador para esta empresa.')
+            return redirect(ACCOUNTS_DASHBOARD_URL)
+        
+        context = {
+            'empresa_activa': empresa_activa,
+            'perfil': perfil,
+            'asientos_mes': 0,  # Pendiente: requiere implementación de modelos contables
+            'facturas_mes': 0,
+            'ventas_mes': 0,
+            'total_mes': 0,
+        }
+        
+    except EmpresaActiva.DoesNotExist:
+        messages.warning(request, MSG_NO_EMPRESA_SELECCIONADA)
+        return redirect(CAMBIAR_EMPRESA_URL)
+    except PerfilEmpresa.DoesNotExist:
+        messages.error(request, MSG_NO_PERFIL_ACTIVO)
+        return redirect(CAMBIAR_EMPRESA_URL)
+    
+    return render(request, 'empresas/observador/dashboard.html', context)

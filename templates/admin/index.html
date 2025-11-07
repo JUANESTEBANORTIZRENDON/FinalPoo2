@@ -1,5 +1,6 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
+{% load admin_links %}
 
 {% block extrahead %}
 {{ block.super }}
@@ -10,8 +11,8 @@
     }
     
     .dev-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: linear-gradient(135deg, #5566d8 0%, #6a3d91 100%);
+        color: #ffffff;
         padding: 30px;
         border-radius: 12px;
         margin-bottom: 30px;
@@ -102,8 +103,8 @@
     }
     
     .section-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: linear-gradient(135deg, #5566d8 0%, #6a3d91 100%);
+        color: #ffffff;
         padding: 20px;
         font-size: 1.2rem;
         font-weight: 600;
@@ -134,9 +135,9 @@
     }
     
     .action-button:hover {
-        background: #667eea;
-        color: white;
-        border-color: #667eea;
+        background: #5566d8;
+        color: #ffffff;
+        border-color: #5566d8;
         text-decoration: none;
         transform: translateX(5px);
     }
@@ -168,8 +169,8 @@
     }
     
     .danger-button {
-        background: #e53e3e;
-        color: white;
+        background: #c53030; /* Cambiado de #e53e3e a #c53030 para mejor contraste */
+        color: #ffffff;
         border: none;
         padding: 10px 20px;
         border-radius: 6px;
@@ -246,22 +247,37 @@
             </div>
             <div class="section-content">
                 <div class="action-grid">
-                    <a href="{% url 'admin:auth_user_changelist' %}" class="action-button">
+                    {% admin_url 'auth_user' 'changelist' as user_list_url %}
+                    {% if user_list_url %}
+                    <a href="{{ user_list_url }}" class="action-button">
                         <span class="action-icon">👥</span>
                         <span>Ver Todos los Usuarios</span>
                     </a>
-                    <a href="{% url 'admin:auth_user_add' %}" class="action-button">
+                    {% endif %}
+                    
+                    {% admin_url 'auth_user' 'add' as user_add_url %}
+                    {% if user_add_url %}
+                    <a href="{{ user_add_url }}" class="action-button">
                         <span class="action-icon">➕</span>
                         <span>Crear Nuevo Usuario</span>
                     </a>
-                    <a href="{% url 'admin:accounts_perfilusuario_changelist' %}" class="action-button">
+                    {% endif %}
+                    
+                    {% admin_url 'accounts_perfilusuario' 'changelist' as profile_list_url %}
+                    {% if profile_list_url %}
+                    <a href="{{ profile_list_url }}" class="action-button">
                         <span class="action-icon">📋</span>
                         <span>Gestionar Perfiles</span>
                     </a>
-                    <a href="{% url 'admin:auth_group_changelist' %}" class="action-button">
+                    {% endif %}
+                    
+                    {% admin_url 'auth_group' 'changelist' as group_list_url %}
+                    {% if group_list_url %}
+                    <a href="{{ group_list_url }}" class="action-button">
                         <span class="action-icon">🔐</span>
                         <span>Grupos y Permisos</span>
                     </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -328,14 +344,22 @@
             </div>
             <div class="section-content">
                 <div class="action-grid">
-                    <a href="{% url 'admin:sessions_session_changelist' %}" class="action-button">
+                    {% admin_url 'sessions_session' 'changelist' as sessions_list_url %}
+                    {% if sessions_list_url %}
+                    <a href="{{ sessions_list_url }}" class="action-button">
                         <span class="action-icon">🔑</span>
                         <span>Sesiones Activas</span>
                     </a>
-                    <a href="{% url 'admin:contenttypes_contenttype_changelist' %}" class="action-button">
+                    {% endif %}
+                    
+                    {% admin_url 'contenttypes_contenttype' 'changelist' as contenttype_list_url %}
+                    {% if contenttype_list_url %}
+                    <a href="{{ contenttype_list_url }}" class="action-button">
                         <span class="action-icon">📊</span>
                         <span>Tipos de Contenido</span>
                     </a>
+                    {% endif %}
+                    
                     <a href="/admin/" class="action-button">
                         <span class="action-icon">🏠</span>
                         <span>Panel Principal Admin</span>

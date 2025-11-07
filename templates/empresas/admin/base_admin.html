@@ -5,12 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Administrador Holding{% endblock %}</title>
     
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 con Subresource Integrity -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" 
+          crossorigin="anonymous">
+    <!-- Font Awesome con Subresource Integrity -->
+    <link rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
+          crossorigin="anonymous" 
+          referrerpolicy="no-referrer">
+    <!-- Google Fonts (no requiere SRI por naturaleza dinámica) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" 
+          rel="stylesheet" 
+          crossorigin="anonymous">
     
     <style>
         :root {
@@ -33,7 +42,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #5566d8 0%, #6a3d91 100%);
             min-height: 100vh;
             color: var(--admin-dark);
         }
@@ -97,6 +106,14 @@
 
         .sidebar-nav {
             padding: 20px 0;
+            /* Hacer el nav interno scrollable para pantallas pequeñas/medianas
+               y evitar que elementos queden fuera de la vista en resoluciones
+               con poca altura. */
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            /* Restar el alto del header del sidebar para calcular el max-height */
+            max-height: calc(100vh - 140px);
+            padding-bottom: 24px;
         }
 
         .nav-item {
@@ -330,15 +347,37 @@
                 position: fixed;
                 top: 20px;
                 left: 20px;
-                z-index: 1001;
+                z-index: 1101; /* por encima del sidebar */
                 background: var(--admin-gradient);
                 color: white;
                 border: none;
-                width: 50px;
-                height: 50px;
+                width: 48px;
+                height: 48px;
                 border-radius: 50%;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
+            /* Añadir backdrop cuando el sidebar esté mostrado en móvil */
+            .admin-sidebar.show + .admin-backdrop {
+                display: block;
+            }
+
+            .admin-backdrop {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.45);
+                z-index: 1100;
+            }
+
+            /* Cuando el sidebar está abierto en móvil evitar scroll del body */
+            body.no-scroll {
+                overflow: hidden;
+                height: 100vh;
+            }
+            
         }
 
         @media (min-width: 769px) {
@@ -460,7 +499,7 @@
 </head>
 <body>
     <!-- Mobile Toggle -->
-    <button class="mobile-toggle" onclick="toggleSidebar()">
+    <button class="mobile-toggle" onclick="toggleMobileSidebar()" aria-label="Abrir menú">
         <i class="fas fa-bars"></i>
     </button>
 
@@ -548,6 +587,17 @@
         </div>
     </nav>
 
+    <!-- Backdrop para móvil -->
+    <div class="admin-backdrop" 
+         id="adminBackdrop" 
+         role="button" 
+         tabindex="0"
+         onclick="toggleMobileSidebar()" 
+         onkeypress="if(event.key==='Enter'||event.key===' ')toggleMobileSidebar()"
+         style="display:none;" 
+         aria-hidden="true"
+         aria-label="Cerrar menú lateral"></div>
+
     <!-- Main Content -->
     <main class="admin-main">
         <header class="admin-header">
@@ -583,8 +633,10 @@
         </div>
     </main>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS con Subresource Integrity -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" 
+            crossorigin="anonymous"></script>
     
     <script>
         function toggleSidebar() {
@@ -605,7 +657,16 @@
         // Mobile sidebar toggle
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('adminSidebar');
+            const backdrop = document.getElementById('adminBackdrop');
             sidebar.classList.toggle('show');
+            if (sidebar.classList.contains('show')) {
+                // Mostrar backdrop y bloquear scroll
+                if (backdrop) backdrop.style.display = 'block';
+                document.body.classList.add('no-scroll');
+            } else {
+                if (backdrop) backdrop.style.display = 'none';
+                document.body.classList.remove('no-scroll');
+            }
         }
 
         // Auto-hide alerts after 5 seconds

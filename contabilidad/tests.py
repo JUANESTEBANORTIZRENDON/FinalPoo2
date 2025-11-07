@@ -7,6 +7,7 @@ from empresas.models import Empresa
 from catalogos.models import Tercero, Impuesto, MetodoPago, Producto
 from facturacion.models import Factura, FacturaDetalle
 from tesoreria.models import Pago
+from core.test_settings import TEST_USER_PASSWORD
 
 
 class ServicioContabilidadTest(TestCase):
@@ -17,7 +18,7 @@ class ServicioContabilidadTest(TestCase):
         self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
-            password='testpass123'
+            password=TEST_USER_PASSWORD
         )
         
         self.empresa = Empresa.objects.create(
@@ -220,7 +221,7 @@ class ServicioPlanCuentasTest(TestCase):
         self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
-            password='testpass123'
+            password=TEST_USER_PASSWORD
         )
         
         self.empresa = Empresa.objects.create(
@@ -276,7 +277,7 @@ class AsientoModelTest(TestCase):
         self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
-            password='testpass123'
+            password=TEST_USER_PASSWORD
         )
         
         self.empresa = Empresa.objects.create(

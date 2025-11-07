@@ -170,24 +170,59 @@
     </div>
 </div>
 
-<script>
-// Validación del formulario
-(function() {
-    'use strict';
-    globalThis.addEventListener('load', function() {
-        var forms = document.getElementsByClassName('needs-validation');
-        Array.prototype.filter.call(forms, function(form) {
-            form.addEventListener('submit', function(event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
-        });
-    }, false);
-})();
+{% include 'empresas/admin/includes/form_validation.html' %}
 
+<style>
+/* Responsive adjustments for empresa form */
+@media (max-width: 768px) {
+    .card-header h4 {
+        font-size: 1.1rem;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    .d-flex.gap-2 {
+        flex-direction: column;
+        gap: 10px !important;
+    }
+    
+    .d-flex.gap-2 .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 10px;
+    }
+    
+    .card-header .btn {
+        width: 100%;
+    }
+    
+    .card-header h4 {
+        font-size: 1rem;
+    }
+    
+    h5.text-primary {
+        font-size: 1rem;
+    }
+    
+    .form-label {
+        font-size: 0.9rem;
+    }
+    
+    .form-control, .form-check-input {
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<script>
 // Formatear NIT mientras se escribe
 document.getElementById('nit').addEventListener('input', function(e) {
     let value = e.target.value.replaceAll(/\D/g, '');

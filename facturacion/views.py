@@ -14,6 +14,9 @@ from catalogos.models import Tercero, Producto, MetodoPago
 # Constante para evitar duplicación del literal de URL
 FACTURA_DETALLE_URL = 'facturacion:detalle'
 
+# Constante para evitar duplicación del literal de URL
+FACTURA_DETALLE_URL = 'facturacion:detalle'
+
 # Vistas temporales básicas
 class FacturaListView(LoginRequiredMixin, ListView):
     model = Factura

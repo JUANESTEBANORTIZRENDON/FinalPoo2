@@ -1,0 +1,349 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Productos - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-box text-primary"></i>
+                                Productos y Servicios
+                            </h2>
+                            <p class="text-muted mb-0">Gestión de productos de {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="{% url 'catalogos:producto_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Nuevo Producto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="buscar" class="form-label">Buscar</label>
+                            <input type="text" id="buscar" name="buscar" class="form-control" 
+                                   placeholder="Buscar por nombre o código..." 
+                                   value="{{ request.GET.buscar }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select id="tipo" name="tipo" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="producto" {% if request.GET.tipo == 'producto' %}selected{% endif %}>Producto</option>
+                                <option value="servicio" {% if request.GET.tipo == 'servicio' %}selected{% endif %}>Servicio</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                            <a href="{% url 'catalogos:producto_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo"></i> Limpiar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Productos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i>
+                        Listado de Productos
+                        {% if productos %}
+                            <span class="badge bg-primary">{{ productos|length }}</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if productos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Tipo</th>
+                                        <th>Precio Venta</th>
+                                        <th>Precio Costo</th>
+                                        <th>Stock</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for producto in productos %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ producto.codigo }}</strong>
+                                        </td>
+                                        <td>
+                                            <div>{{ producto.nombre }}</div>
+                                            {% if producto.impuesto %}
+                                                <small class="text-muted">
+                                                    <i class="fas fa-percent"></i> {{ producto.impuesto.nombre }}
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if producto.tipo_producto == 'producto' %}
+                                                <span class="badge bg-info">Producto</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Servicio</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong class="text-success">${{ producto.precio_venta|floatformat:2 }}</strong>
+                                            {% if producto.impuesto %}
+                                                <br>
+                                                <small class="text-muted">
+                                                    Con IVA: ${{ producto.precio_con_impuesto|floatformat:2 }}
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if producto.precio_costo > 0 %}
+                                                ${{ producto.precio_costo|floatformat:2 }}
+                                                <br>
+                                                <small class="text-success">
+                                                    Margen: {{ producto.margen_utilidad|floatformat:1 }}%
+                                                </small>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if producto.inventariable %}
+                                                <div>{{ producto.stock_actual|floatformat:0 }}</div>
+                                                {% if producto.requiere_reposicion %}
+                                                    <small class="text-danger">
+                                                        <i class="fas fa-exclamation-triangle"></i> Bajo stock
+                                                    </small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if producto.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <!-- Bootstrap button group con aria-label (sin role="group" para evitar warning de SonarCloud) -->
+                                            <div class="btn-group btn-group-sm" aria-label="Acciones para {{ producto.nombre }}">
+                                                <a href="{% url 'catalogos:producto_detail' producto.pk %}" 
+                                                   class="btn btn-outline-primary" 
+                                                   title="Ver detalles del producto">
+                                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Ver detalles</span>
+                                                </a>
+                                                <a href="{% url 'catalogos:producto_update' producto.pk %}" 
+                                                   class="btn btn-outline-warning" 
+                                                   title="Editar producto">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Editar</span>
+                                                </a>
+                                                <a href="{% url 'catalogos:producto_delete' producto.pk %}" 
+                                                   class="btn btn-outline-danger" 
+                                                   title="Eliminar producto">
+                                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Eliminar</span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay productos registrados.</p>
+                            <a href="{% url 'catalogos:producto_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Crear Primer Producto
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen -->
+    {% if productos %}
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Total Productos</h6>
+                    <h3 class="text-primary mb-0">{{ productos|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-info">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Productos Físicos</h6>
+                    <h3 class="text-info mb-0">
+                        {% for p in productos %}{% if p.tipo_producto == 'producto' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% endfor %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-secondary">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Servicios</h6>
+                    <h3 class="text-secondary mb-0">
+                        {% for p in productos %}{% if p.tipo_producto == 'servicio' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% endfor %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Requieren Reposición</h6>
+                    <h3 class="text-warning mb-0">
+                        {% for p in productos %}{% if p.requiere_reposicion %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% endfor %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Responsive Productos Lista */
+    @media (max-width: 992px) {
+        .card-body {
+            padding: 1rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+        }
+        
+        .table th {
+            font-size: 0.9rem;
+        }
+        
+        .table td {
+            font-size: 0.9rem;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 0.3rem 0.5rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .row.mb-4 {
+            margin-bottom: 1rem !important;
+        }
+        
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .d-flex.justify-content-between .btn {
+            width: 100%;
+        }
+        
+        .table-responsive {
+            margin: 0 -1rem;
+        }
+        
+        .table td {
+            padding: 0.75rem;
+            min-width: 100px;
+        }
+        
+        .table th {
+            white-space: nowrap;
+        }
+        
+        .col-md-3 {
+            margin-bottom: 1rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            width: 100%;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .container-fluid {
+            padding: 0.5rem;
+        }
+        
+        h2 {
+            font-size: 1.25rem;
+        }
+        
+        .card-body {
+            padding: 0.75rem;
+        }
+        
+        .form-label {
+            font-size: 0.9rem;
+        }
+        
+        .badge {
+            font-size: 0.75rem;
+        }
+        
+        .table td {
+            font-size: 0.85rem;
+        }
+        
+        .btn {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.75rem;
+        }
+        
+        .text-muted {
+            font-size: 0.8rem;
+        }
+        
+        .col-md-3 h3 {
+            font-size: 1.5rem;
+        }
+        
+        .col-md-3 h6 {
+            font-size: 0.85rem;
+        }
+    }
+</style>
+{% endblock %}

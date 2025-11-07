@@ -45,6 +45,15 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    ALLOWED_HOSTS.append('*.onrender.com')
+
+# CSRF Trusted Origins para Render
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://finalpoo2.onrender.com',
+]
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS.extend(['http://127.0.0.1:8000', 'http://localhost:8000'])
 
 # Application definition
 
@@ -63,6 +72,7 @@ INSTALLED_APPS = [
     'corsheaders',  # Para CORS en API
     
     # Apps del proyecto
+    'core.apps.CoreConfig',  # AdminSite personalizado y template tags
     'accounts',
     'api',  # Nueva app para API
     
@@ -77,6 +87,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # DEBE ir justo después de SecurityMiddleware
     'corsheaders.middleware.CorsMiddleware',  # CORS debe ir temprano
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -92,9 +103,6 @@ MIDDLEWARE = [
     # Middleware para historial de cambios
     'empresas.middleware_historial.ThreadLocalMiddleware',
     'empresas.middleware_historial.HistorialCambiosMiddleware',
-    
-    # Middleware para Whitenoise
-    'whitenoise.middleware.WhiteNoiseMiddleware', 
 ]
 ROOT_URLCONF = 'core.urls'
 
@@ -175,19 +183,21 @@ LOCALE_PATHS = [
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
-# This production code might break development mode, so we check whether we're in DEBUG mode
-if not DEBUG:
-    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
-    # and renames the files with unique names for each version to support long-term caching
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Configuración de almacenamiento de archivos estáticos (Django 5.2+)
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -272,34 +282,48 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-# CORS Configuration - Para desarrollo local
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React/Vue frontend
-    "http://127.0.0.1:3000",
-    "http://localhost:8080",  # Vue CLI default
-    "http://127.0.0.1:8080",
-]
+# CORS Configuration - Seguro para producción, HTTP solo en desarrollo
+if DEBUG:
+    # Solo en desarrollo local se permite HTTP
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",  # React/Vue frontend
+        "http://127.0.0.1:3000",
+        "http://localhost:8080",  # Vue CLI default
+        "http://127.0.0.1:8080",
+    ]
+else:
+    # En producción, solo HTTPS
+    CORS_ALLOWED_ORIGINS = os.getenv(
+        'CORS_ALLOWED_ORIGINS',
+        'https://example.com'  # Reemplazar con tu dominio de producción
+    ).split(',')
 
 CORS_ALLOW_CREDENTIALS = True  # Para cookies de sesión si es necesario
 
-# CSRF Configuration
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    'CSRF_TRUSTED_ORIGINS', 
-    'http://127.0.0.1:8000,http://localhost:8000,http://127.0.0.1:57765'
-).split(',')
-
-# Configuraciones adicionales de CSRF para desarrollo
+# CSRF Configuration - Usa HTTPS en producción
 if DEBUG:
+    # Solo en desarrollo local se permite HTTP
+    CSRF_TRUSTED_ORIGINS = [
+        'http://127.0.0.1:8000',
+        'http://localhost:8000',
+        'http://127.0.0.1:57765',  # Browser preview
+        'http://localhost:57765',
+    ]
+    # Configuraciones de CSRF para desarrollo
     CSRF_COOKIE_SECURE = False
     CSRF_COOKIE_HTTPONLY = False
     CSRF_USE_SESSIONS = False
     CSRF_COOKIE_SAMESITE = 'Lax'
-    
-    # Agregar dominios de desarrollo
-    CSRF_TRUSTED_ORIGINS.extend([
-        'http://127.0.0.1:57765',  # Browser preview
-        'http://localhost:57765',
-    ])
+else:
+    # En producción, solo HTTPS (más seguro)
+    CSRF_TRUSTED_ORIGINS = os.getenv(
+        'CSRF_TRUSTED_ORIGINS',
+        'https://example.com'  # Reemplazar con tu dominio de producción
+    ).split(',')
+    # Configuraciones de seguridad para producción
+    CSRF_COOKIE_SECURE = True  # Requiere HTTPS
+    CSRF_COOKIE_HTTPONLY = True  # Previene acceso desde JavaScript
+    CSRF_COOKIE_SAMESITE = 'Strict'  # Protección contra CSRF
 
 # Configuración de sesiones
 SESSION_COOKIE_AGE = 3600  # 1 hora
@@ -307,4 +331,20 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_SAVE_EVERY_REQUEST = True
 
 # ===== CONFIGURACIÓN DE SEGURIDAD PARA PRODUCCIÓN =====
-# Para configuración de producción, consultar documentación de Django Security
+if not DEBUG:
+    # Forzar HTTPS en producción
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # Configuración de cookies seguras
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Strict'
+    
+    # Cabeceras de seguridad
+    SECURE_HSTS_SECONDS = 31536000  # 1 año
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'

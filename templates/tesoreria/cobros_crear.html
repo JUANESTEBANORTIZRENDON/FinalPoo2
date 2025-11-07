@@ -1,0 +1,202 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Registrar Cobro - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-hand-holding-usd text-success"></i>
+                                Registrar Cobro
+                            </h2>
+                            <p class="text-muted mb-0">Registra un cobro a cliente para {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="{% url 'tesoreria:cobros_lista' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        Información del Cobro
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Información del Cliente -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-success border-bottom pb-2 mb-3">
+                                    <i class="fas fa-user"></i>
+                                    Cliente
+                                </h6>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.tercero.id_for_label }}" class="form-label">
+                                    {{ form.tercero.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.tercero }}
+                                {% if form.tercero.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.tercero.errors }}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Selecciona el cliente al que le vas a cobrar</small>
+                            </div>
+                        </div>
+
+                        <!-- Información del Pago -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-success border-bottom pb-2 mb-3">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    Detalles del Cobro
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.fecha_pago.id_for_label }}" class="form-label">
+                                    {{ form.fecha_pago.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.fecha_pago }}
+                                {% if form.fecha_pago.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.fecha_pago.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.valor.id_for_label }}" class="form-label">
+                                    {{ form.valor.label }} <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.valor }}
+                                </div>
+                                {% if form.valor.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.valor.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.metodo_pago.id_for_label }}" class="form-label">
+                                    {{ form.metodo_pago.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.metodo_pago }}
+                                {% if form.metodo_pago.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.metodo_pago.errors }}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Efectivo, transferencia, cheque, etc.</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.referencia.id_for_label }}" class="form-label">
+                                    {{ form.referencia.label }}
+                                </label>
+                                {{ form.referencia }}
+                                {% if form.referencia.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.referencia.errors }}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Número de cheque, referencia de transferencia, etc.</small>
+                            </div>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-success border-bottom pb-2 mb-3">
+                                    <i class="fas fa-comment-alt"></i>
+                                    Observaciones
+                                </h6>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.observaciones.id_for_label }}" class="form-label">
+                                    {{ form.observaciones.label }}
+                                </label>
+                                {{ form.observaciones }}
+                                {% if form.observaciones.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.observaciones.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="row">
+                            <div class="col-12">
+                                <hr class="my-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'tesoreria:cobros_lista' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-save"></i> Registrar Cobro
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Nota:</strong> Los campos marcados con <span class="text-danger">*</span> son obligatorios.
+                        El cobro será registrado para la empresa <strong>{{ request.empresa_activa.razon_social }}</strong>.
+                        El número de cobro se generará automáticamente.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación en tiempo real del valor
+document.addEventListener('DOMContentLoaded', function() {
+    const valorInput = document.querySelector('input[name="valor"]');
+    if (valorInput) {
+        valorInput.addEventListener('input', function() {
+            const valor = Number.parseFloat(this.value);
+            if (valor && valor > 0) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
