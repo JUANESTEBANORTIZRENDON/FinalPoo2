@@ -588,7 +588,15 @@
     </nav>
 
     <!-- Backdrop para móvil -->
-    <div class="admin-backdrop" id="adminBackdrop" onclick="toggleMobileSidebar()" style="display:none;" aria-hidden="true"></div>
+    <div class="admin-backdrop" 
+         id="adminBackdrop" 
+         role="button" 
+         tabindex="0"
+         onclick="toggleMobileSidebar()" 
+         onkeypress="if(event.key==='Enter'||event.key===' ')toggleMobileSidebar()"
+         style="display:none;" 
+         aria-hidden="true"
+         aria-label="Cerrar menú lateral"></div>
 
     <!-- Main Content -->
     <main class="admin-main">

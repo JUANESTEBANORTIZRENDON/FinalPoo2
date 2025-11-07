@@ -896,7 +896,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (changeLink && changeLink.href) {
                     console.log(`  ➡️ Navegando a: ${changeLink.href}`);
-                    window.location.href = changeLink.href;
+                    globalThis.location.href = changeLink.href;
                 } else {
                     console.log('  ⚠️ No se encontró enlace changelist');
                     // Intentar construir la URL basándose en el nombre de la app
@@ -904,7 +904,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (appClass && appClass[1]) {
                         const appUrl = `/admin/${appClass[1]}/`;
                         console.log(`  ➡️ Navegando a URL construida: ${appUrl}`);
-                        window.location.href = appUrl;
+                        globalThis.location.href = appUrl;
                     }
                 }
             }
