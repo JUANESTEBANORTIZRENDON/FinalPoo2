@@ -317,7 +317,7 @@
         margin-bottom: 1.5rem;
         overflow: hidden;
         border: 1px solid rgba(0, 212, 255, 0.2);
-        animation: slideIn 0.3s ease-out;
+        animation: slideIn 0.4s ease-out;
     }
     
     @keyframes slideIn {
@@ -548,15 +548,9 @@
     
     .button:hover, input[type=submit]:hover, input[type=button]:hover, button[type="submit"]:hover {
         background: var(--neon-blue);
-        color: var(--darker-bg);
+        color: white;
         box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
         transform: translateY(-2px);
-    }
-
-    .button:hover, input[type=submit]:hover, input[type=button]:hover, button[type="submit"]:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        color: white;
     }
 
     .button.default, .default {
@@ -764,10 +758,6 @@
             opacity: 1;
             transform: translateY(0);
         }
-    }
-
-    .module {
-        animation: slideIn 0.4s ease-out;
     }
 
     /* ==================
