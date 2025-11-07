@@ -2,15 +2,16 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_safe
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse_lazy
-from django.db import models
+from django.db.models import Q
 from empresas.middleware import EmpresaFilterMixin
+from core.admin_mixins import EmpresaFilterMixin
 from .models import Tercero, Impuesto, MetodoPago, Producto
 
-# Constantes para evitar duplicación de literales de URL
+# ===== CONSTANTES PARA EVITAR DUPLICACIÓN =====
 TERCERO_LIST_URL = 'catalogos:tercero_list'
 PRODUCTO_LIST_URL = 'catalogos:producto_list'
 
@@ -124,8 +125,8 @@ class ProductoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
         
         if buscar:
             queryset = queryset.filter(
-                models.Q(nombre__icontains=buscar) |
-                models.Q(codigo__icontains=buscar)
+                Q(nombre__icontains=buscar) |
+                Q(codigo__icontains=buscar)
             )
         
         if tipo:
