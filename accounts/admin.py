@@ -514,8 +514,9 @@ class SessionAdmin(admin.ModelAdmin):
             return format_html('<span style="color: green;">✅ Activa</span>')
     is_expired.short_description = "📊 Estado"
     
-    def has_add_permission(self, request):  # noqa: ARG002
+    def has_add_permission(self, request):
         """No permitir crear sesiones manualmente"""
+        _ = request  # Marcar como intencionalmente no usado
         return False
 
 
@@ -528,12 +529,14 @@ class ContentTypeAdmin(admin.ModelAdmin):
     search_fields = ('app_label', 'model', 'name')
     readonly_fields = ('app_label', 'model', 'name')
     
-    def has_add_permission(self, request):  # noqa: ARG002
+    def has_add_permission(self, request):
         """No permitir crear content types manualmente"""
+        _ = request  # Marcar como intencionalmente no usado
         return False
     
-    def has_delete_permission(self, request, obj=None):  # noqa: ARG002
+    def has_delete_permission(self, request, obj=None):
         """No permitir eliminar content types"""
+        _ = request, obj  # Marcar como intencionalmente no usados
         return False
 
 

@@ -69,6 +69,7 @@
                                                 {{ empresa.propietario.get_full_name|default:empresa.propietario.username }}
                                             </td>
                                             <td>
+                                                <!-- role="group" es el estándar ARIA para grupos de botones (Bootstrap) -->
                                                 <div class="btn-group" role="group">
                                                     <a href="{% url 'empresas:empresa_detail' empresa.pk %}" 
                                                        class="btn btn-sm btn-outline-info" 
