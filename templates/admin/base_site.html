@@ -5,8 +5,10 @@
 
 {% block extrahead %}
 {{ block.super }}
+<!-- Version: 2024-11-06-20:10 - Sidebar Reorganizado FORZADO -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="{% static 'admin/js/sidebar_clean.js' %}?v=20241106-2010"></script>
 <style>
     /* ============================================
        DJANGO ADMIN - PANEL DESARROLLADOR REDESIGN
@@ -765,6 +767,40 @@
 
     .module {
         animation: slideIn 0.4s ease-out;
+    }
+
+    /* ==================
+       FORZAR ESTILOS SIDEBAR - MÁXIMA PRIORIDAD
+       ================== */
+    /* Limpiar el sidebar - ocultar todo lo que no sea app-label */
+    #nav-sidebar div:not([class*="app-"]) {
+        display: none !important;
+    }
+    
+    #nav-sidebar [class*="app-"] > *:not(.app-label) {
+        display: none !important;
+    }
+    
+    #nav-sidebar .model-list,
+    #nav-sidebar ul,
+    #nav-sidebar li,
+    #nav-sidebar .app-label + div,
+    #nav-sidebar .app-label + ul,
+    #nav-sidebar .app-label + * {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* Solo mostrar app-labels */
+    #nav-sidebar [class*="app-"] {
+        display: block !important;
+    }
+    
+    #nav-sidebar .app-label {
+        display: block !important;
+        visibility: visible !important;
     }
 </style>
 
