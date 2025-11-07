@@ -172,10 +172,6 @@ def contador_dashboard(request):
             messages.warning(request, 'No tienes permisos de contador para esta empresa.')
             return redirect(ACCOUNTS_DASHBOARD_URL)
         
-        # Obtener estadísticas del mes actual
-        mes_actual = datetime.now().month
-        anio_actual = datetime.now().year
-        
         context = {
             'empresa_activa': empresa_activa,
             'perfil': perfil,
@@ -208,10 +204,6 @@ def operador_dashboard(request):
             messages.warning(request, 'No tienes permisos de operador para esta empresa.')
             return redirect(ACCOUNTS_DASHBOARD_URL)
         
-        # Obtener estadísticas del mes actual
-        mes_actual = datetime.now().month
-        anio_actual = datetime.now().year
-        
         context = {
             'empresa_activa': empresa_activa,
             'perfil': perfil,
@@ -242,10 +234,6 @@ def observador_dashboard(request):
         if perfil.rol != 'observador':
             messages.warning(request, 'No tienes permisos de observador para esta empresa.')
             return redirect(ACCOUNTS_DASHBOARD_URL)
-        
-        # Obtener estadísticas generales
-        mes_actual = datetime.now().month
-        anio_actual = datetime.now().year
         
         context = {
             'empresa_activa': empresa_activa,

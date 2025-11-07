@@ -237,6 +237,10 @@ def gestionar_usuarios(request):
         'usuarios_sin_asignacion': usuarios_sin_asignacion,
         'roles_choices': PerfilEmpresa.ROL_CHOICES,
     }
+    
+    return render(request, 'empresas/admin/gestionar_usuarios.html', context)
+
+
 @login_required
 @require_http_methods(['GET', 'POST'])  # GET: muestra formulario, POST: procesa - CSRF protegido por Django
 def asignar_usuario_empresa(request, usuario_id):

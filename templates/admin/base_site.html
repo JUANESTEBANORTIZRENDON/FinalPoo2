@@ -848,28 +848,28 @@ document.addEventListener('DOMContentLoaded', function() {
     if (sidebar) {
         // Ocultar todas las listas de modelos DENTRO del sidebar
         const modelLists = sidebar.querySelectorAll('.model-list, ul, li');
-        modelLists.forEach(function(list) {
+        for (const list of modelLists) {
             list.style.display = 'none';
             list.style.visibility = 'hidden';
             list.style.height = '0';
-        });
+        }
         
         // Ocultar SOLO los enlaces dentro de las app que no sean app-label
         const appDivs = sidebar.querySelectorAll('[class*="app-"]');
-        appDivs.forEach(function(appDiv) {
+        for (const appDiv of appDivs) {
             const linksInApp = appDiv.querySelectorAll('a:not(.app-label)');
-            linksInApp.forEach(function(link) {
+            for (const link of linksInApp) {
                 link.style.display = 'none';
                 link.style.visibility = 'hidden';
-            });
-        });
+            }
+        }
         
         // Asegurar que las app-label sean visibles
         const appLabels = sidebar.querySelectorAll('.app-label');
-        appLabels.forEach(function(label) {
+        for (const label of appLabels) {
             label.style.display = 'block';
             label.style.visibility = 'visible';
-        });
+        }
         
         console.log(`✅ Sidebar limpiado: ${modelLists.length} listas ocultas`);
     }
@@ -878,7 +878,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const appLabels = document.querySelectorAll('#nav-sidebar .app-label');
     console.log(`📦 Encontradas ${appLabels.length} apps en el sidebar`);
     
-    appLabels.forEach(function(label, index) {
+    for (const [index, label] of Array.from(appLabels).entries()) {
         const appName = label.textContent.trim();
         console.log(`  ${index + 1}. ${appName}`);
         
@@ -909,7 +909,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-    });
+    }
     
     console.log('✨ Panel Desarrollador inicializado correctamente');
 });
