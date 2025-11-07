@@ -792,51 +792,53 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Inicializando Panel Desarrollador');
-    
-    const sidebar = document.getElementById('nav-sidebar');
-    const sidebarToggle = document.querySelector('.sidebar-toggle, .mobile-toggle');
+// Crear backdrop para el sidebar
+function createBackdrop(sidebar) {
     let backdrop = document.querySelector('.sidebar-backdrop');
-    
-    // Crear backdrop si no existe
     if (!backdrop && sidebar) {
-        const newBackdrop = document.createElement('div');
-        newBackdrop.className = 'sidebar-backdrop';
-        document.body.appendChild(newBackdrop);
-        backdrop = newBackdrop;
+        backdrop = document.createElement('div');
+        backdrop.className = 'sidebar-backdrop';
+        document.body.appendChild(backdrop);
     }
-    
-    // Toggle sidebar en móvil
-    if (sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            sidebar.classList.toggle('show');
-            document.body.classList.toggle('nav-open');
-            if (backdrop) {
-                backdrop.classList.toggle('show');
-            }
-            console.log('📱 Sidebar toggled');
-        });
-    }
+    return backdrop;
+}
 
-    // Cerrar sidebar con backdrop
-    if (backdrop) {
-        backdrop.addEventListener('click', function() {
-            sidebar.classList.remove('show');
-            document.body.classList.remove('nav-open');
-            backdrop.classList.remove('show');
-            console.log('🚪 Sidebar cerrado por backdrop');
-        });
-    }
+// Toggle del sidebar en móvil
+function setupSidebarToggle(sidebarToggle, sidebar, backdrop) {
+    if (!sidebarToggle || !sidebar) return;
     
-    // Cerrar sidebar al hacer clic fuera en móvil
+    sidebarToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        sidebar.classList.toggle('show');
+        document.body.classList.toggle('nav-open');
+        if (backdrop) {
+            backdrop.classList.toggle('show');
+        }
+        console.log('📱 Sidebar toggled');
+    });
+}
+
+// Cerrar sidebar con backdrop
+function setupBackdropClick(backdrop, sidebar) {
+    if (!backdrop || !sidebar) return;
+    
+    backdrop.addEventListener('click', function() {
+        sidebar.classList.remove('show');
+        document.body.classList.remove('nav-open');
+        backdrop.classList.remove('show');
+        console.log('🚪 Sidebar cerrado por backdrop');
+    });
+}
+
+// Cerrar sidebar al hacer clic fuera
+function setupOutsideClick(sidebar, sidebarToggle, backdrop) {
     document.addEventListener('click', function(e) {
-        if (window.innerWidth <= 992 && 
-            sidebar && sidebar.classList.contains('show') &&
-            !sidebar.contains(e.target) &&
-            sidebarToggle && !sidebarToggle.contains(e.target)) {
+        const isMobile = window.innerWidth <= 992;
+        const sidebarOpen = sidebar && sidebar.classList.contains('show');
+        const clickedOutside = !sidebar.contains(e.target) && !sidebarToggle.contains(e.target);
+        
+        if (isMobile && sidebarOpen && clickedOutside) {
             sidebar.classList.remove('show');
             document.body.classList.remove('nav-open');
             if (backdrop) {
@@ -844,73 +846,98 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+}
+
+// Limpiar elementos innecesarios del sidebar
+function cleanupSidebar(sidebar) {
+    if (!sidebar) return;
     
-    // Limpiar el sidebar - ocultar elementos innecesarios
-    if (sidebar) {
-        // Ocultar todas las listas de modelos DENTRO del sidebar
-        const modelLists = sidebar.querySelectorAll('.model-list, ul, li');
-        for (const list of modelLists) {
-            list.style.display = 'none';
-            list.style.visibility = 'hidden';
-            list.style.height = '0';
-        }
-        
-        // Ocultar SOLO los enlaces dentro de las app que no sean app-label
-        const appDivs = sidebar.querySelectorAll('[class*="app-"]');
-        for (const appDiv of appDivs) {
-            const linksInApp = appDiv.querySelectorAll('a:not(.app-label)');
-            for (const link of linksInApp) {
-                link.style.display = 'none';
-                link.style.visibility = 'hidden';
-            }
-        }
-        
-        // Asegurar que las app-label sean visibles
-        const appLabels = sidebar.querySelectorAll('.app-label');
-        for (const label of appLabels) {
-            label.style.display = 'block';
-            label.style.visibility = 'visible';
-        }
-        
-        console.log(`✅ Sidebar limpiado: ${modelLists.length} listas ocultas`);
+    // Ocultar listas de modelos
+    const modelLists = sidebar.querySelectorAll('.model-list, ul, li');
+    for (const list of modelLists) {
+        list.style.display = 'none';
+        list.style.visibility = 'hidden';
+        list.style.height = '0';
     }
     
-    // Hacer clickeable cada app-label para navegar a la lista de modelos
+    // Ocultar enlaces dentro de apps (excepto app-label)
+    const appDivs = sidebar.querySelectorAll('[class*="app-"]');
+    for (const appDiv of appDivs) {
+        const linksInApp = appDiv.querySelectorAll('a:not(.app-label)');
+        for (const link of linksInApp) {
+            link.style.display = 'none';
+            link.style.visibility = 'hidden';
+        }
+    }
+    
+    // Asegurar visibilidad de app-label
+    const appLabels = sidebar.querySelectorAll('.app-label');
+    for (const label of appLabels) {
+        label.style.display = 'block';
+        label.style.visibility = 'visible';
+    }
+    
+    console.log(`✅ Sidebar limpiado: ${modelLists.length} listas ocultas`);
+}
+
+// Navegar a URL de app
+function navigateToApp(parentDiv) {
+    const changeLink = parentDiv.querySelector('a[href*="/admin/"][href*="/"]');
+    
+    if (changeLink && changeLink.href) {
+        console.log(`  ➡️ Navegando a: ${changeLink.href}`);
+        globalThis.location.href = changeLink.href;
+        return;
+    }
+    
+    // Construir URL si no se encuentra enlace
+    const appClass = parentDiv.className.match(/app-(\w+)/);
+    if (appClass && appClass[1]) {
+        const appUrl = `/admin/${appClass[1]}/`;
+        console.log(`  ➡️ Navegando a URL construida: ${appUrl}`);
+        globalThis.location.href = appUrl;
+    } else {
+        console.log('  ⚠️ No se encontró enlace changelist');
+    }
+}
+
+// Configurar clicks en app labels
+function setupAppLabels() {
     const appLabels = document.querySelectorAll('#nav-sidebar .app-label');
     console.log(`📦 Encontradas ${appLabels.length} apps en el sidebar`);
     
-    for (const [index, label] of Array.from(appLabels).entries()) {
+    let index = 0;
+    for (const label of appLabels) {
+        index++;
         const appName = label.textContent.trim();
-        console.log(`  ${index + 1}. ${appName}`);
+        console.log(`  ${index}. ${appName}`);
         
         label.style.cursor = 'pointer';
-        
         label.addEventListener('click', function(e) {
             e.preventDefault();
             console.log(`🎯 Click en app: ${appName}`);
             
-            // Obtener el contenedor padre de la app
             const parentDiv = this.closest('[class*="app-"]');
             if (parentDiv) {
-                // Buscar el primer enlace changelist dentro de la app
-                const changeLink = parentDiv.querySelector('a[href*="/admin/"][href*="/"]');
-                
-                if (changeLink && changeLink.href) {
-                    console.log(`  ➡️ Navegando a: ${changeLink.href}`);
-                    globalThis.location.href = changeLink.href;
-                } else {
-                    console.log('  ⚠️ No se encontró enlace changelist');
-                    // Intentar construir la URL basándose en el nombre de la app
-                    const appClass = parentDiv.className.match(/app-(\w+)/);
-                    if (appClass && appClass[1]) {
-                        const appUrl = `/admin/${appClass[1]}/`;
-                        console.log(`  ➡️ Navegando a URL construida: ${appUrl}`);
-                        globalThis.location.href = appUrl;
-                    }
-                }
+                navigateToApp(parentDiv);
             }
         });
     }
+}
+
+// Inicialización principal
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Inicializando Panel Desarrollador');
+    
+    const sidebar = document.getElementById('nav-sidebar');
+    const sidebarToggle = document.querySelector('.sidebar-toggle, .mobile-toggle');
+    const backdrop = createBackdrop(sidebar);
+    
+    setupSidebarToggle(sidebarToggle, sidebar, backdrop);
+    setupBackdropClick(backdrop, sidebar);
+    setupOutsideClick(sidebar, sidebarToggle, backdrop);
+    cleanupSidebar(sidebar);
+    setupAppLabels();
     
     console.log('✨ Panel Desarrollador inicializado correctamente');
 });
