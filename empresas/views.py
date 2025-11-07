@@ -17,7 +17,7 @@ from django.db import transaction
 from django.views.decorators.http import require_http_methods
 
 # Project imports
-from .models import Empresa, PerfilEmpresa, HistorialCambioEmpresa, EmpresaActiva, HistorialCambios
+from .models import Empresa, PerfilEmpresa, EmpresaActiva, HistorialCambios
 
 # URL constants
 ACCOUNTS_DASHBOARD_URL = 'accounts:dashboard'
