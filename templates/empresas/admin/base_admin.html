@@ -410,21 +410,24 @@
         }
 
         .status-active {
-            background: rgba(30, 126, 52, 0.2);
-            color: #145523;
-            font-weight: 600;
+            background: #d4edda;
+            color: #0d3d1a;
+            font-weight: 700;
+            border: 1px solid #c3e6cb;
         }
 
         .status-pending {
-            background: rgba(201, 144, 0, 0.2);
-            color: #8b6500;
-            font-weight: 600;
+            background: #fff3cd;
+            color: #664200;
+            font-weight: 700;
+            border: 1px solid #ffeeba;
         }
 
         .status-inactive {
-            background: rgba(73, 80, 87, 0.2);
-            color: #2d3238;
-            font-weight: 600;
+            background: #e2e3e5;
+            color: #1a1d20;
+            font-weight: 700;
+            border: 1px solid #d6d8db;
         }
 
         /* Secciones del sidebar */
@@ -592,13 +595,9 @@
     <!-- Backdrop para móvil -->
     <div class="admin-backdrop" 
          id="adminBackdrop" 
-         role="button" 
-         tabindex="0"
          onclick="toggleMobileSidebar()" 
-         onkeypress="if(event.key==='Enter'||event.key===' ')toggleMobileSidebar()"
          style="display:none;" 
-         aria-hidden="true"
-         aria-label="Cerrar menú lateral"></div>
+         aria-hidden="true"></div>
 
     <!-- Main Content -->
     <main class="admin-main">
