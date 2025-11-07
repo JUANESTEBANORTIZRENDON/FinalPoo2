@@ -8,6 +8,9 @@ from django.http import JsonResponse
 from django.urls import reverse_lazy
 from .models import Pago, CuentaBancaria
 from .forms import CobroForm
+
+# Constantes para evitar duplicación
+CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
 from empresas.middleware import EmpresaFilterMixin
 
 # Constante para evitar duplicación del literal de URL
@@ -84,7 +87,7 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
         
         if not empresa_activa:
             messages.error(self.request, 'Debes seleccionar una empresa.')
-            return redirect('empresas:cambiar_empresa')
+            return redirect(CAMBIAR_EMPRESA_URL)
         
         # Generar número de cobro automático
         ultimo_cobro = Pago.objects.filter(

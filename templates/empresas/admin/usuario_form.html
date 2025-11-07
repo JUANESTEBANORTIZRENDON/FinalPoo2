@@ -199,12 +199,12 @@
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="password_confirm" class="form-label">
+                                    <label for="new_password_confirm" class="form-label">
                                         <i class="fas fa-lock me-1"></i>Confirmar Nueva Contraseña
                                     </label>
                                     <input type="password" 
                                            class="form-control" 
-                                           id="password_confirm" 
+                                           id="new_password_confirm" 
                                            name="password_confirm">
                                 </div>
                                 {% endif %}
@@ -297,7 +297,7 @@
 // Validación de contraseñas coincidentes
 document.addEventListener('DOMContentLoaded', function() {
     const password = document.getElementById('{% if accion == "crear" %}password{% else %}new_password{% endif %}');
-    const passwordConfirm = document.getElementById('password_confirm');
+    const passwordConfirm = document.getElementById('{% if accion == "crear" %}password_confirm{% else %}new_password_confirm{% endif %}');
     
     function validatePasswords() {
         if (password.value && passwordConfirm.value) {

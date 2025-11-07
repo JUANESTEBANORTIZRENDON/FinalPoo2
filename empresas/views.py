@@ -13,6 +13,11 @@ from .models import Empresa, PerfilEmpresa, EmpresaActiva
 # Constantes para evitar duplicación de literales de URL
 EMPRESA_LIST_URL = 'empresas:empresa_list'
 ACCOUNTS_DASHBOARD_URL = 'accounts:dashboard'
+CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
+
+# Constantes para mensajes de error recurrentes
+MSG_NO_EMPRESA_SELECCIONADA = 'Debes seleccionar una empresa primero.'
+MSG_NO_PERFIL_ACTIVO = 'No tienes un perfil activo en esta empresa.'
 
 
 class EmpresaListView(LoginRequiredMixin, ListView):
@@ -181,11 +186,11 @@ def contador_dashboard(request):
         }
         
     except EmpresaActiva.DoesNotExist:
-        messages.warning(request, 'Debes seleccionar una empresa primero.')
-        return redirect('empresas:cambiar_empresa')
+        messages.warning(request, MSG_NO_EMPRESA_SELECCIONADA)
+        return redirect(CAMBIAR_EMPRESA_URL)
     except PerfilEmpresa.DoesNotExist:
-        messages.error(request, 'No tienes un perfil activo en esta empresa.')
-        return redirect('empresas:cambiar_empresa')
+        messages.error(request, MSG_NO_PERFIL_ACTIVO)
+        return redirect(CAMBIAR_EMPRESA_URL)
     
     return render(request, 'empresas/contador/dashboard.html', context)
 
@@ -216,11 +221,11 @@ def operador_dashboard(request):
         }
         
     except EmpresaActiva.DoesNotExist:
-        messages.warning(request, 'Debes seleccionar una empresa primero.')
-        return redirect('empresas:cambiar_empresa')
+        messages.warning(request, MSG_NO_EMPRESA_SELECCIONADA)
+        return redirect(CAMBIAR_EMPRESA_URL)
     except PerfilEmpresa.DoesNotExist:
-        messages.error(request, 'No tienes un perfil activo en esta empresa.')
-        return redirect('empresas:cambiar_empresa')
+        messages.error(request, MSG_NO_PERFIL_ACTIVO)
+        return redirect(CAMBIAR_EMPRESA_URL)
     
     return render(request, 'empresas/operador/dashboard.html', context)
 
@@ -252,10 +257,10 @@ def observador_dashboard(request):
         }
         
     except EmpresaActiva.DoesNotExist:
-        messages.warning(request, 'Debes seleccionar una empresa primero.')
-        return redirect('empresas:cambiar_empresa')
+        messages.warning(request, MSG_NO_EMPRESA_SELECCIONADA)
+        return redirect(CAMBIAR_EMPRESA_URL)
     except PerfilEmpresa.DoesNotExist:
-        messages.error(request, 'No tienes un perfil activo en esta empresa.')
-        return redirect('empresas:cambiar_empresa')
+        messages.error(request, MSG_NO_PERFIL_ACTIVO)
+        return redirect(CAMBIAR_EMPRESA_URL)
     
     return render(request, 'empresas/observador/dashboard.html', context)
