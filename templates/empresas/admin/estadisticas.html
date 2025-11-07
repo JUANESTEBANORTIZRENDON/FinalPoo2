@@ -110,7 +110,10 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Chart.js con Subresource Integrity -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js" 
+        integrity="sha384-ks6c1L/tVp0yuKGLHDT/NsRhFcxYZt4sJrjBMtgGZIp5AQKz5MfbZsAzU6l3F5Je" 
+        crossorigin="anonymous"></script>
 <script>
 // Gráfico de empresas por mes
 const ctx = document.getElementById('empresasPorMesChart').getContext('2d');

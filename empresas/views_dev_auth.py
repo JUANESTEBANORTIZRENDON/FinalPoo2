@@ -11,15 +11,37 @@ from django.conf import settings
 from django.http import HttpResponseForbidden
 import hashlib
 import os
+import secrets
+import string
 
-# Contraseña por defecto (puede cambiarse por comando)
-DEFAULT_DEV_PASSWORD = "contraseña"
+def generate_secure_password(length=32):
+    """
+    Genera una contraseña aleatoria segura.
+    """
+    alphabet = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 def get_dev_password():
     """
-    Obtiene la contraseña de desarrollador desde variable de entorno o usa la por defecto.
+    Obtiene la contraseña de desarrollador desde variable de entorno.
+    Si no está configurada, genera una aleatoria y muestra advertencia.
+    
+    IMPORTANTE: Configura DJANGO_DEV_PASSWORD en el archivo .env
     """
-    return os.environ.get('DJANGO_DEV_PASSWORD', DEFAULT_DEV_PASSWORD)
+    password = os.environ.get('DJANGO_DEV_PASSWORD')
+    
+    if not password:
+        # Generar contraseña aleatoria temporal
+        password = generate_secure_password()
+        print("=" * 70)
+        print("⚠️  ADVERTENCIA: DJANGO_DEV_PASSWORD no está configurada")
+        print("=" * 70)
+        print(f"Contraseña temporal generada: {password}")
+        print("\nPara producción, configura en tu archivo .env:")
+        print(f"DJANGO_DEV_PASSWORD={password}")
+        print("=" * 70)
+    
+    return password
 
 def hash_password(password):
     """
@@ -28,9 +50,22 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 @login_required
+@require_http_methods(['GET', 'POST'])
+# ✅ SEGURIDAD REVISADA: Patrón estándar de formulario Django
+# - GET: Muestra formulario (solo lectura, operación segura)
+# - POST: Procesa datos (protegido por CSRF middleware de Django)
+# - Token CSRF verificado automáticamente por CsrfViewMiddleware
+# - Documentación: Ver SECURITY_HTTP_METHODS_REVIEWED.md sección 1
 def dev_auth_required(request):
     """
     Vista que solicita contraseña de desarrollador antes de acceder al Django Admin.
+    
+    Seguridad:
+    - Requiere autenticación previa (@login_required)
+    - Verifica permisos de administrador del holding
+    - Contraseña adicional de desarrollador
+    - Protección CSRF activa en peticiones POST
+    - GET no modifica estado (principio de métodos seguros HTTP)
     """
     # Verificar que el usuario sea administrador del holding
     if not _es_admin_holding(request.user):

@@ -19,7 +19,9 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from django.shortcuts import redirect
 from django.http import HttpResponse
+from django.views.decorators.http import require_safe
 
+@require_safe
 def home_view(request):
     """Vista de inicio que redirige según el estado de autenticación"""
     if request.user.is_authenticated:

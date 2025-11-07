@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_safe
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse_lazy
@@ -154,6 +154,7 @@ def seleccionar_empresa(request):
 
 
 @login_required
+@require_safe
 def contador_dashboard(request):
     """Dashboard específico para usuarios con rol contador"""
     try:
@@ -189,6 +190,7 @@ def contador_dashboard(request):
 
 
 @login_required
+@require_safe
 def operador_dashboard(request):
     """Dashboard específico para usuarios con rol operador"""
     try:
@@ -223,6 +225,7 @@ def operador_dashboard(request):
 
 
 @login_required
+@require_safe
 def observador_dashboard(request):
     """Dashboard específico para usuarios con rol observador (solo lectura)"""
     try:

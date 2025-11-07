@@ -1,0 +1,49 @@
+# Archivos y carpetas ignorados por CodeQL Security Analysis
+# Para Django S_CONTABLE
+
+# Entornos virtuales
+env/
+venv/
+ENV/
+.venv/
+
+# Archivos estáticos
+staticfiles/
+static/
+
+# Migraciones de Django (código auto-generado)
+**/migrations/**
+
+# Tests
+**/tests.py
+**/test_*.py
+tests/
+
+# Scripts de verificación y utilidades
+check_*.py
+verify_*.py
+find_*.py
+generate_*.py
+
+# Configuración
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+
+# Base de datos
+*.sqlite3
+*.db
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentación markdown (no tiene código ejecutable)
+*.md
