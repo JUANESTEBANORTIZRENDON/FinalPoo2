@@ -1,0 +1,283 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Facturas - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-file-invoice text-primary"></i>
+                                Facturas
+                            </h2>
+                            <p class="text-muted mb-0">Gestión de facturas de {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="{% url 'facturacion:factura_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Nueva Factura
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Total Facturas</h6>
+                    <h3 class="text-primary mb-0">{{ total_facturas }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Pendientes</h6>
+                    <h3 class="text-warning mb-0">{{ facturas_borrador }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-success">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Confirmadas</h6>
+                    <h3 class="text-success mb-0">{{ facturas_confirmadas }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Anuladas</h6>
+                    <h3 class="text-danger mb-0">{{ facturas_anuladas }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Facturas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i>
+                        Listado de Facturas
+                        {% if facturas %}
+                            <span class="badge bg-primary">{{ facturas|length }}</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if facturas %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Fecha</th>
+                                        <th>Cliente</th>
+                                        <th>Tipo</th>
+                                        <th>Subtotal</th>
+                                        <th>Impuestos</th>
+                                        <th>Total</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for factura in facturas %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ factura.numero_factura }}</strong>
+                                        </td>
+                                        <td>
+                                            {{ factura.fecha_factura|date:"d/m/Y" }}
+                                        </td>
+                                        <td>
+                                            <div>{{ factura.cliente.razon_social }}</div>
+                                            <small class="text-muted">{{ factura.cliente.identificacion }}</small>
+                                        </td>
+                                        <td>
+                                            {% if factura.tipo_venta == 'contado' %}
+                                                <span class="badge bg-success">Contado</span>
+                                            {% else %}
+                                                <span class="badge bg-info">Crédito</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            ${{ factura.subtotal|floatformat:2 }}
+                                        </td>
+                                        <td>
+                                            ${{ factura.total_impuestos|floatformat:2 }}
+                                        </td>
+                                        <td>
+                                            <strong class="text-success">${{ factura.total|floatformat:2 }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if factura.estado == 'borrador' %}
+                                                <span class="badge bg-warning">Pendiente</span>
+                                            {% elif factura.estado == 'confirmada' %}
+                                                <span class="badge bg-success">Confirmada</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Anulada</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" aria-label="Acciones para factura {{ factura.numero_factura }}">
+                                                <a href="{% url 'facturacion:factura_detail' factura.pk %}" 
+                                                   class="btn btn-outline-primary" 
+                                                   title="Ver detalles">
+                                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Ver detalles</span>
+                                                </a>
+                                                {% if factura.puede_editarse %}
+                                                <a href="{% url 'facturacion:factura_update' factura.pk %}" 
+                                                   class="btn btn-outline-warning" 
+                                                   title="Editar">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Editar</span>
+                                                </a>
+                                                {% endif %}
+                                                <a href="{% url 'facturacion:pdf' factura.pk %}" 
+                                                   class="btn btn-outline-info" 
+                                                   title="Descargar PDF">
+                                                    <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">PDF</span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay facturas registradas.</p>
+                            <a href="{% url 'facturacion:factura_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Crear Primera Factura
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Responsive Facturas Lista */
+    @media (max-width: 992px) {
+        .card-body {
+            padding: 1rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+        }
+        
+        .table th {
+            font-size: 0.9rem;
+        }
+        
+        .table td {
+            font-size: 0.9rem;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 0.3rem 0.5rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .row.mb-4 {
+            margin-bottom: 1rem !important;
+        }
+        
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .d-flex.justify-content-between .btn {
+            width: 100%;
+        }
+        
+        .table-responsive {
+            margin: 0 -1rem;
+        }
+        
+        .table td {
+            padding: 0.75rem;
+            min-width: 100px;
+        }
+        
+        .table th {
+            white-space: nowrap;
+        }
+        
+        .col-md-3 {
+            margin-bottom: 1rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            width: 100%;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .container-fluid {
+            padding: 0.5rem;
+        }
+        
+        h2 {
+            font-size: 1.25rem;
+        }
+        
+        .card-body {
+            padding: 0.75rem;
+        }
+        
+        .badge {
+            font-size: 0.75rem;
+        }
+        
+        .table td {
+            font-size: 0.85rem;
+        }
+        
+        .btn {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.75rem;
+        }
+        
+        .text-muted {
+            font-size: 0.8rem;
+        }
+        
+        .col-md-3 h3 {
+            font-size: 1.5rem;
+        }
+        
+        .col-md-3 h6 {
+            font-size: 0.85rem;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,4 +1,7 @@
+<<<<<<< Updated upstream
 import logging
+=======
+>>>>>>> Stashed changes
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -9,13 +12,22 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Prefetch, F, Sum, Q
 from django.views.decorators.http import require_http_methods
+<<<<<<< Updated upstream
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.db import transaction
 from django.core.exceptions import PermissionDenied
 from django.core.cache import cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+=======
+from django.http import JsonResponse, HttpResponse
+from django.urls import reverse_lazy
+from django.contrib import messages
+from django.utils import timezone
+from decimal import Decimal
+>>>>>>> Stashed changes
 from .models import Factura, FacturaDetalle
+from catalogos.models import Tercero, Producto, MetodoPago
 
 # Logger setup
 logger = logging.getLogger(__name__)
@@ -42,6 +54,7 @@ class FacturaListView(LoginRequiredMixin, ListView):
     Vista para listar facturas con paginación y optimizaciones de rendimiento.
     """
     model = Factura
+<<<<<<< Updated upstream
     template_name = 'facturacion/lista.html'
     context_object_name = 'facturas'
     paginate_by = 20  # Número de facturas por página
@@ -103,6 +116,27 @@ class FacturaListView(LoginRequiredMixin, ListView):
             'mes_actual': timezone.now().strftime('%B %Y')
         })
         
+=======
+    template_name = 'facturacion/factura_list.html'
+    context_object_name = 'facturas'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Filtrar por empresa activa
+        if hasattr(self.request, 'empresa_activa'):
+            queryset = queryset.filter(empresa=self.request.empresa_activa)
+        return queryset.select_related('cliente', 'empresa', 'creado_por')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Agregar estadísticas
+        facturas = self.get_queryset()
+        context['total_facturas'] = facturas.count()
+        context['facturas_borrador'] = facturas.filter(estado='borrador').count()
+        context['facturas_confirmadas'] = facturas.filter(estado='confirmada').count()
+        context['facturas_anuladas'] = facturas.filter(estado='anulada').count()
+>>>>>>> Stashed changes
         return context
 
 class FacturaDetailView(LoginRequiredMixin, DetailView):
@@ -155,6 +189,7 @@ class FacturaCreateView(LoginRequiredMixin, EmpresaRequiredMixin, CreateView):
     Vista para crear una nueva factura con validaciones de seguridad.
     """
     model = Factura
+<<<<<<< Updated upstream
     template_name = 'facturacion/crear.html'
     fields = [
         'cliente', 'fecha_factura', 'fecha_vencimiento', 'tipo_venta',
@@ -278,6 +313,65 @@ class FacturaCreateView(LoginRequiredMixin, EmpresaRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Crear Nueva Factura'
         return context
+=======
+    template_name = 'facturacion/factura_create.html'
+    fields = ['cliente', 'fecha_factura', 'tipo_venta', 'metodo_pago', 'fecha_vencimiento', 'observaciones']
+    success_url = reverse_lazy('facturacion:factura_list')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Obtener clientes para el select
+        if hasattr(self.request, 'empresa_activa'):
+            context['clientes'] = Tercero.objects.filter(
+                empresa=self.request.empresa_activa,
+                tipo_tercero__in=['cliente', 'ambos']
+            ).order_by('razon_social')
+            context['metodos_pago'] = MetodoPago.objects.filter(
+                empresa=self.request.empresa_activa
+            ).order_by('nombre')
+            context['productos'] = Producto.objects.filter(
+                empresa=self.request.empresa_activa,
+                activo=True
+            ).select_related('impuesto').order_by('nombre')
+        # Agregar fecha actual
+        context['today'] = timezone.now().date()
+        return context
+    
+    def form_valid(self, form):
+        # Asignar empresa activa
+        if hasattr(self.request, 'empresa_activa'):
+            form.instance.empresa = self.request.empresa_activa
+        
+        # Asignar usuario creador
+        form.instance.creado_por = self.request.user
+        
+        # Generar número de factura automáticamente
+        form.instance.numero_factura = self.generar_numero_factura()
+        
+        # Estado inicial: borrador (pendiente)
+        form.instance.estado = 'borrador'
+        
+        # Inicializar totales en cero
+        form.instance.subtotal = Decimal('0.00')
+        form.instance.total_impuestos = Decimal('0.00')
+        form.instance.total = Decimal('0.00')
+        
+        messages.success(self.request, f'Factura {form.instance.numero_factura} creada exitosamente en estado pendiente.')
+        return super().form_valid(form)
+    
+    def generar_numero_factura(self):
+        """Genera el siguiente número de factura para la empresa"""
+        empresa = self.request.empresa_activa if hasattr(self.request, 'empresa_activa') else None
+        if empresa:
+            ultima_factura = Factura.objects.filter(empresa=empresa).order_by('-numero_factura').first()
+            if ultima_factura:
+                try:
+                    numero = int(ultima_factura.numero_factura) + 1
+                    return str(numero).zfill(6)
+                except ValueError:
+                    pass
+        return '000001'
+>>>>>>> Stashed changes
 
 class FacturaUpdateView(LoginRequiredMixin, UpdateView):
     model = Factura

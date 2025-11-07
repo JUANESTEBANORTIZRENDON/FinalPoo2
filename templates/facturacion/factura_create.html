@@ -1,0 +1,374 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Nueva Factura - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-file-invoice text-primary"></i>
+                                Nueva Factura
+                            </h2>
+                            <p class="text-muted mb-0">Crear nueva factura para {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="{% url 'facturacion:factura_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <form method="post" id="facturaForm" novalidate>
+        {% csrf_token %}
+        
+        <div class="row">
+            <!-- Información del Cliente -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user"></i>
+                            Información del Cliente
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="id_cliente" class="form-label">
+                                    Cliente <span class="text-danger">*</span>
+                                </label>
+                                <select name="cliente" id="id_cliente" class="form-select" required>
+                                    <option value="">Seleccione un cliente...</option>
+                                    {% for cliente in clientes %}
+                                    <option value="{{ cliente.id }}" 
+                                            data-identificacion="{{ cliente.identificacion }}"
+                                            data-email="{{ cliente.email }}"
+                                            data-telefono="{{ cliente.telefono }}">
+                                        {{ cliente.razon_social }} - {{ cliente.identificacion }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.cliente.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.cliente.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Identificación</label>
+                                <input type="text" id="cliente_identificacion" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="text" id="cliente_email" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Teléfono</label>
+                                <input type="text" id="cliente_telefono" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalles de la Factura -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list"></i>
+                            Detalles de la Factura
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="detallesTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="40%">Producto/Servicio</th>
+                                        <th width="15%">Cantidad</th>
+                                        <th width="15%">Precio Unit.</th>
+                                        <th width="10%">Impuesto</th>
+                                        <th width="15%">Total</th>
+                                        <th width="5%"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detallesBody">
+                                    <!-- Las líneas se agregarán dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <button type="button" class="btn btn-success" id="btnAgregarLinea">
+                            <i class="fas fa-plus"></i> Agregar Línea
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen y Configuración -->
+            <div class="col-lg-4">
+                <!-- Información de la Factura -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle"></i>
+                            Información
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="id_fecha_factura" class="form-label">
+                                Fecha de Factura <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" name="fecha_factura" id="id_fecha_factura" 
+                                   class="form-control" required value="{{ today|date:'Y-m-d' }}">
+                            {% if form.fecha_factura.errors %}
+                                <div class="invalid-feedback d-block">{{ form.fecha_factura.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_tipo_venta" class="form-label">
+                                Tipo de Venta <span class="text-danger">*</span>
+                            </label>
+                            <select name="tipo_venta" id="id_tipo_venta" class="form-select" required>
+                                <option value="contado">Contado</option>
+                                <option value="credito">Crédito</option>
+                            </select>
+                            {% if form.tipo_venta.errors %}
+                                <div class="invalid-feedback d-block">{{ form.tipo_venta.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3" id="metodo_pago_group">
+                            <label for="id_metodo_pago" class="form-label">
+                                Método de Pago
+                            </label>
+                            <select name="metodo_pago" id="id_metodo_pago" class="form-select">
+                                <option value="">Seleccione...</option>
+                                {% for metodo in metodos_pago %}
+                                <option value="{{ metodo.id }}">{{ metodo.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" id="fecha_vencimiento_group" style="display: none;">
+                            <label for="id_fecha_vencimiento" class="form-label">
+                                Fecha de Vencimiento
+                            </label>
+                            <input type="date" name="fecha_vencimiento" id="id_fecha_vencimiento" 
+                                   class="form-control">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_observaciones" class="form-label">
+                                Observaciones
+                            </label>
+                            <textarea name="observaciones" id="id_observaciones" 
+                                      class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Totales -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calculator"></i>
+                            Totales
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <strong id="subtotal">$0.00</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Impuestos:</span>
+                            <strong id="impuestos">$0.00</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <h5>Total:</h5>
+                            <h5 class="text-success" id="total">$0.00</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-2">
+                            <i class="fas fa-save"></i> Crear Factura (Pendiente)
+                        </button>
+                        <a href="{% url 'facturacion:factura_list' %}" class="btn btn-secondary w-100">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Template para línea de detalle -->
+<template id="lineaTemplate">
+    <tr class="linea-detalle">
+        <td>
+            <select class="form-select form-select-sm producto-select" required>
+                <option value="">Seleccione...</option>
+                {% for producto in productos %}
+                <option value="{{ producto.id }}" 
+                        data-precio="{{ producto.precio_venta }}"
+                        data-impuesto="{{ producto.impuesto.porcentaje|default:'0' }}"
+                        data-impuesto-id="{{ producto.impuesto.id|default:'' }}">
+                    {{ producto.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm cantidad-input" 
+                   min="1" step="0.01" value="1" required>
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm precio-input" 
+                   min="0" step="0.01" value="0" required>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm impuesto-display" 
+                   readonly value="0%">
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm total-linea" 
+                   readonly value="$0.00">
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm btn-eliminar-linea">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const detallesBody = document.getElementById('detallesBody');
+    const lineaTemplate = document.getElementById('lineaTemplate');
+    const btnAgregarLinea = document.getElementById('btnAgregarLinea');
+    const tipoVentaSelect = document.getElementById('id_tipo_venta');
+    const metodoPagoGroup = document.getElementById('metodo_pago_group');
+    const fechaVencimientoGroup = document.getElementById('fecha_vencimiento_group');
+    const clienteSelect = document.getElementById('id_cliente');
+    
+    // Manejar cambio de cliente
+    clienteSelect.addEventListener('change', function() {
+        const option = this.options[this.selectedIndex];
+        document.getElementById('cliente_identificacion').value = option.dataset.identificacion || '';
+        document.getElementById('cliente_email').value = option.dataset.email || '';
+        document.getElementById('cliente_telefono').value = option.dataset.telefono || '';
+    });
+    
+    // Manejar cambio de tipo de venta
+    tipoVentaSelect.addEventListener('change', function() {
+        if (this.value === 'contado') {
+            metodoPagoGroup.style.display = 'block';
+            fechaVencimientoGroup.style.display = 'none';
+        } else {
+            metodoPagoGroup.style.display = 'none';
+            fechaVencimientoGroup.style.display = 'block';
+        }
+    });
+    
+    // Agregar línea de detalle
+    btnAgregarLinea.addEventListener('click', function() {
+        const nuevaLinea = lineaTemplate.content.cloneNode(true);
+        detallesBody.appendChild(nuevaLinea);
+        actualizarEventos();
+        calcularTotales();
+    });
+    
+    // Actualizar eventos de las líneas
+    function actualizarEventos() {
+        // Eventos de producto select
+        document.querySelectorAll('.producto-select').forEach(select => {
+            select.removeEventListener('change', handleProductoChange);
+            select.addEventListener('change', handleProductoChange);
+        });
+        
+        // Eventos de cantidad y precio
+        document.querySelectorAll('.cantidad-input, .precio-input').forEach(input => {
+            input.removeEventListener('input', calcularTotales);
+            input.addEventListener('input', calcularTotales);
+        });
+        
+        // Eventos de eliminar línea
+        document.querySelectorAll('.btn-eliminar-linea').forEach(btn => {
+            btn.removeEventListener('click', handleEliminarLinea);
+            btn.addEventListener('click', handleEliminarLinea);
+        });
+    }
+    
+    // Manejar cambio de producto
+    function handleProductoChange(e) {
+        const option = e.target.options[e.target.selectedIndex];
+        const row = e.target.closest('tr');
+        const precioInput = row.querySelector('.precio-input');
+        const impuestoDisplay = row.querySelector('.impuesto-display');
+        
+        precioInput.value = option.dataset.precio || 0;
+        impuestoDisplay.value = (option.dataset.impuesto || 0) + '%';
+        
+        calcularTotales();
+    }
+    
+    // Manejar eliminar línea
+    function handleEliminarLinea(e) {
+        e.target.closest('tr').remove();
+        calcularTotales();
+    }
+    
+    // Calcular totales
+    function calcularTotales() {
+        let subtotal = 0;
+        let totalImpuestos = 0;
+        
+        document.querySelectorAll('.linea-detalle').forEach(row => {
+            const cantidad = parseFloat(row.querySelector('.cantidad-input').value) || 0;
+            const precio = parseFloat(row.querySelector('.precio-input').value) || 0;
+            const productoSelect = row.querySelector('.producto-select');
+            const option = productoSelect.options[productoSelect.selectedIndex];
+            const porcentajeImpuesto = parseFloat(option.dataset.impuesto) || 0;
+            
+            const subtotalLinea = cantidad * precio;
+            const impuestoLinea = subtotalLinea * (porcentajeImpuesto / 100);
+            const totalLinea = subtotalLinea + impuestoLinea;
+            
+            row.querySelector('.total-linea').value = '$' + totalLinea.toFixed(2);
+            
+            subtotal += subtotalLinea;
+            totalImpuestos += impuestoLinea;
+        });
+        
+        const total = subtotal + totalImpuestos;
+        
+        document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+        document.getElementById('impuestos').textContent = '$' + totalImpuestos.toFixed(2);
+        document.getElementById('total').textContent = '$' + total.toFixed(2);
+    }
+    
+    // Agregar primera línea automáticamente
+    btnAgregarLinea.click();
+});
+</script>
+
+{% endblock %}

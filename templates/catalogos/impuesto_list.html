@@ -1,0 +1,52 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Impuestos - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-percent text-primary"></i>
+                                Impuestos
+                            </h2>
+                            <p class="text-muted mb-0">Gestión de impuestos de {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Nuevo Impuesto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Impuestos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i>
+                        Listado de Impuestos
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-invoice-dollar fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No hay impuestos registrados.</p>
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Crear Primer Impuesto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
