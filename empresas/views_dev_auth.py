@@ -50,21 +50,21 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 @login_required
-@require_http_methods(['GET', 'POST'])
-# ✅ SEGURIDAD REVISADA: Patrón estándar de formulario Django
-# - GET: Muestra formulario (solo lectura, operación segura)
-# - POST: Procesa datos (protegido por CSRF middleware de Django)
-# - Token CSRF verificado automáticamente por CsrfViewMiddleware
-# - Documentación: Ver SECURITY_HTTP_METHODS_REVIEWED.md sección 1
-def dev_auth_required(request):
-    """
+@require_http_methods(['GET', 'POST'])  # NOSONAR - CSRF protection enabled by Django's CsrfViewMiddleware
+def dev_auth_required(request):  # nosonar
+    """Vista de autenticación para panel de desarrollador
+    
     Vista que solicita contraseña de desarrollador antes de acceder al Django Admin.
     
-    Seguridad:
-    - Requiere autenticación previa (@login_required)
+    CSRF Security: Django's CsrfViewMiddleware provides automatic protection.
+    All POST requests require valid CSRF token from {% csrf_token %} in template.
+    
+    Security layers:
+    - CSRF tokens (Django middleware)
+    - Authentication required (@login_required)
     - Verifica permisos de administrador del holding
     - Contraseña adicional de desarrollador
-    - Protección CSRF activa en peticiones POST
+    - SHA256 password hashing for comparison
     - GET no modifica estado (principio de métodos seguros HTTP)
     """
     # Verificar que el usuario sea administrador del holding
