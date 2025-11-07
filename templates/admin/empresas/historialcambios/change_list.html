@@ -43,22 +43,23 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: rgba(255, 255, 255, 0.3); /* Aumentado de 0.25 a 0.3 */
-        color: #ffffff;
+        background: rgba(255, 255, 255, 0.95); /* Cambiado de 0.3 a 0.95 para cumplir WCAG AA */
+        color: #2c3e50; /* Cambiado de #ffffff a color oscuro para contraste */
         text-decoration: none;
         padding: 8px 15px;
         border-radius: 6px;
         font-weight: 500;
         transition: all 0.2s ease;
         margin-top: 10px;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Agregado para mejor legibilidad */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Agregado para definir bordes */
     }
     
     .admin-link:hover {
-        background: rgba(255, 255, 255, 0.45); /* Aumentado de 0.4 a 0.45 */
-        color: #ffffff;
+        background: #ffffff; /* Fondo blanco sólido en hover */
+        color: #1a252f; /* Color aún más oscuro en hover */
         text-decoration: none;
         transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
     
     .diferencias-info {
