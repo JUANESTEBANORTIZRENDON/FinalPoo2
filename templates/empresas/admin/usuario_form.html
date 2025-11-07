@@ -84,20 +84,23 @@
                                     </div>
                                 </div>
                                 
-                                {% if accion == 'editar' %}
                                 <div class="mb-3">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" 
                                                type="checkbox" 
                                                id="is_active" 
                                                name="is_active"
-                                               {% if usuario.is_active %}checked{% endif %}>
+                                               {% if accion == 'crear' %}checked{% elif usuario.is_active %}checked{% endif %}>
                                         <label class="form-check-label" for="is_active">
                                             <i class="fas fa-toggle-on me-1"></i>Usuario Activo
                                         </label>
                                     </div>
+                                    {% if accion == 'crear' %}
+                                    <small class="form-text text-muted">
+                                        Por defecto, los nuevos usuarios se crean activos
+                                    </small>
+                                    {% endif %}
                                 </div>
-                                {% endif %}
                             </div>
                             
                             <!-- Información Personal y Contraseña -->

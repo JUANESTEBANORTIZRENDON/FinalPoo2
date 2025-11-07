@@ -397,11 +397,20 @@ def crear_usuario(request):  # nosonar
             first_name = request.POST.get('first_name', '').strip()
             last_name = request.POST.get('last_name', '').strip()
             password = request.POST.get('password', '').strip()
+            password_confirm = request.POST.get('password_confirm', '').strip()
             is_active = request.POST.get('is_active') == 'on'
             
             # Validaciones básicas
             if not username or not email or not password:
                 messages.error(request, 'Los campos nombre de usuario, email y contraseña son obligatorios.')
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_CREAR_USUARIO,
+                    'accion': 'crear'
+                })
+            
+            # Validar que las contraseñas coincidan
+            if password != password_confirm:
+                messages.error(request, 'Las contraseñas no coinciden.')
                 return render(request, TEMPLATE_USUARIO_FORM, {
                     'titulo': TITULO_CREAR_USUARIO,
                     'accion': 'crear'
@@ -437,7 +446,20 @@ def crear_usuario(request):  # nosonar
             if hasattr(user, 'perfil'):
                 perfil = user.perfil
                 perfil.tipo_documento = request.POST.get('tipo_documento', 'CC')
-                perfil.numero_documento = request.POST.get('numero_documento', '').strip()
+                
+                # Manejar numero_documento - generar uno temporal si está vacío
+                numero_documento = request.POST.get('numero_documento', '').strip()
+                if not numero_documento:
+                    # Generar número temporal único basado en el ID del usuario
+                    numero_documento = f"TEMP{user.id:06d}"
+                
+                # Verificar que el número no exista ya
+                if PerfilUsuario.objects.filter(numero_documento=numero_documento).exclude(usuario=user).exists():
+                    # Si existe, generar uno con timestamp
+                    import time
+                    numero_documento = f"TEMP{user.id:06d}{int(time.time() % 1000):03d}"
+                
+                perfil.numero_documento = numero_documento
                 perfil.telefono = request.POST.get('telefono', '').strip()
                 perfil.fecha_nacimiento = request.POST.get('fecha_nacimiento') or None
                 perfil.genero = request.POST.get('genero', '')
