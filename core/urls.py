@@ -20,7 +20,7 @@ from django.views.generic import RedirectView
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.views.decorators.http import require_safe
-from core.admin_site import contable_admin_site
+from core.admin_site import admin_site
 
 @require_safe
 def home_view(request):
@@ -35,7 +35,7 @@ def home_view(request):
 urlpatterns = [
     # ===== ADMINISTRACIÓN =====
     # Admin site personalizado con sidebar jerárquico y estadísticas
-    path('admin/', contable_admin_site.urls),
+    path('admin/', admin_site.urls),
     
     # ===== AUTENTICACIÓN MVT (HTML/Sesiones) =====
     # Mantiene el sistema existente intacto

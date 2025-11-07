@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'corsheaders',  # Para CORS en API
     
     # Apps del proyecto
+    'core.apps.CoreConfig',  # AdminSite personalizado y template tags
     'accounts',
     'api',  # Nueva app para API
     

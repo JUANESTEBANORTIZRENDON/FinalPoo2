@@ -200,4 +200,5 @@ class ContableAdminSite(AdminSite):
 
 
 # Instancia global del AdminSite personalizado
-contable_admin_site = ContableAdminSite(name='contable_admin')
+# Usar 'admin' como namespace para mantener compatibilidad con templates
+admin_site = ContableAdminSite(name='admin')
