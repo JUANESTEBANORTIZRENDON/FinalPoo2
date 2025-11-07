@@ -10,8 +10,9 @@ from django.db.models import Count, Sum
 from datetime import datetime
 from .models import Empresa, PerfilEmpresa, EmpresaActiva
 
-# Constante para evitar duplicación del literal de URL
+# Constantes para evitar duplicación de literales de URL
 EMPRESA_LIST_URL = 'empresas:empresa_list'
+ACCOUNTS_DASHBOARD_URL = 'accounts:dashboard'
 
 
 class EmpresaListView(LoginRequiredMixin, ListView):
@@ -150,7 +151,7 @@ def seleccionar_empresa(request):
         else:
             messages.error(request, 'Empresa no especificada.')
     
-    return redirect('accounts:dashboard')
+    return redirect(ACCOUNTS_DASHBOARD_URL)
 
 
 @login_required
@@ -164,7 +165,7 @@ def contador_dashboard(request):
         # Verificar que el usuario tenga rol contador
         if perfil.rol != 'contador':
             messages.warning(request, 'No tienes permisos de contador para esta empresa.')
-            return redirect('accounts:dashboard')
+            return redirect(ACCOUNTS_DASHBOARD_URL)
         
         # Obtener estadísticas del mes actual
         mes_actual = datetime.now().month
@@ -200,7 +201,7 @@ def operador_dashboard(request):
         # Verificar que el usuario tenga rol operador
         if perfil.rol != 'operador':
             messages.warning(request, 'No tienes permisos de operador para esta empresa.')
-            return redirect('accounts:dashboard')
+            return redirect(ACCOUNTS_DASHBOARD_URL)
         
         # Obtener estadísticas del mes actual
         mes_actual = datetime.now().month
@@ -235,7 +236,7 @@ def observador_dashboard(request):
         # Verificar que el usuario tenga rol observador
         if perfil.rol != 'observador':
             messages.warning(request, 'No tienes permisos de observador para esta empresa.')
-            return redirect('accounts:dashboard')
+            return redirect(ACCOUNTS_DASHBOARD_URL)
         
         # Obtener estadísticas generales
         mes_actual = datetime.now().month

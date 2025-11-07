@@ -66,99 +66,70 @@ class ContableAdminSite(AdminSite):
         """
         Retorna la estructura jerárquica del sidebar organizada por áreas funcionales
         """
-        # Obtener las apps registradas
         app_list = self.get_app_list(request)
-        
-        # Definir la estructura del sidebar por secciones
-        structure = [
-            {
-                'name': 'Gestión de Usuarios',
-                'icon': 'fa-users',
-                'apps': ['auth', 'accounts'],
-                'models': []
-            },
-            {
-                'name': 'Empresas',
-                'icon': 'fa-building',
-                'apps': ['empresas'],
-                'models': []
-            },
-            {
-                'name': 'Catálogos',
-                'icon': 'fa-boxes',
-                'apps': ['catalogos'],
-                'models': []
-            },
-            {
-                'name': 'Facturación',
-                'icon': 'fa-file-invoice',
-                'apps': ['facturacion'],
-                'models': []
-            },
-            {
-                'name': 'Tesorería',
-                'icon': 'fa-piggy-bank',
-                'apps': ['tesoreria'],
-                'models': []
-            },
-            {
-                'name': 'Contabilidad',
-                'icon': 'fa-book',
-                'apps': ['contabilidad'],
-                'models': []
-            },
-            {
-                'name': 'Reportes',
-                'icon': 'fa-chart-line',
-                'apps': ['reportes'],
-                'models': []
-            },
-            {
-                'name': 'API REST',
-                'icon': 'fa-code',
-                'apps': ['api'],
-                'models': []
-            },
-            {
-                'name': 'Ventas',
-                'icon': 'fa-shopping-cart',
-                'apps': ['ventas'],
-                'models': []
-            },
-            {
-                'name': 'Herramientas de Desarrollo',
-                'icon': 'fa-wrench',
-                'apps': ['admin', 'sessions', 'contenttypes'],
-                'models': []
-            },
-        ]
-        
-        # Mapear los modelos de cada app a su sección correspondiente
+        structure = self._create_sidebar_sections()
         app_dict = {app['app_label']: app for app in app_list}
         
+        self._populate_sidebar_models(structure, app_dict)
+        
+        # Filtrar secciones vacías (sin modelos)
+        return [section for section in structure if section['models']]
+    
+    def _create_sidebar_sections(self):
+        """Crea la estructura base de secciones del sidebar"""
+        return [
+            {'name': 'Gestión de Usuarios', 'icon': 'fa-users', 
+             'apps': ['auth', 'accounts'], 'models': []},
+            {'name': 'Empresas', 'icon': 'fa-building', 
+             'apps': ['empresas'], 'models': []},
+            {'name': 'Catálogos', 'icon': 'fa-boxes', 
+             'apps': ['catalogos'], 'models': []},
+            {'name': 'Facturación', 'icon': 'fa-file-invoice', 
+             'apps': ['facturacion'], 'models': []},
+            {'name': 'Tesorería', 'icon': 'fa-piggy-bank', 
+             'apps': ['tesoreria'], 'models': []},
+            {'name': 'Contabilidad', 'icon': 'fa-book', 
+             'apps': ['contabilidad'], 'models': []},
+            {'name': 'Reportes', 'icon': 'fa-chart-line', 
+             'apps': ['reportes'], 'models': []},
+            {'name': 'API REST', 'icon': 'fa-code', 
+             'apps': ['api'], 'models': []},
+            {'name': 'Ventas', 'icon': 'fa-shopping-cart', 
+             'apps': ['ventas'], 'models': []},
+            {'name': 'Herramientas de Desarrollo', 'icon': 'fa-wrench', 
+             'apps': ['admin', 'sessions', 'contenttypes'], 'models': []},
+        ]
+    
+    def _populate_sidebar_models(self, structure, app_dict):
+        """Mapea los modelos de cada app a su sección correspondiente"""
         for section in structure:
             for app_label in section['apps']:
                 if app_label in app_dict:
-                    app_data = app_dict[app_label]
-                    # Agregar los modelos de esta app a la sección
-                    for model in app_data.get('models', []):
-                        # Verificar permisos
-                        if model.get('perms', {}).get('view', False) or \
-                           model.get('perms', {}).get('change', False):
-                            section['models'].append({
-                                'name': model['name'],
-                                'object_name': model['object_name'],
-                                'admin_url': model.get('admin_url'),
-                                'add_url': model.get('add_url') if model.get('perms', {}).get('add', False) else None,
-                                'view_perm': model.get('perms', {}).get('view', False),
-                                'add_perm': model.get('perms', {}).get('add', False),
-                                'app_label': app_label,
-                            })
-        
-        # Filtrar secciones vacías (sin modelos)
-        structure = [s for s in structure if s['models']]
-        
-        return structure
+                    self._add_app_models_to_section(section, app_dict[app_label], app_label)
+    
+    def _add_app_models_to_section(self, section, app_data, app_label):
+        """Agrega los modelos de una app a una sección del sidebar"""
+        for model in app_data.get('models', []):
+            if self._has_view_permission(model):
+                section['models'].append(self._create_model_entry(model, app_label))
+    
+    def _has_view_permission(self, model):
+        """Verifica si el usuario tiene permisos de visualización o cambio"""
+        perms = model.get('perms', {})
+        return perms.get('view', False) or perms.get('change', False)
+    
+    def _create_model_entry(self, model, app_label):
+        """Crea la entrada de un modelo para el sidebar"""
+        perms = model.get('perms', {})
+        return {
+            'name': model['name'],
+            'object_name': model['object_name'],
+            'admin_url': model.get('admin_url'),
+            'add_url': model.get('add_url') if perms.get('add', False) else None,
+            'view_perm': perms.get('view', False),
+            'add_perm': perms.get('add', False),
+            'app_label': app_label,
+        }
     
     def get_app_list(self, request):
         """
