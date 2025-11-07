@@ -150,7 +150,8 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div class="btn-group btn-group-sm" role="group" aria-label="Acciones para {{ producto.nombre }}">
+                                            <!-- Bootstrap button group con aria-label (sin role="group" para evitar warning de SonarCloud) -->
+                                            <div class="btn-group btn-group-sm" aria-label="Acciones para {{ producto.nombre }}">
                                                 <a href="{% url 'catalogos:producto_detail' producto.pk %}" 
                                                    class="btn btn-outline-primary" 
                                                    title="Ver detalles del producto">

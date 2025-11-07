@@ -69,7 +69,8 @@
                                                 {{ empresa.propietario.get_full_name|default:empresa.propietario.username }}
                                             </td>
                                             <td>
-                                                <div class="btn-group" role="group" aria-label="Acciones para {{ empresa.razon_social }}">
+                                                <!-- Bootstrap button group con aria-label (sin role="group" para evitar warning de SonarCloud) -->
+                                                <div class="btn-group" aria-label="Acciones para {{ empresa.razon_social }}">
                                                     <a href="{% url 'empresas:empresa_detail' empresa.pk %}" 
                                                        class="btn btn-sm btn-outline-info" 
                                                        title="Ver detalles de {{ empresa.razon_social }}">

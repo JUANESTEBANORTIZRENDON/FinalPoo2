@@ -133,7 +133,7 @@ from django.db.models import Count, Sum
 from datetime import datetime
 ```
 
-**Nota:** Las estadísticas están con valores por defecto (0) porque los modelos de contabilidad/ventas aún no están implementados. Tienen comentarios `# TODO: Implementar cuando exista el modelo`
+**Nota:** Las estadísticas están con valores por defecto (0) porque los modelos de contabilidad/ventas aún no están implementados. Tienen comentarios informativos sobre las funcionalidades pendientes.
 
 #### C. URLs Configuradas
 

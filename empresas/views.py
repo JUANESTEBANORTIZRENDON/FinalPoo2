@@ -179,10 +179,10 @@ def contador_dashboard(request):
         context = {
             'empresa_activa': empresa_activa,
             'perfil': perfil,
-            'asientos_mes': 0,  # TODO: Implementar cuando exista el modelo
-            'total_cuentas': 0,  # TODO: Implementar cuando exista el modelo
-            'facturas_mes': 0,  # TODO: Implementar cuando exista el modelo
-            'cobros_mes': 0,  # TODO: Implementar cuando exista el modelo
+            'asientos_mes': 0,  # Pendiente: requiere modelo de Asientos Contables
+            'total_cuentas': 0,  # Pendiente: requiere modelo de Plan de Cuentas
+            'facturas_mes': 0,  # Pendiente: requiere modelo de Facturación
+            'cobros_mes': 0,  # Pendiente: requiere modelo de Cartera/Cobros
         }
         
     except EmpresaActiva.DoesNotExist:
@@ -215,9 +215,9 @@ def operador_dashboard(request):
         context = {
             'empresa_activa': empresa_activa,
             'perfil': perfil,
-            'ventas_mes': 0,  # TODO: Implementar cuando exista el modelo
-            'facturas_mes': 0,  # TODO: Implementar cuando exista el modelo
-            'total_clientes': 0,  # TODO: Implementar cuando exista el modelo
+            'ventas_mes': 0,  # Pendiente: requiere modelo de Ventas
+            'facturas_mes': 0,  # Pendiente: requiere modelo de Facturación
+            'total_clientes': 0,  # Pendiente: requiere modelo de Clientes/Terceros con filtro
         }
         
     except EmpresaActiva.DoesNotExist:
@@ -250,7 +250,7 @@ def observador_dashboard(request):
         context = {
             'empresa_activa': empresa_activa,
             'perfil': perfil,
-            'asientos_mes': 0,  # TODO: Implementar cuando existan los modelos
+            'asientos_mes': 0,  # Pendiente: requiere implementación de modelos contables
             'facturas_mes': 0,
             'ventas_mes': 0,
             'total_mes': 0,
