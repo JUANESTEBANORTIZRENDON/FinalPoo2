@@ -10,7 +10,14 @@ Bienvenido a la carpeta de documentación del Sistema Contable S_CONTABLE.
 1. **[Cambio de Contraseña del Administrador](./cambio_password_admin.md)**
    - Guía paso a paso para cambiar/resetear la contraseña del superusuario Django
    - Métodos: `changepassword`, shell de Django, y creación de nuevo superusuario
+   - Incluye información sobre la contraseña del panel desarrollador
    - Incluye solución de problemas y recomendaciones de seguridad
+
+2. **[Contraseña del Panel de Desarrollador](./password_panel_desarrollador.md)** ⭐ NUEVO
+   - Guía detallada del sistema de doble autenticación
+   - Cómo cambiar la contraseña del panel técnico (archivo .env)
+   - Contraseña actual: `hackerputo24`
+   - Solución de problemas de acceso
 
 ### 👥 Organización del Equipo
 2. **[División de Trabajo del Equipo](./DIVISION_TRABAJO_EQUIPO.md)**
@@ -24,9 +31,10 @@ Bienvenido a la carpeta de documentación del Sistema Contable S_CONTABLE.
 ## 🚀 Accesos Rápidos
 
 ### Para Administradores
-- [Cambiar contraseña de admin](./cambio_password_admin.md#cambio-rápido-de-contraseña)
-- [Acceder al panel de Django](./cambio_password_admin.md#credenciales-de-acceso-actuales)
-- [Panel de desarrollador](./cambio_password_admin.md#contraseña-del-panel-desarrollador)
+- [Cambiar contraseña de admin Django](./cambio_password_admin.md#cambio-rápido-de-contraseña)
+- [Cambiar contraseña del panel desarrollador](./password_panel_desarrollador.md#cómo-cambiar-la-contraseña) ⭐
+- [Acceder al panel técnico](./password_panel_desarrollador.md#cómo-acceder-al-panel-de-desarrollador)
+- [Solución de problemas de acceso](./password_panel_desarrollador.md#solución-de-problemas)
 
 ### Para Desarrolladores
 - [Ver asignación de tareas](./DIVISION_TRABAJO_EQUIPO.md#división-equitativa-del-trabajo)
@@ -40,7 +48,9 @@ Bienvenido a la carpeta de documentación del Sistema Contable S_CONTABLE.
 ```
 documentacion/
 ├── README.md                           # Este archivo (índice general)
-├── cambio_password_admin.md            # Guía de cambio de contraseña
+├── QUICK_START_PASSWORD.md             # Guía rápida de contraseñas
+├── cambio_password_admin.md            # Cambio de contraseña admin Django
+├── password_panel_desarrollador.md     # Contraseña del panel técnico ⭐
 └── DIVISION_TRABAJO_EQUIPO.md          # División de tareas del equipo
 ```
 

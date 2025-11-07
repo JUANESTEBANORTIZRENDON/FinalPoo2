@@ -111,25 +111,53 @@ Superuser created successfully.
 
 ## 🔒 Contraseña del Panel Desarrollador
 
-El panel de desarrollador (`/empresas/dev-auth/`) tiene una contraseña adicional de seguridad configurada en el código. Si necesitas cambiarla:
+El panel de desarrollador (`/empresas/dev-auth/`) tiene una contraseña adicional de seguridad que se configura en el archivo `.env`.
 
-### Ubicación del archivo
-```
-empresas/views_dev_auth.py
-```
+### ⚡ Método Rápido - Cambiar en el archivo .env
 
-### Cambiar la contraseña de desarrollador
-Busca la línea que contiene:
-```python
-DEV_PASSWORD = "dev2025secure!"
-```
+Esta es la forma más sencilla y recomendada:
 
-Y cámbiala por tu nueva contraseña:
-```python
-DEV_PASSWORD = "TuNuevaContraseñaDesarrollador123!"
+#### Paso 1: Abrir el archivo .env
+El archivo `.env` está en la raíz del proyecto (mismo nivel que `manage.py`)
+
+#### Paso 2: Buscar o agregar la variable DJANGO_DEV_PASSWORD
+```bash
+# Si no existe, agrégala al final del archivo .env
+DJANGO_DEV_PASSWORD=TuNuevaContraseñaDesarrollador123!
 ```
 
-**⚠️ Importante**: Esta contraseña está hardcodeada por seguridad adicional. Es diferente de la contraseña del usuario Django.
+#### Paso 3: Guardar el archivo
+
+#### Paso 4: Reiniciar el servidor de Django
+```bash
+# Detén el servidor (Ctrl+C) y vuelve a iniciarlo
+python manage.py runserver
+```
+
+**✅ ¡Listo! La nueva contraseña ya está activa.**
+
+### 🔐 Contraseña Actual del Panel Desarrollador
+
+**Contraseña actual:** `hackerputo24`
+
+**Ubicación:** Archivo `.env` en la raíz del proyecto  
+**Variable:** `DJANGO_DEV_PASSWORD`
+
+### 📝 Ejemplo del archivo .env
+```bash
+# ==================================================
+# 🔒 PANEL DE DESARROLLADOR
+# ==================================================
+
+# DJANGO_DEV_PASSWORD: Contraseña adicional para acceder al panel Django Admin
+DJANGO_DEV_PASSWORD=hackerputo24
+```
+
+**⚠️ Importante**: 
+- Esta contraseña es ADICIONAL a la contraseña del usuario admin de Django
+- Primero debes iniciar sesión con tu usuario (admin) y su contraseña
+- Luego, te pedirá esta contraseña de desarrollador para acceder al panel técnico
+- El archivo `.env` NO se sube a GitHub (está en `.gitignore` por seguridad)
 
 ---
 

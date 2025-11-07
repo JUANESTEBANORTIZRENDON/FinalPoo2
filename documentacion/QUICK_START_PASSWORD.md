@@ -28,11 +28,13 @@ Usuario: admin
 Contraseña: [La que acabas de cambiar]
 ```
 
-### Panel de Administrador Holding  
+### Panel de Administrador Holding (Desarrollador)
 ```
 URL: http://127.0.0.1:8000/empresas/dev-auth/
-Contraseña Desarrollador: dev2025secure!
+Contraseña Desarrollador: hackerputo24
 ```
+
+**Nota:** Esta es la contraseña del panel de desarrollador (adicional a la del usuario admin)
 
 ---
 
@@ -47,11 +49,18 @@ Contraseña Desarrollador: dev2025secure!
 
 ---
 
-## 🔄 Si necesitas cambiarla de nuevo
+## 🔄 Cambiar Contraseñas
 
+### Contraseña del Usuario Admin (Django):
 1. Activa el entorno virtual: `.\env\Scripts\Activate.ps1`
 2. Ejecuta: `python manage.py changepassword admin`
 3. Ingresa la nueva contraseña dos veces
+
+### Contraseña del Panel Desarrollador:
+1. Abre el archivo `.env` en la raíz del proyecto
+2. Busca la línea: `DJANGO_DEV_PASSWORD=hackerputo24`
+3. Cámbiala por tu nueva contraseña
+4. Guarda el archivo y reinicia el servidor Django
 
 ---
 
