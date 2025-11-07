@@ -115,11 +115,10 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <!-- Bootstrap button group con aria-label (sin role="group" para evitar warning de SonarCloud) -->
                                                 <div class="btn-group" aria-label="Acciones para {{ tercero.razon_social }}">
                                                     <a href="{% url 'catalogos:tercero_detail' tercero.pk %}" 
                                                        class="btn btn-sm btn-outline-info" 
-                                                       title="Ver detalles del tercero {{ tercero.razon_social }}">
+                                                       title="Ver detalles del tercero {{ tercero.razon_social }}">"
                                                         <i class="bi bi-eye" aria-hidden="true"></i>
                                                         <span class="visually-hidden">Ver detalles</span>
                                                     </a>
