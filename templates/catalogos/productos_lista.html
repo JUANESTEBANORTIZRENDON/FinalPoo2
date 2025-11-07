@@ -150,7 +150,7 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div class="btn-group btn-group-sm" role="group">
+                                            <div class="btn-group btn-group-sm" role="group" aria-label="Acciones para {{ producto.nombre }}">
                                                 <a href="{% url 'catalogos:producto_detail' producto.pk %}" 
                                                    class="btn btn-outline-primary" 
                                                    title="Ver detalles del producto">
