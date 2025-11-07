@@ -234,22 +234,21 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <fieldset class="btn-group" style="border: none; padding: 0; margin: 0; min-width: auto;">
-                                            <legend class="visually-hidden">Acciones para el perfil en {{ perfil.empresa.razon_social }}</legend>
+                                        <div class="btn-group" role="group">
                                             <a href="{% url 'empresas:admin_ver_empresa' perfil.empresa.id %}" 
                                                class="btn btn-sm btn-outline-info"
-                                               aria-label="Ver empresa {{ perfil.empresa.razon_social }}">
+                                               title="Ver empresa {{ perfil.empresa.razon_social }}">
                                                 <i class="fas fa-eye me-1" aria-hidden="true"></i>Ver Empresa
                                             </a>
                                             {% if perfil.activo %}
                                             <a href="{% url 'empresas:admin_desactivar_asignacion' perfil.id %}" 
                                                class="btn btn-sm btn-outline-danger"
                                                onclick="return confirm('¿Estás seguro de desactivar esta asignación?')"
-                                               aria-label="Desactivar asignación en {{ perfil.empresa.razon_social }}">
+                                               title="Desactivar asignación en {{ perfil.empresa.razon_social }}">
                                                 <i class="fas fa-user-times me-1" aria-hidden="true"></i>Desactivar
                                             </a>
                                             {% endif %}
-                                        </fieldset>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}

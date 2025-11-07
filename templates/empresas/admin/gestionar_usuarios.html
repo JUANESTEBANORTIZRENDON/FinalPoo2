@@ -187,24 +187,24 @@
                         <div class="btn-group" role="group">
                             <a href="{% url 'empresas:admin_asignar_usuario' usuario.id %}" 
                                class="btn btn-sm btn-outline-success"
-                               aria-label="Asignar empresa a {{ usuario.get_full_name|default:usuario.username }}">
+                               title="Asignar empresa a {{ usuario.get_full_name|default:usuario.username }}">
                                 🏢 Asignar
                             </a>
                             <a href="{% url 'empresas:admin_editar_usuario' usuario.id %}" 
                                class="btn btn-sm btn-outline-primary"
-                               aria-label="Editar usuario {{ usuario.get_full_name|default:usuario.username }}">
+                               title="Editar usuario {{ usuario.get_full_name|default:usuario.username }}">
                                 ✏️ Editar
                             </a>
                             {% if usuario.is_active %}
                                 <button type="button" class="btn btn-sm btn-outline-warning" 
                                         onclick="toggleUsuario('{{ usuario.id|escapejs }}', false)"
-                                        aria-label="Desactivar usuario {{ usuario.get_full_name|default:usuario.username|escapejs }}">
+                                        title="Desactivar usuario {{ usuario.get_full_name|default:usuario.username|escapejs }}">
                                     🚫 Desactivar
                                 </button>
                             {% else %}
                                 <button type="button" class="btn btn-sm btn-outline-success" 
                                         onclick="toggleUsuario('{{ usuario.id|escapejs }}', true)"
-                                        aria-label="Activar usuario {{ usuario.get_full_name|default:usuario.username|escapejs }}">
+                                        title="Activar usuario {{ usuario.get_full_name|default:usuario.username|escapejs }}">
                                     ✅ Activar
                                 </button>
                             {% endif %}

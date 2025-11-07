@@ -122,16 +122,16 @@
                                             <div class="btn-group btn-group-sm" role="group">
                                                 <a href="{% url 'tesoreria:pagos_detalle' cobro.pk %}" 
                                                    class="btn btn-outline-primary" 
-                                                   title="Ver detalles"
-                                                   aria-label="Ver detalles del cobro">
+                                                   title="Ver detalles del cobro">
                                                     <i class="fas fa-eye" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Ver detalles</span>
                                                 </a>
                                                 {% if cobro.estado == 'borrador' %}
                                                 <a href="{% url 'tesoreria:pagos_editar' cobro.pk %}" 
                                                    class="btn btn-outline-warning" 
-                                                   title="Editar"
-                                                   aria-label="Editar cobro">
+                                                   title="Editar cobro">
                                                     <i class="fas fa-edit" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Editar</span>
                                                 </a>
                                                 {% endif %}
                                             </div>

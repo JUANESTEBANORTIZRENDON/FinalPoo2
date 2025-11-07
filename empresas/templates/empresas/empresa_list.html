@@ -69,27 +69,26 @@
                                                 {{ empresa.propietario.get_full_name|default:empresa.propietario.username }}
                                             </td>
                                             <td>
-                                                <fieldset class="btn-group" style="border: none; padding: 0; margin: 0; min-width: auto;">
-                                                    <legend class="visually-hidden">Acciones para la empresa {{ empresa.razon_social }}</legend>
+                                                <div class="btn-group" role="group">
                                                     <a href="{% url 'empresas:empresa_detail' empresa.pk %}" 
                                                        class="btn btn-sm btn-outline-info" 
-                                                       title="Ver Detalles"
-                                                       aria-label="Ver detalles de {{ empresa.razon_social }}">
+                                                       title="Ver detalles de {{ empresa.razon_social }}">
                                                         <i class="bi bi-eye" aria-hidden="true"></i>
+                                                        <span class="visually-hidden">Ver detalles</span>
                                                     </a>
                                                     <a href="{% url 'empresas:empresa_update' empresa.pk %}" 
                                                        class="btn btn-sm btn-outline-warning" 
-                                                       title="Editar"
-                                                       aria-label="Editar {{ empresa.razon_social }}">
+                                                       title="Editar {{ empresa.razon_social }}">
                                                         <i class="bi bi-pencil" aria-hidden="true"></i>
+                                                        <span class="visually-hidden">Editar</span>
                                                     </a>
                                                     <a href="{% url 'empresas:perfil_list' empresa.pk %}" 
                                                        class="btn btn-sm btn-outline-secondary" 
-                                                       title="Gestionar Usuarios"
-                                                       aria-label="Gestionar usuarios de {{ empresa.razon_social }}">
+                                                       title="Gestionar usuarios de {{ empresa.razon_social }}">
                                                         <i class="bi bi-people" aria-hidden="true"></i>
+                                                        <span class="visually-hidden">Gestionar usuarios</span>
                                                     </a>
-                                                </fieldset>
+                                                </div>
                                             </td>
                                         </tr>
                                     {% endfor %}
