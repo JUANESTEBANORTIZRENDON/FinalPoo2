@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: finalpoo2
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: bash build.sh
+    startCommand: gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: RENDER_EXTERNAL_HOSTNAME
+        sync: false
