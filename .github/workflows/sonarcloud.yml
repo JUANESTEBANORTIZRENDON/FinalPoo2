@@ -58,7 +58,7 @@ jobs:
       - name: 📥 Checkout del repositorio
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
-          # fetch-depth: 0 descarga TODO el historial de commits
+          # fetch-depth: 0 descarga COMPLETO el historial de commits
           # ¿Por qué? SonarCloud necesita el historial para:
           # - Detectar qué archivos cambiaron en el PR
           # - Calcular métricas de código nuevo vs código existente
