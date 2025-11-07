@@ -20,6 +20,7 @@ from django.views.generic import RedirectView
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.views.decorators.http import require_safe
+from accounts.admin_index import admin_index
 
 @require_safe
 def home_view(request):
@@ -33,6 +34,8 @@ def home_view(request):
  #Holi
 urlpatterns = [
     # ===== ADMINISTRACIÓN =====
+    # Vista personalizada para el index del admin
+    path('admin/', admin_index, name='admin:index'),
     path('admin/', admin.site.urls),
     
     # ===== AUTENTICACIÓN MVT (HTML/Sesiones) =====

@@ -5,10 +5,9 @@
 
 {% block extrahead %}
 {{ block.super }}
-<!-- Version: 2024-11-06-20:10 - Sidebar Reorganizado FORZADO -->
+<!-- Version: 2024-11-06-20:30 - Sidebar Limpio SIN JavaScript Agresivo -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="{% static 'admin/js/sidebar_clean.js' %}?v=20241106-2010"></script>
 <style>
     /* ============================================
        DJANGO ADMIN - PANEL DESARROLLADOR REDESIGN
@@ -860,19 +859,32 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Limpiar el sidebar - ocultar elementos innecesarios
     if (sidebar) {
-        // Ocultar todas las listas de modelos
-        const modelLists = sidebar.querySelectorAll('.model-list, ul');
+        // Ocultar todas las listas de modelos DENTRO del sidebar
+        const modelLists = sidebar.querySelectorAll('.model-list, ul, li');
         modelLists.forEach(function(list) {
             list.style.display = 'none';
+            list.style.visibility = 'hidden';
+            list.style.height = '0';
         });
         
-        // Ocultar todos los enlaces que no sean app-label
-        const allLinks = sidebar.querySelectorAll('a:not(.app-label)');
-        allLinks.forEach(function(link) {
-            link.style.display = 'none';
+        // Ocultar SOLO los enlaces dentro de las app que no sean app-label
+        const appDivs = sidebar.querySelectorAll('[class*="app-"]');
+        appDivs.forEach(function(appDiv) {
+            const linksInApp = appDiv.querySelectorAll('a:not(.app-label)');
+            linksInApp.forEach(function(link) {
+                link.style.display = 'none';
+                link.style.visibility = 'hidden';
+            });
         });
         
-        console.log(`✅ Sidebar limpiado: ${modelLists.length} listas ocultas, ${allLinks.length} enlaces ocultos`);
+        // Asegurar que las app-label sean visibles
+        const appLabels = sidebar.querySelectorAll('.app-label');
+        appLabels.forEach(function(label) {
+            label.style.display = 'block';
+            label.style.visibility = 'visible';
+        });
+        
+        console.log(`✅ Sidebar limpiado: ${modelLists.length} listas ocultas`);
     }
     
     // Hacer clickeable cada app-label para navegar a la lista de modelos
