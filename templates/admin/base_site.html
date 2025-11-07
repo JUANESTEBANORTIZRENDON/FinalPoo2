@@ -5,9 +5,11 @@
 
 {% block extrahead %}
 {{ block.super }}
-<!-- Version: 2024-11-06-20:30 - Sidebar Limpio SIN JavaScript Agresivo -->
+<!-- Version: 2024-11-06-22:00 - Sidebar Jerárquico v2.0 -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'admin/css/admin_custom.css' %}?v=2.0">
+<script src="{% static 'admin/js/sidebar.js' %}?v=2.0" defer></script>
 <style>
     /* ============================================
        DJANGO ADMIN - PANEL DESARROLLADOR REDESIGN
@@ -931,12 +933,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% block branding %}
 <h1 id="site-name">
-    <button class="sidebar-toggle" aria-label="Abrir menú"><i class="fas fa-bars"></i></button>
+    <button data-toggle="sidebar" class="sidebar-toggle" aria-label="Abrir menú" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;margin-right:1rem;">
+        <i class="fas fa-bars"></i>
+    </button>
     <a href="{% url 'admin:index' %}">
         <i class="fas fa-cogs"></i>
         S_CONTABLE - Panel Desarrollador
     </a>
 </h1>
+{% endblock %}
+
+{% block nav-sidebar %}
+    {% include "admin/partials/sidebar.html" %}
 {% endblock %}
 
 {% block nav-global %}{% endblock %}

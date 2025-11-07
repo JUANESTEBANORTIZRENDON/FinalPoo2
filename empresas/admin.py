@@ -2,9 +2,10 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from core.admin_site import contable_admin_site
 from .models import Empresa, PerfilEmpresa, EmpresaActiva, HistorialCambios
 
-@admin.register(Empresa)
+@admin.register(Empresa, site=contable_admin_site)
 class EmpresaAdmin(admin.ModelAdmin):
     list_display = ('razon_social', 'nit', 'email', 'telefono', 'activa', 'fecha_creacion')
     list_filter = ('activa', 'fecha_creacion', 'ciudad')
@@ -30,7 +31,7 @@ class EmpresaAdmin(admin.ModelAdmin):
         }),
     )
 
-@admin.register(PerfilEmpresa)
+@admin.register(PerfilEmpresa, site=contable_admin_site)
 class PerfilEmpresaAdmin(admin.ModelAdmin):
     list_display = ('usuario', 'empresa', 'rol', 'activo', 'fecha_asignacion')
     list_filter = ('rol', 'activo', 'fecha_asignacion')
@@ -50,7 +51,7 @@ class PerfilEmpresaAdmin(admin.ModelAdmin):
         }),
     )
 
-@admin.register(EmpresaActiva)
+@admin.register(EmpresaActiva, site=contable_admin_site)
 class EmpresaActivaAdmin(admin.ModelAdmin):
     list_display = ('usuario', 'empresa', 'fecha_seleccion')
     list_filter = ('fecha_seleccion',)
@@ -58,7 +59,7 @@ class EmpresaActivaAdmin(admin.ModelAdmin):
     readonly_fields = ('fecha_seleccion',)
 
 
-@admin.register(HistorialCambios)
+@admin.register(HistorialCambios, site=contable_admin_site)
 class HistorialCambiosAdmin(admin.ModelAdmin):
     list_display = (
         'icono_accion_display', 
