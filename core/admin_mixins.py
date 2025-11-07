@@ -51,13 +51,16 @@ class ReadOnlyAdminMixin:
     Mixin que hace que un ModelAdmin sea de solo lectura
     """
     
-    def has_add_permission(self, request):
+    def has_add_permission(self, request):  # noqa: ARG002
+        """Deshabilita el permiso de agregar objetos"""
         return False
     
-    def has_change_permission(self, request, obj=None):
+    def has_change_permission(self, request, obj=None):  # noqa: ARG002
+        """Deshabilita el permiso de modificar objetos"""
         return False
     
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request, obj=None):  # noqa: ARG002
+        """Deshabilita el permiso de eliminar objetos"""
         return False
 
 
