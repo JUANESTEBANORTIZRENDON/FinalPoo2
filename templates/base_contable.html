@@ -96,15 +96,17 @@
         
         .nav-link:hover {
             color: #ffffff;
-            background: rgba(255,255,255,0.15); /* Aumentado de 0.1 a 0.15 */
+            background: rgba(52, 73, 94, 0.8); /* Fondo oscuro más sólido para mejor contraste */
             border-left-color: var(--secondary-color);
+            font-weight: 500;
         }
         
         .nav-link.active {
             color: #ffffff;
-            background: rgba(255,255,255,0.2); /* Aumentado de 0.15 a 0.2 */
+            background: rgba(52, 73, 94, 0.95); /* Fondo casi sólido para máximo contraste */
             border-left-color: var(--secondary-color);
-            font-weight: 600; /* Agregado para mejor énfasis */
+            font-weight: 600;
+            box-shadow: inset 4px 0 0 var(--secondary-color); /* Añadido para mayor énfasis visual */
         }
         
         .nav-link i {
