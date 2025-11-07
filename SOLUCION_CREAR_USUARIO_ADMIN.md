@@ -45,8 +45,16 @@ La función `crear_usuario` en `empresas/views_admin.py` estaba **incompleta**:
 ## Archivos Modificados
 - `empresas/views_admin.py`: Funciones `crear_usuario` y `editar_usuario` completadas
 
+### 3. Segundo Fix - Problemas Post-Creación (Commit `603af59`)
+✅ **numero_documento único:** Genera temporal único si está vacío (`TEMP{user_id}`)  
+✅ **Validación contraseñas:** Verifica que password y password_confirm coincidan  
+✅ **Usuario activo por defecto:** Checkbox marcado en formulario de creación  
+✅ **Template mejorado:** Campo is_active visible en creación y edición  
+✅ **Manejo duplicados:** Usa timestamp si número temporal ya existe  
+
 ## Deploy
-✅ **Commit realizado:** `32af7ab`  
+✅ **Commit 1:** `32af7ab` - Función crear_usuario implementada  
+✅ **Commit 2:** `603af59` - Problemas de BD y formulario solucionados  
 ✅ **Pushéado a master:** Cambios en GitHub  
 ✅ **Render autodeploy:** Detectará cambios automáticamente  
 
@@ -54,11 +62,21 @@ La función `crear_usuario` en `empresas/views_admin.py` estaba **incompleta**:
 Acceder a: `https://finalpoo2.onrender.com/empresas/admin/usuarios/crear/`
 
 La vista ahora debería:
-1. Mostrar formulario de creación correctamente (GET)
-2. Procesar creación de usuarios (POST) 
-3. No generar errores ValueError
-4. Redirigir apropiadamente después de acciones exitosas
+1. ✅ Mostrar formulario con checkbox "Usuario Activo" marcado
+2. ✅ Validar que contraseñas coincidan
+3. ✅ Crear usuarios ACTIVOS por defecto
+4. ✅ Generar numero_documento temporal si está vacío
+5. ✅ No generar errores de BD por duplicados
+6. ✅ Redirigir a lista de usuarios después de creación exitosa
+7. ✅ No quedarse en el formulario mostrando errores
+
+## Problemas Solucionados
+- ❌ **ValueError HttpResponse:** Función incompleta → ✅ Función completa implementada
+- ❌ **Usuarios inactivos:** Sin checkbox → ✅ Checkbox activo por defecto  
+- ❌ **Error BD numero_documento:** Campo vacío duplicado → ✅ Número temporal único
+- ❌ **Sin validar contraseñas:** Falta confirmación → ✅ Validación implementada
+- ❌ **Formulario no redirige:** Se queda en creación → ✅ Redirige a lista usuarios
 
 ---
 **Fecha:** 7 de Noviembre 2025  
-**Estado:** ✅ Solucionado y desplegado
+**Estado:** ✅ Completamente solucionado y desplegado

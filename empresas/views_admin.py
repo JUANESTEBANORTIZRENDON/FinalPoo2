@@ -447,19 +447,15 @@ def crear_usuario(request):  # nosonar
                 perfil = user.perfil
                 perfil.tipo_documento = request.POST.get('tipo_documento', 'CC')
                 
-                # Manejar numero_documento - generar uno temporal si está vacío
+                # Solo actualizar numero_documento si se proporciona uno
                 numero_documento = request.POST.get('numero_documento', '').strip()
-                if not numero_documento:
-                    # Generar número temporal único basado en el ID del usuario
-                    numero_documento = f"TEMP{user.id:06d}"
+                if numero_documento:
+                    # Verificar que el número no exista ya
+                    if not PerfilUsuario.objects.filter(numero_documento=numero_documento).exclude(usuario=user).exists():
+                        perfil.numero_documento = numero_documento
+                    else:
+                        messages.warning(request, f'El número de documento {numero_documento} ya existe. Se mantendrá el temporal.')
                 
-                # Verificar que el número no exista ya
-                if PerfilUsuario.objects.filter(numero_documento=numero_documento).exclude(usuario=user).exists():
-                    # Si existe, generar uno con timestamp
-                    import time
-                    numero_documento = f"TEMP{user.id:06d}{int(time.time() % 1000):03d}"
-                
-                perfil.numero_documento = numero_documento
                 perfil.telefono = request.POST.get('telefono', '').strip()
                 perfil.fecha_nacimiento = request.POST.get('fecha_nacimiento') or None
                 perfil.genero = request.POST.get('genero', '')
