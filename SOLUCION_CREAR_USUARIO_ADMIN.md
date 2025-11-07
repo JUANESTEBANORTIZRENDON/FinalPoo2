@@ -52,11 +52,19 @@ La función `crear_usuario` en `empresas/views_admin.py` estaba **incompleta**:
 ✅ **Template mejorado:** Campo is_active visible en creación y edición  
 ✅ **Manejo duplicados:** Usa timestamp si número temporal ya existe  
 
+### 4. Fix Definitivo - Error BD Duplicados (Commit `b69fb0b`)
+🔧 **Señal post_save mejorada:** Genera numero_documento único automáticamente en creación  
+🔧 **Migración de datos:** Arregla registros existentes con documento vacío  
+🔧 **Lógica simplificada:** Solo actualiza numero_documento si se proporciona uno válido  
+🔧 **Constraint violations resueltos:** No más errores de clave duplicada en BD  
+🔧 **Script de arreglo local:** Ejecutado para limpiar BD local  
+
 ## Deploy
 ✅ **Commit 1:** `32af7ab` - Función crear_usuario implementada  
 ✅ **Commit 2:** `603af59` - Problemas de BD y formulario solucionados  
+✅ **Commit 3:** `b69fb0b` - **FIX DEFINITIVO** - Error duplicados resuelto  
 ✅ **Pushéado a master:** Cambios en GitHub  
-✅ **Render autodeploy:** Detectará cambios automáticamente  
+✅ **Render autodeploy:** Detectará cambios y ejecutará migración automáticamente  
 
 ## Verificación
 Acceder a: `https://finalpoo2.onrender.com/empresas/admin/usuarios/crear/`

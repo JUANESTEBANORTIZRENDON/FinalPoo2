@@ -63,6 +63,101 @@ def es_administrador_holding(user):
     ).exists()
 
 
+# === Helpers extraídos para reducir complejidad cognitiva ===
+def _validate_new_user_data(username, email, password, password_confirm):
+    """Validaciones básicas para creación de usuario."""
+    if not username or not email or not password:
+        return False, 'Los campos nombre de usuario, email y contraseña son obligatorios.'
+    if password != password_confirm:
+        return False, 'Las contraseñas no coinciden.'
+    if User.objects.filter(username=username).exists():
+        return False, 'El nombre de usuario ya existe.'
+    if User.objects.filter(email=email).exists():
+        return False, 'El email ya está registrado.'
+    return True, None
+
+
+def _create_user_and_profile(request, username, email, first_name, last_name, password, is_active):
+    """Crear usuario y actualizar perfil (si existe).
+
+    La señal `post_save` de `User` se encarga de crear el perfil con un
+    numero_documento temporal único cuando sea necesario; aquí solo
+    actualizamos campos secundarios si el formulario los provee.
+    """
+    user = User.objects.create_user(
+        username=username,
+        email=email,
+        password=password,
+        first_name=first_name,
+        last_name=last_name,
+        is_active=is_active
+    )
+
+    if hasattr(user, 'perfil'):
+        perfil = user.perfil
+        perfil.tipo_documento = request.POST.get('tipo_documento', 'CC')
+
+        numero_documento = request.POST.get('numero_documento', '').strip()
+        if numero_documento:
+            # Sólo asignar si no existe ya (evitar constraint violation)
+            if not PerfilUsuario.objects.filter(numero_documento=numero_documento).exists():
+                perfil.numero_documento = numero_documento
+            else:
+                messages.warning(request, f'El número de documento {numero_documento} ya existe. Se mantendrá el temporal.')
+
+        perfil.telefono = request.POST.get('telefono', '').strip()
+        perfil.fecha_nacimiento = request.POST.get('fecha_nacimiento') or None
+        perfil.genero = request.POST.get('genero', '')
+        perfil.direccion = request.POST.get('direccion', '').strip()
+        perfil.save()
+
+    return user
+
+
+def _validate_edit_user_data(username, email, usuario):
+    """Validaciones básicas para edición de usuario."""
+    if not username or not email:
+        return False, 'El nombre de usuario y email son obligatorios.'
+    if User.objects.filter(username=username).exclude(id=usuario.id).exists():
+        return False, 'El nombre de usuario ya existe.'
+    if User.objects.filter(email=email).exclude(id=usuario.id).exists():
+        return False, 'El email ya está registrado.'
+    return True, None
+
+
+def _update_user_profile_from_request(usuario, request):
+    """Actualizar campos del perfil del usuario desde el request si existen."""
+    if not hasattr(usuario, 'perfil'):
+        return
+    perfil = usuario.perfil
+    perfil.tipo_documento = request.POST.get('tipo_documento', perfil.tipo_documento)
+    numero_documento = request.POST.get('numero_documento', '').strip()
+    if numero_documento:
+        if not PerfilUsuario.objects.filter(numero_documento=numero_documento).exclude(usuario=usuario).exists():
+            perfil.numero_documento = numero_documento
+        else:
+            messages.warning(request, f'El número de documento {numero_documento} ya existe. Se conservará el valor anterior.')
+    perfil.telefono = request.POST.get('telefono', perfil.telefono).strip() if request.POST.get('telefono') is not None else perfil.telefono
+    perfil.fecha_nacimiento = request.POST.get('fecha_nacimiento') or perfil.fecha_nacimiento
+    perfil.genero = request.POST.get('genero', perfil.genero)
+    perfil.direccion = request.POST.get('direccion', perfil.direccion).strip() if request.POST.get('direccion') is not None else perfil.direccion
+    perfil.save()
+
+
+def _change_password_if_provided(usuario, request):
+    """Cambiar contraseña si el formulario incluye nueva contraseña."""
+    new_password = request.POST.get('new_password', '').strip()
+    if not new_password:
+        return True, ''
+    new_password_confirm = request.POST.get('new_password_confirm', '').strip()
+    if new_password != new_password_confirm:
+        return False, 'Las contraseñas no coinciden.'
+    usuario.set_password(new_password)
+    usuario.save()
+    return True, 'Contraseña actualizada exitosamente.'
+
+
+
 @login_required
 @require_http_methods(["GET"])
 def dashboard_admin(request):
@@ -399,72 +494,22 @@ def crear_usuario(request):  # nosonar
             password = request.POST.get('password', '').strip()
             password_confirm = request.POST.get('password_confirm', '').strip()
             is_active = request.POST.get('is_active') == 'on'
-            
-            # Validaciones básicas
-            if not username or not email or not password:
-                messages.error(request, 'Los campos nombre de usuario, email y contraseña son obligatorios.')
+
+            # Validar datos básicos usando helper
+            valido, error = _validate_new_user_data(username, email, password, password_confirm)
+            if not valido:
+                messages.error(request, error)
                 return render(request, TEMPLATE_USUARIO_FORM, {
                     'titulo': TITULO_CREAR_USUARIO,
                     'accion': 'crear'
                 })
-            
-            # Validar que las contraseñas coincidan
-            if password != password_confirm:
-                messages.error(request, 'Las contraseñas no coinciden.')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_CREAR_USUARIO,
-                    'accion': 'crear'
-                })
-            
-            # Verificar que no exista el usuario
-            if User.objects.filter(username=username).exists():
-                messages.error(request, 'El nombre de usuario ya existe.')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_CREAR_USUARIO,
-                    'accion': 'crear'
-                })
-            
-            # Verificar que no exista el email
-            if User.objects.filter(email=email).exists():
-                messages.error(request, 'El email ya está registrado.')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_CREAR_USUARIO,
-                    'accion': 'crear'
-                })
-            
-            # Crear el usuario
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password,
-                first_name=first_name,
-                last_name=last_name,
-                is_active=is_active
-            )
-            
-            # Actualizar datos del perfil si existen
-            if hasattr(user, 'perfil'):
-                perfil = user.perfil
-                perfil.tipo_documento = request.POST.get('tipo_documento', 'CC')
-                
-                # Solo actualizar numero_documento si se proporciona uno
-                numero_documento = request.POST.get('numero_documento', '').strip()
-                if numero_documento:
-                    # Verificar que el número no exista ya
-                    if not PerfilUsuario.objects.filter(numero_documento=numero_documento).exclude(usuario=user).exists():
-                        perfil.numero_documento = numero_documento
-                    else:
-                        messages.warning(request, f'El número de documento {numero_documento} ya existe. Se mantendrá el temporal.')
-                
-                perfil.telefono = request.POST.get('telefono', '').strip()
-                perfil.fecha_nacimiento = request.POST.get('fecha_nacimiento') or None
-                perfil.genero = request.POST.get('genero', '')
-                perfil.direccion = request.POST.get('direccion', '').strip()
-                perfil.save()
-            
+
+            # Crear usuario y actualizar perfil de forma segura
+            user = _create_user_and_profile(request, username, email, first_name, last_name, password, is_active)
+
             messages.success(request, f'Usuario "{username}" creado exitosamente.')
             return redirect(URL_GESTIONAR_USUARIOS)
-            
+
         except Exception as e:
             messages.error(request, f'Error al crear el usuario: {str(e)}')
             return render(request, TEMPLATE_USUARIO_FORM, {
@@ -501,33 +546,17 @@ def editar_usuario(request, usuario_id):  # nosonar
             first_name = request.POST.get('first_name', '').strip()
             last_name = request.POST.get('last_name', '').strip()
             is_active = request.POST.get('is_active') == 'on'
-            
-            # Validaciones básicas
-            if not username or not email:
-                messages.error(request, 'El nombre de usuario y email son obligatorios.')
+
+            # Validaciones básicas usando helper
+            valido, error = _validate_edit_user_data(username, email, usuario)
+            if not valido:
+                messages.error(request, error)
                 return render(request, TEMPLATE_USUARIO_FORM, {
                     'titulo': TITULO_EDITAR_USUARIO,
                     'accion': 'editar',
                     'usuario': usuario
                 })
-            
-            # Verificar duplicados excluyendo el usuario actual
-            if User.objects.filter(username=username).exclude(id=usuario.id).exists():
-                messages.error(request, 'El nombre de usuario ya existe.')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_EDITAR_USUARIO,
-                    'accion': 'editar',
-                    'usuario': usuario
-                })
-            
-            if User.objects.filter(email=email).exclude(id=usuario.id).exists():
-                messages.error(request, 'El email ya está registrado.')
-                return render(request, TEMPLATE_USUARIO_FORM, {
-                    'titulo': TITULO_EDITAR_USUARIO,
-                    'accion': 'editar',
-                    'usuario': usuario
-                })
-            
+
             # Actualizar datos del usuario
             usuario.username = username
             usuario.email = email
@@ -535,33 +564,21 @@ def editar_usuario(request, usuario_id):  # nosonar
             usuario.last_name = last_name
             usuario.is_active = is_active
             usuario.save()
-            
-            # Actualizar perfil si existe
-            if hasattr(usuario, 'perfil'):
-                perfil = usuario.perfil
-                perfil.tipo_documento = request.POST.get('tipo_documento', perfil.tipo_documento)
-                perfil.numero_documento = request.POST.get('numero_documento', '').strip()
-                perfil.telefono = request.POST.get('telefono', '').strip()
-                perfil.fecha_nacimiento = request.POST.get('fecha_nacimiento') or perfil.fecha_nacimiento
-                perfil.genero = request.POST.get('genero', perfil.genero)
-                perfil.direccion = request.POST.get('direccion', '').strip()
-                perfil.save()
-            
-            # Cambiar contraseña si se proporciona
-            new_password = request.POST.get('new_password', '').strip()
-            if new_password:
-                new_password_confirm = request.POST.get('new_password_confirm', '').strip()
-                if new_password == new_password_confirm:
-                    usuario.set_password(new_password)
-                    usuario.save()
-                    messages.info(request, 'Contraseña actualizada exitosamente.')
-                else:
-                    messages.error(request, 'Las contraseñas no coinciden.')
-                    return render(request, TEMPLATE_USUARIO_FORM, {
-                        'titulo': TITULO_EDITAR_USUARIO,
-                        'accion': 'editar',
-                        'usuario': usuario
-                    })
+
+            # Actualizar perfil de forma segura
+            _update_user_profile_from_request(usuario, request)
+
+            # Cambiar contraseña si se proporciona (helper)
+            pwd_ok, pwd_msg = _change_password_if_provided(usuario, request)
+            if not pwd_ok:
+                messages.error(request, pwd_msg)
+                return render(request, TEMPLATE_USUARIO_FORM, {
+                    'titulo': TITULO_EDITAR_USUARIO,
+                    'accion': 'editar',
+                    'usuario': usuario
+                })
+            if pwd_msg:
+                messages.info(request, pwd_msg)
             
             messages.success(request, f'Usuario "{usuario.get_full_name() or usuario.username}" actualizado exitosamente.')
             return redirect(URL_GESTIONAR_USUARIOS)
