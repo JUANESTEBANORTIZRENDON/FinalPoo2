@@ -200,10 +200,10 @@
 
 .contador-nav .nav-item:hover,
 .contador-nav .nav-item.active {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, #1e7e34 0%, #17a2b8 100%); /* Oscurecido para mejor contraste */
     color: white;
     transform: translateY(-2px);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* Agregado para mejor legibilidad */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); /* Aumentado para WCAG compliance */
 }
 
 .operador-nav .nav-item:hover,
@@ -278,8 +278,9 @@
 }
 
 .empresa-option.active {
-    background: #667eea;
+    background: #5568d3; /* Oscurecido de #667eea para cumplir WCAG AA */
     color: white;
+    font-weight: 600; /* Agregado para mejor legibilidad */
 }
 
 .empresa-option:last-child {

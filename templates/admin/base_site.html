@@ -632,9 +632,10 @@
     }
 
     .messagelist .error {
-        background: rgba(245, 87, 108, 0.25);
-        color: #5a0a0f; /* Oscurecido para cumplir WCAG AA (4.5:1 ratio) */
-        border-left: 4px solid #5a0a0f;
+        background: rgba(245, 87, 108, 0.3); /* Aumentado de 0.25 a 0.3 */
+        color: #4a0a0d; /* Oscurecido más de #5a0a0f a #4a0a0d para mejor contraste */
+        border-left: 4px solid #4a0a0d;
+        font-weight: 600; /* Agregado para mejor legibilidad */
     }
 
     .messagelist .error::before {
