@@ -275,7 +275,7 @@
             </div>
             <div class="modal-body" id="detalleEmpresaContent">
                 <output class="text-center d-block">
-                    <div class="spinner-border" aria-label="Cargando información de la empresa">
+                    <div class="spinner-border" role="status">
                         <span class="visually-hidden">Cargando...</span>
                     </div>
                 </output>
@@ -303,7 +303,7 @@ function verDetalleEmpresa(empresaId) {
     // Mostrar loading
     content.innerHTML = `
         <output class="text-center d-block">
-            <div class="spinner-border" aria-label="Cargando detalles de la empresa">
+            <div class="spinner-border" role="status">
                 <span class="visually-hidden">Cargando...</span>
             </div>
         </output>
