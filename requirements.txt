@@ -1,3 +1,6 @@
+# ===============================================
+# DEPENDENCIAS DE PRODUCCIÓN
+# ===============================================
 asgiref==3.10.0
 Brotli==1.1.0
 click==8.3.0
@@ -22,3 +25,26 @@ uvicorn==0.38.0
 whitenoise==6.11.0
 reportlab==4.0.7
 weasyprint==60.1
+
+# ===============================================
+# DEPENDENCIAS DE DESARROLLO (solo local)
+# ===============================================
+# Code quality tools
+black==24.8.0
+isort==5.13.2
+flake8==7.1.1
+flake8-bugbear==24.12.12
+flake8-comprehensions==3.16.0
+bandit[toml]==1.7.10
+
+# Pre-commit hooks
+pre-commit==4.0.1
+
+# Testing
+pytest==8.3.4
+pytest-django==4.9.0
+pytest-cov==6.0.0
+
+# Django development
+django-debug-toolbar==4.4.6
+django-extensions==3.2.3
