@@ -48,9 +48,9 @@
                             <label for="estado" class="form-label">Estado</label>
                             <select id="estado" name="estado" class="form-select">
                                 <option value="">Todos</option>
-                                <option value="borrador">Borrador</option>
-                                <option value="confirmado">Confirmado</option>
-                                <option value="anulado">Anulado</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="activo">Activo</option>
+                                <option value="pagado">Pagado</option>
                             </select>
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
@@ -110,12 +110,12 @@
                                             <strong class="text-success">${{ cobro.valor|floatformat:2 }}</strong>
                                         </td>
                                         <td>
-                                            {% if cobro.estado == 'borrador' %}
-                                                <span class="badge bg-warning">Borrador</span>
-                                            {% elif cobro.estado == 'confirmado' %}
-                                                <span class="badge bg-success">Confirmado</span>
-                                            {% elif cobro.estado == 'anulado' %}
-                                                <span class="badge bg-danger">Anulado</span>
+                                            {% if cobro.estado == 'pendiente' %}
+                                                <span class="badge bg-warning">Pendiente</span>
+                                            {% elif cobro.estado == 'activo' %}
+                                                <span class="badge bg-info">Activo</span>
+                                            {% elif cobro.estado == 'pagado' %}
+                                                <span class="badge bg-success">Pagado</span>
                                             {% endif %}
                                         </td>
                                         <td>
@@ -126,12 +126,47 @@
                                                     <i class="fas fa-eye" aria-hidden="true"></i>
                                                     <span class="visually-hidden">Ver detalles</span>
                                                 </a>
-                                                {% if cobro.estado == 'borrador' %}
-                                                <a href="{% url 'tesoreria:pagos_editar' cobro.pk %}" 
+                                                
+                                                {% if cobro.estado == 'pendiente' %}
+                                                <a href="{% url 'tesoreria:cobros_editar' cobro.pk %}" 
                                                    class="btn btn-outline-warning" 
                                                    title="Editar cobro">
                                                     <i class="fas fa-edit" aria-hidden="true"></i>
                                                     <span class="visually-hidden">Editar</span>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-outline-success" 
+                                                        title="Activar cobro y generar factura"
+                                                        onclick="activarCobro({{ cobro.pk }}, '{{ cobro.numero_pago }}')">
+                                                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Activar</span>
+                                                </button>
+                                                
+                                                {% elif cobro.estado == 'activo' %}
+                                                <button type="button" 
+                                                        class="btn btn-outline-success" 
+                                                        title="Procesar pago"
+                                                        onclick="abrirModalPago({{ cobro.pk }}, '{{ cobro.numero_pago }}', {{ cobro.valor }})">
+                                                    <i class="fas fa-cash-register" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Procesar Pago</span>
+                                                </button>
+                                                {% if cobro.factura %}
+                                                <a href="{% url 'tesoreria:factura_pdf' cobro.factura.pk %}" 
+                                                   class="btn btn-outline-info" 
+                                                   title="Descargar factura PDF"
+                                                   target="_blank">
+                                                    <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Ver PDF</span>
+                                                </a>
+                                                {% endif %}
+                                                
+                                                {% elif cobro.estado == 'pagado' and cobro.factura %}
+                                                <a href="{% url 'tesoreria:factura_pdf' cobro.factura.pk %}" 
+                                                   class="btn btn-outline-info" 
+                                                   title="Descargar factura PDF"
+                                                   target="_blank">
+                                                    <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Ver PDF</span>
                                                 </a>
                                                 {% endif %}
                                             </div>
@@ -155,47 +190,632 @@
         </div>
     </div>
 
-    <!-- Resumen -->
+    <!-- Resumen Estadístico -->
     {% if object_list %}
     <div class="row mt-4">
-        <div class="col-md-4">
+        <!-- Total Cobros -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-invoice-dollar fa-2x text-info mb-2"></i>
+                    <h6 class="text-muted mb-2">Total Cobros</h6>
+                    <h3 class="text-info mb-0">{{ estadisticas.total_cobros }}</h3>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Valor Total -->
+        <div class="col-md-3">
             <div class="card shadow-sm border-success">
                 <div class="card-body text-center">
-                    <h6 class="text-muted mb-2">Total Cobros</h6>
-                    <h3 class="text-success mb-0">{{ object_list|length }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm border-primary">
-                <div class="card-body text-center">
+                    <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
                     <h6 class="text-muted mb-2">Valor Total</h6>
-                    <h3 class="text-primary mb-0">
-                        ${% widthratio object_list|length 1 1 as total %}
-                        {% for cobro in object_list %}
-                            {% if forloop.first %}
-                                {{ cobro.valor|floatformat:2 }}
-                            {% endif %}
-                        {% endfor %}
-                    </h3>
+                    <h3 class="text-success mb-0">${{ estadisticas.valor_total|floatformat:2 }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        
+        <!-- Pendientes -->
+        <div class="col-md-2">
             <div class="card shadow-sm border-warning">
                 <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x text-warning mb-2"></i>
                     <h6 class="text-muted mb-2">Pendientes</h6>
-                    <h3 class="text-warning mb-0">
-                        {% for cobro in object_list %}
-                            {% if cobro.estado == 'borrador' %}
-                                {% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}
-                            {% endif %}
-                        {% endfor %}
-                    </h3>
+                    <h3 class="text-warning mb-0">{{ estadisticas.pendientes }}</h3>
+                    <small class="text-muted">${{ estadisticas.valor_pendientes|floatformat:2 }}</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Activos -->
+        <div class="col-md-2">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x text-primary mb-2"></i>
+                    <h6 class="text-muted mb-2">Activos</h6>
+                    <h3 class="text-primary mb-0">{{ estadisticas.activos }}</h3>
+                    <small class="text-muted">${{ estadisticas.valor_activos|floatformat:2 }}</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pagados -->
+        <div class="col-md-2">
+            <div class="card shadow-sm border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-2x text-success mb-2"></i>
+                    <h6 class="text-muted mb-2">Pagados</h6>
+                    <h3 class="text-success mb-0">{{ estadisticas.pagados }}</h3>
+                    <small class="text-muted">${{ estadisticas.valor_pagados|floatformat:2 }}</small>
                 </div>
             </div>
         </div>
     </div>
     {% endif %}
+
+    <!-- Modal de Procesamiento de Pago -->
+    <div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="modalPagoLabel">
+                        <i class="fas fa-cash-register"></i> Procesar Pago
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Información del Cobro -->
+                    <div class="alert alert-info">
+                        <h6 class="mb-2"><strong>Cobro:</strong> <span id="info-numero-cobro"></span></h6>
+                        <h4 class="mb-0"><strong>Total a Pagar:</strong> $<span id="info-total-pagar">0.00</span></h4>
+                    </div>
+
+                    <!-- Selección de Método de Pago -->
+                    <div class="mb-4">
+                        <h6 class="border-bottom pb-2 mb-3">Seleccionar Método de Pago</h6>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="metodo_pago" id="metodo_efectivo" value="efectivo" checked>
+                            <label class="btn btn-outline-success" for="metodo_efectivo">
+                                <i class="fas fa-money-bill-wave fa-2x d-block mb-2"></i>
+                                Efectivo
+                            </label>
+
+                            <input type="radio" class="btn-check" name="metodo_pago" id="metodo_transferencia" value="transferencia">
+                            <label class="btn btn-outline-primary" for="metodo_transferencia">
+                                <i class="fas fa-exchange-alt fa-2x d-block mb-2"></i>
+                                Transferencia
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Panel de Pago en Efectivo -->
+                    <div id="panel-efectivo">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="fas fa-calculator"></i> Calculadora de Cambio</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label"><strong>Monto Recibido:</strong></label>
+                                        <div class="input-group input-group-lg">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="monto-recibido" 
+                                                   min="0" step="0.01" placeholder="0.00" 
+                                                   oninput="calcularCambio()">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label"><strong>Cambio a Devolver:</strong></label>
+                                        <div class="alert alert-warning mb-0 py-2">
+                                            <h4 class="mb-0">$<span id="cambio-devolver">0.00</span></h4>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Botones de Denominaciones -->
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Denominaciones Rápidas:</strong></label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="agregarDenominacion(1000)">$1,000</button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="agregarDenominacion(2000)">$2,000</button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="agregarDenominacion(5000)">$5,000</button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="agregarDenominacion(10000)">$10,000</button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="agregarDenominacion(20000)">$20,000</button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="agregarDenominacion(50000)">$50,000</button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="agregarDenominacion(100000)">$100,000</button>
+                                    </div>
+                                </div>
+
+                                <!-- Resumen de Transacción -->
+                                <div class="alert alert-light border">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <small class="text-muted">Total</small>
+                                            <h5 class="mb-0 text-primary">$<span id="resumen-total">0.00</span></h5>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted">Recibido</small>
+                                            <h5 class="mb-0 text-success">$<span id="resumen-recibido">0.00</span></h5>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted">Cambio</small>
+                                            <h5 class="mb-0 text-warning">$<span id="resumen-cambio">0.00</span></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel de Transferencia -->
+                    <div id="panel-transferencia" style="display: none;">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <div class="d-flex align-items-center">
+                                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect fill='%23FFDD00' width='40' height='40' rx='5'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' font-weight='bold' fill='%23003DA5'%3EB%3C/text%3E%3C/svg%3E" alt="Banco" class="me-2">
+                                    <h6 class="mb-0">Transferencia Bancaria</h6>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Información de la Cuenta Destino -->
+                                <div class="alert alert-light border mb-3">
+                                    <h6 class="text-primary mb-3"><i class="fas fa-university"></i> Información de Cuenta Destino</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="text-muted">Banco:</small>
+                                            <p class="mb-2"><strong>Bancolombia</strong></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted">Tipo de Cuenta:</small>
+                                            <p class="mb-2"><strong>Ahorros</strong></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted">Número de Cuenta:</small>
+                                            <p class="mb-2"><strong>1234-5678-9012</strong></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted">Titular:</small>
+                                            <p class="mb-2"><strong id="titular-cuenta">Empresa</strong></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tabs de Métodos de Transferencia -->
+                                <ul class="nav nav-tabs mb-3" id="transferenciaTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="tab-manual" data-bs-toggle="tab" data-bs-target="#transferencia-manual" type="button" role="tab">
+                                            <i class="fas fa-keyboard"></i> Transferencia Manual
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="tab-qr" data-bs-toggle="tab" data-bs-target="#transferencia-qr" type="button" role="tab">
+                                            <i class="fas fa-qrcode"></i> Código QR
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content" id="transferenciaTabContent">
+                                    <!-- Transferencia Manual -->
+                                    <div class="tab-pane fade show active" id="transferencia-manual" role="tabpanel">
+                                        <form id="form-transferencia">
+                                            <div class="mb-3">
+                                                <label class="form-label"><i class="fas fa-user"></i> Número de Cuenta Origen</label>
+                                                <input type="text" class="form-control form-control-lg" id="cuenta-origen" 
+                                                       placeholder="Ingrese su número de cuenta" 
+                                                       maxlength="20" required>
+                                                <small class="text-muted">Cuenta desde la cual realizará la transferencia</small>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label"><i class="fas fa-lock"></i> Contraseña de Transacciones</label>
+                                                <div class="input-group">
+                                                    <input type="password" class="form-control form-control-lg" id="password-transferencia" 
+                                                           placeholder="••••••" 
+                                                           maxlength="6" required>
+                                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordTransferencia()">
+                                                        <i class="fas fa-eye" id="icon-password-transferencia"></i>
+                                                    </button>
+                                                </div>
+                                                <small class="text-muted">Clave de 4-6 dígitos para autorizar la transacción</small>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label"><i class="fas fa-comment-alt"></i> Descripción (Opcional)</label>
+                                                <input type="text" class="form-control" id="descripcion-transferencia" 
+                                                       placeholder="Ej: Pago factura #123" 
+                                                       maxlength="100">
+                                            </div>
+
+                                            <!-- Resumen de Transferencia -->
+                                            <div class="alert alert-primary">
+                                                <h6 class="mb-2"><i class="fas fa-info-circle"></i> Resumen de Transferencia</h6>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <small class="text-muted">Monto a Transferir:</small>
+                                                        <h5 class="mb-0">$<span id="monto-transferencia">0.00</span></h5>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <small class="text-muted">Cuenta Destino:</small>
+                                                        <p class="mb-0"><strong>1234-5678-9012</strong></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="alert alert-warning">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                <small><strong>Importante:</strong> Verifique que los datos sean correctos antes de confirmar. Esta operación no se puede deshacer.</small>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <!-- Transferencia por QR -->
+                                    <div class="tab-pane fade" id="transferencia-qr" role="tabpanel">
+                                        <div class="text-center py-4">
+                                            <div class="mb-3">
+                                                <i class="fas fa-qrcode fa-5x text-primary"></i>
+                                            </div>
+                                            <h5 class="mb-3">Escanea el código QR</h5>
+                                            <p class="text-muted mb-3">Usa la aplicación de tu banco para escanear este código y realizar el pago</p>
+                                            
+                                            <!-- Placeholder para QR Code -->
+                                            <div class="border rounded p-4 d-inline-block bg-white" style="width: 250px; height: 250px;">
+                                                <div class="d-flex align-items-center justify-content-center h-100">
+                                                    <div class="text-center">
+                                                        <i class="fas fa-qrcode fa-4x text-muted mb-2"></i>
+                                                        <p class="text-muted small mb-0">Código QR</p>
+                                                        <p class="text-muted small">Próximamente</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="alert alert-info mt-3">
+                                                <i class="fas fa-info-circle"></i>
+                                                <small>El código QR contiene la información de pago. Una vez escaneado, confirma la transacción en tu aplicación bancaria.</small>
+                                            </div>
+
+                                            <div class="alert alert-warning">
+                                                <i class="fas fa-tools"></i>
+                                                <small><strong>Funcionalidad en desarrollo.</strong> La generación de código QR estará disponible próximamente.</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg" id="btn-confirmar-pago" onclick="confirmarPago()">
+                        <i class="fas fa-check-circle"></i> Confirmar Pago
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function activarCobro(cobroId, numeroCobro) {
+    if (confirm(`¿Estás seguro de que deseas activar el cobro ${numeroCobro}?\n\nEsta acción generará automáticamente una factura y no se puede deshacer.`)) {
+        enviarFormulario(`/tesoreria/cobros/${cobroId}/activar/`);
+    }
+}
+
+// Variables globales para el modal de pago
+let cobroIdActual = null;
+let numeroCobroActual = null;
+let totalPagarActual = 0;
+
+// Abrir modal de pago
+function abrirModalPago(cobroId, numeroCobro, totalPagar) {
+    cobroIdActual = cobroId;
+    numeroCobroActual = numeroCobro;
+    totalPagarActual = parseFloat(totalPagar);
+    
+    // Actualizar información en el modal
+    document.getElementById('info-numero-cobro').textContent = numeroCobro;
+    document.getElementById('info-total-pagar').textContent = totalPagarActual.toFixed(2);
+    document.getElementById('resumen-total').textContent = totalPagarActual.toFixed(2);
+    
+    // Resetear campos
+    document.getElementById('monto-recibido').value = '';
+    document.getElementById('cambio-devolver').textContent = '0.00';
+    document.getElementById('resumen-recibido').textContent = '0.00';
+    document.getElementById('resumen-cambio').textContent = '0.00';
+    
+    // Seleccionar efectivo por defecto
+    document.getElementById('metodo_efectivo').checked = true;
+    mostrarPanelEfectivo();
+    
+    // Abrir modal
+    const modal = new bootstrap.Modal(document.getElementById('modalPago'));
+    modal.show();
+}
+
+// Cambiar entre paneles de método de pago
+document.addEventListener('DOMContentLoaded', function() {
+    const radioEfectivo = document.getElementById('metodo_efectivo');
+    const radioTransferencia = document.getElementById('metodo_transferencia');
+    
+    if (radioEfectivo) {
+        radioEfectivo.addEventListener('change', mostrarPanelEfectivo);
+    }
+    if (radioTransferencia) {
+        radioTransferencia.addEventListener('change', mostrarPanelTransferencia);
+    }
+});
+
+function mostrarPanelEfectivo() {
+    document.getElementById('panel-efectivo').style.display = 'block';
+    document.getElementById('panel-transferencia').style.display = 'none';
+}
+
+function mostrarPanelTransferencia() {
+    document.getElementById('panel-efectivo').style.display = 'none';
+    document.getElementById('panel-transferencia').style.display = 'block';
+    
+    // Actualizar monto en el resumen de transferencia
+    document.getElementById('monto-transferencia').textContent = totalPagarActual.toFixed(2);
+}
+
+// Toggle password visibility para transferencia
+function togglePasswordTransferencia() {
+    const passwordInput = document.getElementById('password-transferencia');
+    const icon = document.getElementById('icon-password-transferencia');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Calcular cambio
+function calcularCambio() {
+    const montoRecibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
+    const cambio = montoRecibido - totalPagarActual;
+    
+    // Actualizar displays
+    document.getElementById('cambio-devolver').textContent = cambio >= 0 ? cambio.toFixed(2) : '0.00';
+    document.getElementById('resumen-recibido').textContent = montoRecibido.toFixed(2);
+    document.getElementById('resumen-cambio').textContent = cambio >= 0 ? cambio.toFixed(2) : '0.00';
+    
+    // Cambiar color según si es suficiente
+    const alertCambio = document.querySelector('#cambio-devolver').parentElement;
+    if (montoRecibido >= totalPagarActual) {
+        alertCambio.classList.remove('alert-danger');
+        alertCambio.classList.add('alert-warning');
+    } else {
+        alertCambio.classList.remove('alert-warning');
+        alertCambio.classList.add('alert-danger');
+    }
+}
+
+// Agregar denominación al monto recibido
+function agregarDenominacion(valor) {
+    const input = document.getElementById('monto-recibido');
+    const montoActual = parseFloat(input.value) || 0;
+    input.value = (montoActual + valor).toFixed(2);
+    calcularCambio();
+}
+
+// Confirmar pago
+function confirmarPago() {
+    const metodoSeleccionado = document.querySelector('input[name="metodo_pago"]:checked').value;
+    
+    if (metodoSeleccionado === 'efectivo') {
+        const montoRecibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
+        
+        if (montoRecibido < totalPagarActual) {
+            alert('El monto recibido es insuficiente para completar el pago.');
+            return;
+        }
+        
+        const cambio = montoRecibido - totalPagarActual;
+        
+        // Confirmar con el usuario
+        if (confirm(`¿Confirmar pago en efectivo?\n\nTotal: $${totalPagarActual.toFixed(2)}\nRecibido: $${montoRecibido.toFixed(2)}\nCambio: $${cambio.toFixed(2)}`)) {
+            // Enviar formulario con datos de pago
+            enviarPagoEfectivo(cobroIdActual, montoRecibido, cambio);
+        }
+    } else if (metodoSeleccionado === 'transferencia') {
+        procesarTransferencia();
+    }
+}
+
+// Procesar transferencia bancaria
+function procesarTransferencia() {
+    const cuentaOrigen = document.getElementById('cuenta-origen').value.trim();
+    const password = document.getElementById('password-transferencia').value.trim();
+    const descripcion = document.getElementById('descripcion-transferencia').value.trim();
+    
+    // Validaciones
+    if (!cuentaOrigen) {
+        alert('Por favor ingrese el número de cuenta origen.');
+        document.getElementById('cuenta-origen').focus();
+        return;
+    }
+    
+    if (!password) {
+        alert('Por favor ingrese su contraseña de transacciones.');
+        document.getElementById('password-transferencia').focus();
+        return;
+    }
+    
+    if (password.length < 4) {
+        alert('La contraseña debe tener al menos 4 dígitos.');
+        document.getElementById('password-transferencia').focus();
+        return;
+    }
+    
+    // Simular validación de contraseña
+    if (password !== '1234' && password !== '123456') {
+        alert('⚠️ Contraseña incorrecta. Para esta simulación use: 1234 o 123456');
+        document.getElementById('password-transferencia').focus();
+        return;
+    }
+    
+    // Confirmación final
+    const mensaje = `¿Confirmar transferencia bancaria?\n\n` +
+                   `Cuenta Origen: ${cuentaOrigen}\n` +
+                   `Cuenta Destino: 1234-5678-9012\n` +
+                   `Monto: $${totalPagarActual.toFixed(2)}\n` +
+                   `Descripción: ${descripcion || 'N/A'}\n\n` +
+                   `Esta operación no se puede deshacer.`;
+    
+    if (confirm(mensaje)) {
+        // Mostrar mensaje de procesamiento
+        const btnConfirmar = document.getElementById('btn-confirmar-pago');
+        const textoOriginal = btnConfirmar.innerHTML;
+        btnConfirmar.disabled = true;
+        btnConfirmar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        
+        // Simular procesamiento (2 segundos)
+        setTimeout(() => {
+            enviarPagoTransferencia(cobroIdActual, cuentaOrigen, descripcion);
+        }, 2000);
+    }
+}
+
+// Enviar pago por transferencia
+function enviarPagoTransferencia(cobroId, cuentaOrigen, descripcion) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/tesoreria/cobros/${cobroId}/marcar-pagado/`;
+    
+    // Token CSRF
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken.value;
+        form.appendChild(csrfInput);
+    } else {
+        const csrfCookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+        if (csrfCookie) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfCookie.split('=')[1];
+            form.appendChild(csrfInput);
+        }
+    }
+    
+    // Datos del pago
+    const inputMetodo = document.createElement('input');
+    inputMetodo.type = 'hidden';
+    inputMetodo.name = 'metodo_pago';
+    inputMetodo.value = 'transferencia';
+    form.appendChild(inputMetodo);
+    
+    const inputCuenta = document.createElement('input');
+    inputCuenta.type = 'hidden';
+    inputCuenta.name = 'cuenta_origen';
+    inputCuenta.value = cuentaOrigen;
+    form.appendChild(inputCuenta);
+    
+    const inputDescripcion = document.createElement('input');
+    inputDescripcion.type = 'hidden';
+    inputDescripcion.name = 'descripcion';
+    inputDescripcion.value = descripcion;
+    form.appendChild(inputDescripcion);
+    
+    const inputMonto = document.createElement('input');
+    inputMonto.type = 'hidden';
+    inputMonto.name = 'monto_transferencia';
+    inputMonto.value = totalPagarActual.toFixed(2);
+    form.appendChild(inputMonto);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Enviar pago en efectivo
+function enviarPagoEfectivo(cobroId, montoRecibido, cambio) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/tesoreria/cobros/${cobroId}/marcar-pagado/`;
+    
+    // Token CSRF
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken.value;
+        form.appendChild(csrfInput);
+    } else {
+        const csrfCookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+        if (csrfCookie) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfCookie.split('=')[1];
+            form.appendChild(csrfInput);
+        }
+    }
+    
+    // Datos del pago
+    const inputMetodo = document.createElement('input');
+    inputMetodo.type = 'hidden';
+    inputMetodo.name = 'metodo_pago';
+    inputMetodo.value = 'efectivo';
+    form.appendChild(inputMetodo);
+    
+    const inputRecibido = document.createElement('input');
+    inputRecibido.type = 'hidden';
+    inputRecibido.name = 'monto_recibido';
+    inputRecibido.value = montoRecibido.toFixed(2);
+    form.appendChild(inputRecibido);
+    
+    const inputCambio = document.createElement('input');
+    inputCambio.type = 'hidden';
+    inputCambio.name = 'cambio';
+    inputCambio.value = cambio.toFixed(2);
+    form.appendChild(inputCambio);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function enviarFormulario(action) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = action;
+    
+    // Agregar el token CSRF
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken.value;
+        form.appendChild(csrfInput);
+    } else {
+        // Si no hay token en la página, obtenerlo de las cookies
+        const csrfCookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+        if (csrfCookie) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfCookie.split('=')[1];
+            form.appendChild(csrfInput);
+        }
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
 {% endblock %}

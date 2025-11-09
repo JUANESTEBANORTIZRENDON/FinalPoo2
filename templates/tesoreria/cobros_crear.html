@@ -53,13 +53,18 @@
                                 <label for="{{ form.tercero.id_for_label }}" class="form-label">
                                     {{ form.tercero.label }} <span class="text-danger">*</span>
                                 </label>
-                                {{ form.tercero }}
+                                <div class="input-group">
+                                    {{ form.tercero }}
+                                    <button type="button" class="btn btn-success" onclick="abrirModalNuevoCliente()">
+                                        <i class="fas fa-user-plus"></i> Nuevo Cliente
+                                    </button>
+                                </div>
                                 {% if form.tercero.errors %}
                                     <div class="invalid-feedback d-block">
                                         {{ form.tercero.errors }}
                                     </div>
                                 {% endif %}
-                                <small class="form-text text-muted">Selecciona el cliente al que le vas a cobrar</small>
+                                <small class="form-text text-muted">Selecciona el cliente o crea uno nuevo</small>
                             </div>
                         </div>
 
@@ -80,21 +85,6 @@
                                 {% if form.fecha_pago.errors %}
                                     <div class="invalid-feedback d-block">
                                         {{ form.fecha_pago.errors }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.valor.id_for_label }}" class="form-label">
-                                    {{ form.valor.label }} <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    {{ form.valor }}
-                                </div>
-                                {% if form.valor.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.valor.errors }}
                                     </div>
                                 {% endif %}
                             </div>
@@ -123,6 +113,55 @@
                                     </div>
                                 {% endif %}
                                 <small class="form-text text-muted">Número de cheque, referencia de transferencia, etc.</small>
+                            </div>
+                        </div>
+
+                        <!-- Productos del Cobro -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-success border-bottom pb-2 mb-3">
+                                    <i class="fas fa-box-open"></i>
+                                    Productos / Servicios
+                                </h6>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="tabla-productos">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th width="40%">Producto</th>
+                                                <th width="15%">Cantidad</th>
+                                                <th width="20%">Precio Unit.</th>
+                                                <th width="20%">Subtotal</th>
+                                                <th width="5%"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="productos-body">
+                                            <!-- Las filas se agregan dinámicamente -->
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="5">
+                                                    <button type="button" class="btn btn-sm btn-outline-success" onclick="agregarFila()">
+                                                        <i class="fas fa-plus"></i> Agregar Producto
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr class="table-info">
+                                                <td colspan="3" class="text-end"><strong>TOTAL:</strong></td>
+                                                <td colspan="2">
+                                                    <strong id="total-cobro">$0.00</strong>
+                                                    <input type="hidden" name="valor" id="valor-total" value="0">
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    Agrega los productos o servicios que incluye este cobro. El total se calculará automáticamente.
+                                </small>
                             </div>
                         </div>
 
@@ -179,24 +218,304 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Nuevo Cliente -->
+    <div class="modal fade" id="modalNuevoCliente" tabindex="-1" aria-labelledby="modalNuevoClienteLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="modalNuevoClienteLabel">
+                        <i class="fas fa-user-plus"></i> Registrar Nuevo Cliente
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-nuevo-cliente">
+                        {% csrf_token %}
+                        
+                        <!-- Información Básica -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h6 class="text-success border-bottom pb-2 mb-3">
+                                    <i class="fas fa-id-card"></i> Información Básica
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tipo de Documento <span class="text-danger">*</span></label>
+                                <select class="form-select" id="tipo_documento" name="tipo_documento" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="CC">Cédula de Ciudadanía</option>
+                                    <option value="CE">Cédula de Extranjería</option>
+                                    <option value="NIT">NIT</option>
+                                    <option value="TI">Tarjeta de Identidad</option>
+                                    <option value="PP">Pasaporte</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Número de Documento <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="numero_documento" name="numero_documento" 
+                                       placeholder="Ej: 1234567890" required>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Razón Social / Nombre Completo <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="razon_social" name="razon_social" 
+                                       placeholder="Ej: Juan Pérez o Empresa S.A.S" required>
+                            </div>
+                        </div>
+
+                        <!-- Información de Contacto -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h6 class="text-success border-bottom pb-2 mb-3">
+                                    <i class="fas fa-address-book"></i> Información de Contacto
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Teléfono</label>
+                                <input type="text" class="form-control" id="telefono" name="telefono" 
+                                       placeholder="Ej: 3001234567">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="Ej: cliente@email.com">
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Dirección</label>
+                                <input type="text" class="form-control" id="direccion" name="direccion" 
+                                       placeholder="Ej: Calle 123 #45-67">
+                            </div>
+                        </div>
+
+                        <!-- Información Adicional -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="text-success border-bottom pb-2 mb-3">
+                                    <i class="fas fa-cog"></i> Configuración
+                                </h6>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <small>El cliente será registrado como <strong>Cliente</strong> y quedará <strong>activo</strong> automáticamente.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="guardarNuevoCliente()">
+                        <i class="fas fa-save"></i> Guardar Cliente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-// Validación en tiempo real del valor
+// Productos disponibles (pasados desde la vista)
+const productos = {{ productos_json|safe }};
+
+let filaCounter = 0;
+
+// Agregar una fila de producto
+function agregarFila() {
+    const tbody = document.getElementById('productos-body');
+    const fila = document.createElement('tr');
+    fila.id = `fila-${filaCounter}`;
+    
+    fila.innerHTML = `
+        <td>
+            <select class="form-select form-select-sm" name="producto_${filaCounter}" onchange="actualizarPrecio(${filaCounter})" required>
+                <option value="">Seleccionar...</option>
+                ${productos.map(p => `<option value="${p.id}" data-precio="${p.precio}">${p.nombre} - $${parseFloat(p.precio).toFixed(2)}</option>`).join('')}
+            </select>
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm" name="cantidad_${filaCounter}" 
+                   min="0.01" step="0.01" value="1" onchange="calcularSubtotal(${filaCounter})" required>
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm" name="precio_${filaCounter}" 
+                   min="0" step="0.01" value="0" onchange="calcularSubtotal(${filaCounter})" required readonly>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm" id="subtotal_${filaCounter}" 
+                   value="$0.00" readonly>
+        </td>
+        <td>
+            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarFila(${filaCounter})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(fila);
+    filaCounter++;
+}
+
+// Actualizar precio cuando se selecciona un producto
+function actualizarPrecio(index) {
+    const select = document.querySelector(`select[name="producto_${index}"]`);
+    const precioInput = document.querySelector(`input[name="precio_${index}"]`);
+    
+    if (select.value) {
+        const option = select.options[select.selectedIndex];
+        const precio = parseFloat(option.getAttribute('data-precio'));
+        precioInput.value = precio.toFixed(2);
+        calcularSubtotal(index);
+    } else {
+        precioInput.value = '0.00';
+        calcularSubtotal(index);
+    }
+}
+
+// Calcular subtotal de una fila
+function calcularSubtotal(index) {
+    const cantidad = parseFloat(document.querySelector(`input[name="cantidad_${index}"]`).value) || 0;
+    const precio = parseFloat(document.querySelector(`input[name="precio_${index}"]`).value) || 0;
+    const subtotal = cantidad * precio;
+    
+    document.getElementById(`subtotal_${index}`).value = `$${subtotal.toFixed(2)}`;
+    calcularTotal();
+}
+
+// Calcular total general
+function calcularTotal() {
+    let total = 0;
+    
+    for (let i = 0; i < filaCounter; i++) {
+        const fila = document.getElementById(`fila-${i}`);
+        if (fila) {
+            const cantidad = parseFloat(document.querySelector(`input[name="cantidad_${i}"]`).value) || 0;
+            const precio = parseFloat(document.querySelector(`input[name="precio_${i}"]`).value) || 0;
+            total += cantidad * precio;
+        }
+    }
+    
+    document.getElementById('total-cobro').textContent = `$${total.toFixed(2)}`;
+    document.getElementById('valor-total').value = total.toFixed(2);
+}
+
+// Eliminar una fila
+function eliminarFila(index) {
+    const fila = document.getElementById(`fila-${index}`);
+    if (fila) {
+        fila.remove();
+        calcularTotal();
+    }
+}
+
+// Agregar una fila inicial al cargar
 document.addEventListener('DOMContentLoaded', function() {
-    const valorInput = document.querySelector('input[name="valor"]');
-    if (valorInput) {
-        valorInput.addEventListener('input', function() {
-            const valor = Number.parseFloat(this.value);
-            if (valor && valor > 0) {
-                this.classList.remove('is-invalid');
-                this.classList.add('is-valid');
-            } else {
-                this.classList.remove('is-valid');
-                this.classList.add('is-invalid');
-            }
-        });
+    agregarFila();
+});
+
+// Validar que haya al menos un producto antes de enviar
+document.querySelector('form').addEventListener('submit', function(e) {
+    const tbody = document.getElementById('productos-body');
+    if (tbody.children.length === 0) {
+        e.preventDefault();
+        alert('Debes agregar al menos un producto al cobro');
+        return false;
+    }
+    
+    const total = parseFloat(document.getElementById('valor-total').value);
+    if (total <= 0) {
+        e.preventDefault();
+        alert('El total del cobro debe ser mayor a cero');
+        return false;
     }
 });
+
+// ===== FUNCIONES PARA NUEVO CLIENTE =====
+
+// Abrir modal de nuevo cliente
+function abrirModalNuevoCliente() {
+    // Limpiar formulario
+    document.getElementById('form-nuevo-cliente').reset();
+    
+    // Abrir modal
+    const modal = new bootstrap.Modal(document.getElementById('modalNuevoCliente'));
+    modal.show();
+}
+
+// Guardar nuevo cliente
+function guardarNuevoCliente() {
+    const form = document.getElementById('form-nuevo-cliente');
+    
+    // Validar campos requeridos
+    const tipoDocumento = document.getElementById('tipo_documento').value;
+    const numeroDocumento = document.getElementById('numero_documento').value;
+    const razonSocial = document.getElementById('razon_social').value;
+    
+    if (!tipoDocumento || !numeroDocumento || !razonSocial) {
+        alert('Por favor complete todos los campos obligatorios (*)');
+        return;
+    }
+    
+    // Preparar datos
+    const formData = new FormData(form);
+    
+    // Mostrar loading en el botón
+    const btnGuardar = event.target;
+    const textoOriginal = btnGuardar.innerHTML;
+    btnGuardar.disabled = true;
+    btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+    
+    // Enviar petición AJAX
+    fetch('{% url "tesoreria:crear_cliente_ajax" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Agregar el nuevo cliente al select
+            const selectTercero = document.getElementById('{{ form.tercero.id_for_label }}');
+            const option = document.createElement('option');
+            option.value = data.cliente.id;
+            option.text = data.cliente.razon_social;
+            option.selected = true;
+            selectTercero.appendChild(option);
+            
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalNuevoCliente'));
+            modal.hide();
+            
+            // Mostrar mensaje de éxito
+            alert(`✓ Cliente "${data.cliente.razon_social}" registrado exitosamente`);
+            
+            // Resetear botón
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = textoOriginal;
+        } else {
+            // Mostrar errores
+            alert('Error al guardar el cliente:\n' + (data.error || 'Error desconocido'));
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = textoOriginal;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al guardar el cliente. Por favor intente nuevamente.');
+        btnGuardar.disabled = false;
+        btnGuardar.innerHTML = textoOriginal;
+    });
+}
 </script>
 {% endblock %}

@@ -128,21 +128,6 @@
                                                         <i class="bi bi-pencil" aria-hidden="true"></i>
                                                         <span class="visually-hidden">Editar</span>
                                                     </a>
-                                                    {% if tercero.activo %}
-                                                        <button class="btn btn-sm btn-outline-danger" 
-                                                                onclick="toggleEstado('{{ tercero.pk }}', false)"
-                                                                title="Desactivar tercero {{ tercero.razon_social }}">
-                                                            <i class="bi bi-toggle-on" aria-hidden="true"></i>
-                                                            <span class="visually-hidden">Desactivar</span>
-                                                        </button>
-                                                    {% else %}
-                                                        <button class="btn btn-sm btn-outline-success" 
-                                                                onclick="toggleEstado('{{ tercero.pk }}', true)"
-                                                                title="Activar tercero {{ tercero.razon_social }}">
-                                                            <i class="bi bi-toggle-off" aria-hidden="true"></i>
-                                                            <span class="visually-hidden">Activar</span>
-                                                        </button>
-                                                    {% endif %}
                                                 </div>
                                             </td>
                                         </tr>
@@ -216,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    document.getElementById('buscar_tercero').addEventListener('input', filtrarTabla);
+    buscar.addEventListener('input', filtrarTabla);
     filtroTipo.addEventListener('change', filtrarTabla);
     filtroEstado.addEventListener('change', filtrarTabla);
 });
@@ -230,28 +215,6 @@ function limpiarFiltros() {
     const filas = document.querySelectorAll('#tabla-terceros tbody tr');
     for (const fila of filas) {
         fila.style.display = '';
-    }
-}
-
-function toggleEstado(terceroId, nuevoEstado) {
-    if (confirm('¿Estás seguro de cambiar el estado de este tercero?')) {
-        // Aquí iría la llamada AJAX para cambiar el estado
-        fetch(`/catalogos/terceros/${terceroId}/toggle-estado/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({activo: nuevoEstado})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error al cambiar el estado');
-            }
-        });
     }
 }
 </script>
