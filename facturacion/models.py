@@ -15,6 +15,7 @@ class Factura(models.Model):
     ESTADO_CHOICES = [
         ('borrador', 'Borrador'),
         ('confirmada', 'Confirmada'),
+        ('pagada', 'Pagada'),
         ('anulada', 'Anulada'),
     ]
     
