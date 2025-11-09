@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import transaction
 from django.utils import timezone
+from core.admin_site import admin_site
 from .models import PerfilUsuario
 from .admin_forms import UsuarioCompletoAdminForm, PerfilUsuarioEditForm, UsuarioEditForm, PerfilUsuarioCompletoForm
 
@@ -360,7 +361,8 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
             return JsonResponse({'error': f'Error al eliminar usuario: {str(e)}'}, status=500)
 
 
-@admin.register(PerfilUsuario)
+@admin.register(PerfilUsuario, site=admin_site)
+@admin.register(PerfilUsuario)  # También en admin por defecto
 class PerfilUsuarioAdmin(admin.ModelAdmin):
     """Admin inteligente para gestión directa de perfiles con creación automática de usuarios"""
     form = PerfilUsuarioCompletoForm
@@ -468,7 +470,8 @@ class PerfilUsuarioAdmin(admin.ModelAdmin):
         js = ('admin/js/perfil_usuario_inteligente.js',)
 
 
-@admin.register(Session)
+@admin.register(Session, site=admin_site)
+@admin.register(Session)  # También en admin por defecto
 class SessionAdmin(admin.ModelAdmin):
     """Admin para gestión de sesiones activas"""
     list_display = ('session_key_short', 'get_user', 'expire_date', 'is_expired')
@@ -513,10 +516,12 @@ class SessionAdmin(admin.ModelAdmin):
     
     def has_add_permission(self, request):
         """No permitir crear sesiones manualmente"""
+        _ = request  # Marcar como intencionalmente no usado
         return False
 
 
-@admin.register(ContentType)
+@admin.register(ContentType, site=admin_site)
+@admin.register(ContentType)  # También en admin por defecto
 class ContentTypeAdmin(admin.ModelAdmin):
     """Admin para gestión de tipos de contenido"""
     list_display = ('app_label', 'model', 'name', 'id')
@@ -526,18 +531,23 @@ class ContentTypeAdmin(admin.ModelAdmin):
     
     def has_add_permission(self, request):
         """No permitir crear content types manualmente"""
+        _ = request  # Marcar como intencionalmente no usado
         return False
     
     def has_delete_permission(self, request, obj=None):
         """No permitir eliminar content types"""
+        _ = request, obj  # Marcar como intencionalmente no usados
         return False
 
 
-# Desregistrar el admin por defecto y registrar el personalizado
+# Registrar en el admin site personalizado
+# NOTA: User y Group se registran en core/admin.py para mantener el código organizado
+
+# También mantener el registro en el admin site por defecto para compatibilidad
 admin.site.unregister(User)
 admin.site.register(User, UsuarioPersonalizadoAdmin)
 
-# Personalizar títulos del admin
+# Personalizar títulos del admin por defecto (por si se accede directamente)
 admin.site.site_header = "🏢 S_CONTABLE - Panel de Administración"
 admin.site.site_title = "S_CONTABLE Admin"
 admin.site.index_title = "🇨🇴 Sistema Contable Colombiano - Panel de Control"

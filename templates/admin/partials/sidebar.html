@@ -1,0 +1,79 @@
+{% load i18n %}
+{# Sidebar Jerárquico por Secciones #}
+
+<aside id="contable-sidebar">
+    {# Header del Sidebar #}
+    <div class="sidebar-header">
+        <h2>
+            <i class="fas fa-cogs"></i>
+            Panel Admin
+        </h2>
+    </div>
+    
+    {# Búsqueda #}
+    <div class="sidebar-search">
+        <input 
+            type="text" 
+            id="sidebar-search" 
+            placeholder="🔍 Buscar modelos..."
+            aria-label="Buscar en el sidebar"
+        >
+    </div>
+    
+    {# Secciones con Modelos #}
+    <div class="sidebar-sections">
+        {% for section in sidebar_structure %}
+        <div 
+            class="sidebar-section" 
+            data-section-id="{{ section.name|slugify }}"
+            data-section-name="{{ section.name }}"
+        >
+            {# Header de la Sección #}
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas {{ section.icon }} section-icon"></i>
+                    <span>{{ section.name }}</span>
+                    {% if section.models|length > 0 %}
+                    <span class="section-badge">{{ section.models|length }}</span>
+                    {% endif %}
+                </div>
+                <i class="fas fa-chevron-down section-toggle-icon"></i>
+            </div>
+            
+            {# Lista de Modelos #}
+            <div class="section-models">
+                {% for model in section.models %}
+                <div 
+                    class="model-item"
+                    data-model-name="{{ model.name }}"
+                    {% if not model.view_perm %}data-no-permission{% endif %}
+                >
+                    <a href="{{ model.admin_url }}" class="model-link">
+                        <i class="fas fa-database" style="font-size: 0.8rem; opacity: 0.6;"></i>
+                        <span>{{ model.name }}</span>
+                    </a>
+                    
+                    {% if model.add_url and model.add_perm %}
+                    <a href="{{ model.add_url }}" class="model-add-btn" title="Agregar {{ model.name }}">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="model-item" style="opacity: 0.5;">
+                    <span style="font-size: 0.85rem;">No hay modelos disponibles</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div style="padding: 2rem 1rem; text-align: center; color: var(--text-secondary);">
+            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <p>No hay secciones disponibles</p>
+        </div>
+        {% endfor %}
+    </div>
+</aside>
+
+{# Backdrop para móvil #}
+<div class="sidebar-backdrop"></div>

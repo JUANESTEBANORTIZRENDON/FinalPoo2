@@ -214,12 +214,16 @@ def crear_perfil_usuario(sender, instance, created, **kwargs):
     Usa get_or_create para evitar duplicados
     """
     if created:
+        # Generar número de documento temporal único
+        import time
+        numero_temp = f"TEMP{instance.id:06d}{int(time.time() % 1000):03d}"
+        
         # Usar get_or_create para evitar duplicados de forma atómica
         PerfilUsuario.objects.get_or_create(
             usuario=instance,
             defaults={
-                'numero_documento': '',  # Se llenará después
-                'telefono': '',          # Se llenará después
+                'numero_documento': numero_temp,  # Número temporal único
+                'telefono': '',                   # Se llenará después
             }
         )
 

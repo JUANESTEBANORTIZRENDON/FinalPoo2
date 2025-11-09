@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from .models import Empresa, PerfilEmpresa, EmpresaActiva
+from core.test_settings import TEST_USER_PASSWORD, TEST_ADMIN_PASSWORD
 
 
 class EmpresaModelTest(TestCase):
@@ -11,7 +12,7 @@ class EmpresaModelTest(TestCase):
         self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
-            password='testpass123'
+            password=TEST_USER_PASSWORD
         )
     
     def test_crear_empresa(self):
@@ -55,13 +56,13 @@ class PerfilEmpresaModelTest(TestCase):
         self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
-            password='testpass123'
+            password=TEST_USER_PASSWORD
         )
         
         self.admin_user = User.objects.create_user(
             username='admin',
             email='admin@example.com',
-            password='adminpass123'
+            password=TEST_ADMIN_PASSWORD
         )
         
         self.empresa = Empresa.objects.create(
@@ -141,7 +142,7 @@ class EmpresaActivaModelTest(TestCase):
         self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
-            password='testpass123'
+            password=TEST_USER_PASSWORD
         )
         
         self.empresa = Empresa.objects.create(

@@ -1,0 +1,301 @@
+{% extends 'base_contable.html' %} {% block title %}Detalle del Cobro -
+S_CONTABLE{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-1">
+                <i class="fas fa-file-invoice-dollar text-success"></i>
+                {{ object.get_tipo_pago_display }} {{ object.numero_pago }}
+              </h2>
+              <p class="text-muted mb-0">
+                Detalles del {{ object.get_tipo_pago_display|lower }}
+              </p>
+            </div>
+            <div>
+              <a
+                href="{% url 'tesoreria:cobros_lista' %}"
+                class="btn btn-outline-secondary"
+              >
+                <i class="fas fa-arrow-left"></i> Volver
+              </a>
+
+              {% if object.estado == 'pendiente' %}
+              <a
+                href="{% url 'tesoreria:pagos_editar' object.pk %}"
+                class="btn btn-warning"
+              >
+                <i class="fas fa-edit"></i> Editar
+              </a>
+              <form
+                method="post"
+                action="{% url 'tesoreria:pagos_confirmar' object.pk %}"
+                style="display: inline"
+              >
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="btn btn-success"
+                  onclick="return confirm('¿Confirmar este pago?');"
+                >
+                  <i class="fas fa-check"></i> Confirmar
+                </button>
+              </form>
+              {% endif %} {% if object.estado == 'activo' %}
+              <form
+                method="post"
+                action="{% url 'tesoreria:pagos_marcar_pagado' object.pk %}"
+                style="display: inline"
+              >
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  onclick="return confirm('¿Marcar como pagado?');"
+                >
+                  <i class="fas fa-check-circle"></i> Marcar Pagado
+                </button>
+              </form>
+              <form
+                method="post"
+                action="{% url 'tesoreria:pagos_anular' object.pk %}"
+                style="display: inline"
+              >
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="btn btn-danger"
+                  onclick="return confirm('¿Anular este pago?');"
+                >
+                  <i class="fas fa-times"></i> Anular
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información Principal -->
+  <div class="row">
+    <!-- Información del Cobro -->
+    <div class="col-md-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-info-circle"></i>
+            Información del Cobro
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <span class="text-muted small d-block">Número de Cobro</span>
+              <p class="mb-0"><strong>{{ object.numero_pago }}</strong></p>
+            </div>
+            <div class="col-md-6">
+              <span class="text-muted small d-block">Fecha</span>
+              <p class="mb-0">{{ object.fecha_pago|date:"d/m/Y" }}</p>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <span class="text-muted small d-block">Cliente</span>
+              <p class="mb-0">
+                <i class="fas fa-user text-primary"></i>
+                <strong>{{ object.tercero.razon_social }}</strong>
+                <br />
+                <small class="text-muted"
+                  >{{ object.tercero.get_tipo_documento_display }}: {{
+                  object.tercero.numero_documento }}</small
+                >
+              </p>
+            </div>
+            <div class="col-md-6">
+              <span class="text-muted small d-block">Método de Pago</span>
+              <p class="mb-0">{{ object.metodo_pago.nombre }}</p>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <span class="text-muted small d-block">Valor</span>
+              <h4 class="text-success mb-0">
+                ${{ object.valor|floatformat:2 }}
+              </h4>
+            </div>
+            <div class="col-md-6">
+              <span class="text-muted small d-block">Estado</span>
+              <p class="mb-0">
+                {% if object.estado == 'borrador' %}
+                <span class="badge bg-warning fs-6">Borrador</span>
+                {% elif object.estado == 'confirmado' %}
+                <span class="badge bg-success fs-6">Confirmado</span>
+                {% elif object.estado == 'anulado' %}
+                <span class="badge bg-danger fs-6">Anulado</span>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+
+          {% if object.referencia %}
+          <div class="row mb-3">
+            <div class="col-12">
+              <span class="text-muted small d-block">Referencia</span>
+              <p class="mb-0">{{ object.referencia }}</p>
+            </div>
+          </div>
+          {% endif %} {% if object.observaciones %}
+          <div class="row">
+            <div class="col-12">
+              <span class="text-muted small d-block">Observaciones</span>
+              <p class="mb-0">{{ object.observaciones }}</p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Información del Sistema -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">
+            <i class="fas fa-cog"></i>
+            Información del Sistema
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <span class="text-muted small d-block">Creado Por</span>
+              <p class="mb-0">
+                {{
+                object.creado_por.get_full_name|default:object.creado_por.username
+                }}
+              </p>
+              <small class="text-muted"
+                >{{ object.fecha_creacion|date:"d/m/Y H:i" }}</small
+              >
+            </div>
+            {% if object.confirmado_por %}
+            <div class="col-md-6 mb-3">
+              <span class="text-muted small d-block">Confirmado Por</span>
+              <p class="mb-0">
+                {{
+                object.confirmado_por.get_full_name|default:object.confirmado_por.username
+                }}
+              </p>
+              <small class="text-muted"
+                >{{ object.fecha_confirmacion|date:"d/m/Y H:i" }}</small
+              >
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de Acciones -->
+    <div class="col-md-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-tasks"></i>
+            Acciones
+          </h6>
+        </div>
+        <div class="card-body">
+          {% if object.estado == 'borrador' %}
+          <a
+            href="{% url 'tesoreria:pagos_editar' object.pk %}"
+            class="btn btn-warning w-100 mb-2"
+          >
+            <i class="fas fa-edit"></i> Editar Cobro
+          </a>
+          <button class="btn btn-success w-100 mb-2" onclick="confirmarCobro()">
+            <i class="fas fa-check"></i> Confirmar Cobro
+          </button>
+          {% elif object.estado == 'confirmado' %}
+          <button class="btn btn-danger w-100 mb-2" onclick="anularCobro()">
+            <i class="fas fa-ban"></i> Anular Cobro
+          </button>
+          {% endif %}
+
+          <hr />
+
+          <a
+            href="{% url 'tesoreria:cobros_lista' %}"
+            class="btn btn-outline-secondary w-100"
+          >
+            <i class="fas fa-list"></i> Ver Todos los Cobros
+          </a>
+        </div>
+      </div>
+
+      <!-- Información del Cliente -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-user"></i>
+            Datos del Cliente
+          </h6>
+        </div>
+        <div class="card-body">
+          <p class="mb-2"><strong>{{ object.tercero.razon_social }}</strong></p>
+          <p class="mb-1 small">
+            <i class="fas fa-id-card"></i>
+            {{ object.tercero.get_tipo_documento_display }}: {{
+            object.tercero.numero_documento }}
+          </p>
+          {% if object.tercero.email %}
+          <p class="mb-1 small">
+            <i class="fas fa-envelope"></i>
+            {{ object.tercero.email }}
+          </p>
+          {% endif %} {% if object.tercero.telefono %}
+          <p class="mb-1 small">
+            <i class="fas fa-phone"></i>
+            {{ object.tercero.telefono }}
+          </p>
+          {% endif %} {% if object.tercero.direccion %}
+          <p class="mb-0 small">
+            <i class="fas fa-map-marker-alt"></i>
+            {{ object.tercero.direccion }}
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmarCobro() {
+    if (
+      confirm(
+        "¿Estás seguro de confirmar este cobro? Una vez confirmado no podrá ser editado."
+      )
+    ) {
+      globalThis.location.href =
+        "{% url 'tesoreria:pagos_confirmar' object.pk %}";
+    }
+  }
+
+  function anularCobro() {
+    if (
+      confirm(
+        "¿Estás seguro de anular este cobro? Esta acción no se puede deshacer."
+      )
+    ) {
+      globalThis.location.href = "{% url 'tesoreria:pagos_anular' object.pk %}";
+    }
+  }
+</script>
+{% endblock %}

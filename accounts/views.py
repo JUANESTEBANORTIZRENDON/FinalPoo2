@@ -11,6 +11,7 @@ from django.core.signing import Signer
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.views.decorators.http import require_safe
 from .forms import RegistroCompletoForm
 
 # Constantes para URLs reutilizables
@@ -290,6 +291,7 @@ class CustomLoginView(LoginView):
         return super().dispatch(request, *args, **kwargs)
 
 
+@require_safe
 def activar_cuenta(request):
     """Vista para activar cuenta mediante token"""
     token = request.GET.get('token')

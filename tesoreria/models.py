@@ -18,9 +18,9 @@ class Pago(models.Model):
     ]
     
     ESTADO_CHOICES = [
-        ('borrador', 'Borrador'),
-        ('confirmado', 'Confirmado'),
-        ('anulado', 'Anulado'),
+        ('pendiente', 'Pendiente'),
+        ('activo', 'Activo'),
+        ('pagado', 'Pagado'),
     ]
     
     # Relación con empresa (multi-tenant)
@@ -95,7 +95,7 @@ class Pago(models.Model):
     estado = models.CharField(
         max_length=15,
         choices=ESTADO_CHOICES,
-        default='borrador',
+        default='pendiente',
         verbose_name="Estado"
     )
     
@@ -154,17 +154,17 @@ class Pago(models.Model):
     @property
     def puede_editarse(self):
         """Verifica si el pago puede editarse"""
-        return self.estado == 'borrador'
+        return self.estado == 'pendiente'
     
     @property
-    def puede_confirmarse(self):
-        """Verifica si el pago puede confirmarse"""
-        return self.estado == 'borrador'
+    def puede_activarse(self):
+        """Verifica si el pago puede activarse"""
+        return self.estado == 'pendiente'
     
     @property
-    def puede_anularse(self):
-        """Verifica si el pago puede anularse"""
-        return self.estado == 'confirmado'
+    def puede_marcarse_pagado(self):
+        """Verifica si el pago puede marcarse como pagado"""
+        return self.estado == 'activo'
     
     @property
     def es_cobro(self):
@@ -183,12 +183,12 @@ class Pago(models.Model):
         from django.core.exceptions import ValidationError
         
         # Validar que el tercero sea del tipo correcto
-        if self.tipo_pago == 'cobro' and not self.tercero.es_cliente:
+        if self.tipo_pago == 'cobro' and self.tercero and not self.tercero.es_cliente:
             raise ValidationError({
                 'tercero': 'Para cobros, debe seleccionar un cliente.'
             })
         
-        if self.tipo_pago == 'egreso' and not self.tercero.es_proveedor:
+        if self.tipo_pago == 'egreso' and self.tercero and not self.tercero.es_proveedor:
             raise ValidationError({
                 'tercero': 'Para egresos, debe seleccionar un proveedor.'
             })
@@ -313,3 +313,83 @@ class CuentaBancaria(models.Model):
     def saldo_formateado(self):
         """Retorna el saldo con formato de moneda"""
         return f"${self.saldo_actual:,.2f}"
+
+
+class PagoDetalle(models.Model):
+    """
+    Modelo para gestionar los detalles (productos) de un pago/cobro.
+    """
+    # Relación con el pago
+    pago = models.ForeignKey(
+        Pago,
+        on_delete=models.CASCADE,
+        related_name='detalles',
+        verbose_name="Pago"
+    )
+    
+    # Producto
+    producto = models.ForeignKey(
+        'catalogos.Producto',
+        on_delete=models.PROTECT,
+        verbose_name="Producto"
+    )
+    
+    # Cantidad y valores
+    cantidad = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        verbose_name="Cantidad"
+    )
+    
+    precio_unitario = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))],
+        verbose_name="Precio Unitario"
+    )
+    
+    subtotal = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))],
+        verbose_name="Subtotal",
+        help_text="Cantidad × Precio Unitario"
+    )
+    
+    # Información del sistema
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de Creación"
+    )
+    
+    class Meta:
+        verbose_name = "Detalle de Pago"
+        verbose_name_plural = "Detalles de Pago"
+        ordering = ['id']
+    
+    def __str__(self):
+        return f"{self.producto.nombre} - {self.cantidad} × ${self.precio_unitario}"
+    
+    def save(self, *args, **kwargs):
+        """Calcular subtotal antes de guardar"""
+        self.subtotal = self.cantidad * self.precio_unitario
+        super().save(*args, **kwargs)
+
+
+class ExtractoBancario(models.Model):
+    cuenta = models.ForeignKey(CuentaBancaria, on_delete=models.PROTECT, related_name='extractos')
+    fecha = models.DateField()
+    descripcion = models.CharField(max_length=255)
+    referencia = models.CharField(max_length=128, blank=True)
+    valor = models.DecimalField(max_digits=15, decimal_places=2)
+    conciliado = models.BooleanField(default=False)
+    pago = models.ForeignKey('tesoreria.Pago', null=True, blank=True, on_delete=models.SET_NULL, related_name='conciliaciones')
+
+    class Meta:
+        verbose_name = 'Extracto Bancario'
+        verbose_name_plural = 'Extractos Bancarios'
+        ordering = ['-fecha', '-id']
+
+    def __str__(self):
+        return f"{self.fecha} {self.descripcion} {self.valor}"

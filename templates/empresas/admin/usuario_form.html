@@ -84,20 +84,23 @@
                                     </div>
                                 </div>
                                 
-                                {% if accion == 'editar' %}
                                 <div class="mb-3">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" 
                                                type="checkbox" 
                                                id="is_active" 
                                                name="is_active"
-                                               {% if usuario.is_active %}checked{% endif %}>
+                                               {% if accion == 'crear' %}checked{% elif usuario.is_active %}checked{% endif %}>
                                         <label class="form-check-label" for="is_active">
                                             <i class="fas fa-toggle-on me-1"></i>Usuario Activo
                                         </label>
                                     </div>
+                                    {% if accion == 'crear' %}
+                                    <small class="form-text text-muted">
+                                        Por defecto, los nuevos usuarios se crean activos
+                                    </small>
+                                    {% endif %}
                                 </div>
-                                {% endif %}
                             </div>
                             
                             <!-- Información Personal y Contraseña -->
@@ -199,12 +202,12 @@
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="password_confirm" class="form-label">
+                                    <label for="new_password_confirm" class="form-label">
                                         <i class="fas fa-lock me-1"></i>Confirmar Nueva Contraseña
                                     </label>
                                     <input type="password" 
                                            class="form-control" 
-                                           id="password_confirm" 
+                                           id="new_password_confirm" 
                                            name="password_confirm">
                                 </div>
                                 {% endif %}
@@ -229,28 +232,75 @@
     </div>
 </div>
 
-<script>
-// Validación del formulario
-(function() {
-    'use strict';
-    globalThis.addEventListener('load', function() {
-        var forms = document.getElementsByClassName('needs-validation');
-        Array.prototype.filter.call(forms, function(form) {
-            form.addEventListener('submit', function(event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
-        });
-    }, false);
-})();
+{% include 'empresas/admin/includes/form_validation.html' %}
 
+<style>
+/* Responsive adjustments for usuario form */
+@media (max-width: 768px) {
+    .card-header h4 {
+        font-size: 1.1rem;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    .d-flex.gap-2 {
+        flex-direction: column;
+        gap: 10px !important;
+    }
+    
+    .d-flex.gap-2 .btn {
+        width: 100%;
+    }
+    
+    h6.text-secondary {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 10px;
+    }
+    
+    .card-header .btn {
+        width: 100%;
+    }
+    
+    .card-header h4 {
+        font-size: 1rem;
+    }
+    
+    h5.text-primary {
+        font-size: 1rem;
+    }
+    
+    h6.text-secondary {
+        font-size: 0.9rem;
+    }
+    
+    .form-label {
+        font-size: 0.9rem;
+    }
+    
+    .form-control, .form-check-input {
+        font-size: 0.9rem;
+    }
+    
+    .form-text {
+        font-size: 0.8rem;
+    }
+}
+</style>
+
+<script>
 // Validación de contraseñas coincidentes
 document.addEventListener('DOMContentLoaded', function() {
     const password = document.getElementById('{% if accion == "crear" %}password{% else %}new_password{% endif %}');
-    const passwordConfirm = document.getElementById('password_confirm');
+    const passwordConfirm = document.getElementById('{% if accion == "crear" %}password_confirm{% else %}new_password_confirm{% endif %}');
     
     function validatePasswords() {
         if (password.value && passwordConfirm.value) {

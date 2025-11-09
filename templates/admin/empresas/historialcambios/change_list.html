@@ -5,8 +5,8 @@
 {{ block.super }}
 <style>
     .historial-info-banner {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: linear-gradient(135deg, #5566d8 0%, #6a3d91 100%);
+        color: #ffffff;
         padding: 20px;
         border-radius: 8px;
         margin-bottom: 20px;
@@ -43,21 +43,23 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
+        background: rgba(255, 255, 255, 0.95); /* Cambiado de 0.3 a 0.95 para cumplir WCAG AA */
+        color: #2c3e50; /* Cambiado de #ffffff a color oscuro para contraste */
         text-decoration: none;
         padding: 8px 15px;
         border-radius: 6px;
         font-weight: 500;
         transition: all 0.2s ease;
         margin-top: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Agregado para definir bordes */
     }
     
     .admin-link:hover {
-        background: rgba(255, 255, 255, 0.3);
-        color: white;
+        background: #ffffff; /* Fondo blanco sólido en hover */
+        color: #1a252f; /* Color aún más oscuro en hover */
         text-decoration: none;
         transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
     
     .diferencias-info {
@@ -150,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const badge = document.createElement('span');
             badge.style.cssText = `
                 background: #dc3545;
-                color: white;
+                color: #ffffff;
                 font-size: 0.7rem;
                 padding: 2px 6px;
                 border-radius: 10px;
@@ -173,8 +175,8 @@ document.addEventListener('DOMContentLoaded', function() {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: rgba(102, 126, 234, 0.9);
-            color: white;
+            background: rgba(85, 102, 216, 0.95);
+            color: #ffffff;
             padding: 12px 16px;
             border-radius: 8px;
             font-size: 0.8rem;

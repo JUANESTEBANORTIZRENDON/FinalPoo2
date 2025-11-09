@@ -1,18 +1,48 @@
-# 🚀 S_CONTABLE - Comandos Esenciales# � S_CONTABLE - Comandos Esenciales
+# S_CONTABLE - Sistema de Gestión Contable
 
+## Módulos Implementados
 
+| Módulo            | Estado      | Descripción                                  |
+| ----------------- | ----------- | -------------------------------------------- |
+| **Autenticación** | Completado  | Login, registro y gestión de usuarios        |
+| **Empresas**      | Completado  | Gestión de múltiples empresas                |
+| **Catálogos**     | Completado  | Métodos de pago, tipos de documento, etc.    |
+| **Tesoreria**     | Completado  | Gestión de cobros, pagos y cuentas bancarias |
+| **Facturación**   | En Progreso | Facturas, notas crédito/débito               |
+| **Contabilidad**  | Pendiente   | Asientos contables, mayor general            |
+| **Reportes**      | Parcial     | Reportes financieros básicos                 |
 
-## 🔧 Configuración Inicial (Primera vez)## ⚡ Comandos Rápidos
+## Vista Rápida de Tesorería
 
+### Características Implementadas:
 
+- Gestión de cuentas bancarias
+- Registro de cobros y pagos
+- Conciliación bancaria
+- Reportes de flujo de caja
+- Control de saldos por cuenta
+
+### Acceso Rápido:
+
+- **Cuentas Bancarias**: `/tesoreria/cuentas/`
+- **Cobros**: `/tesoreria/cobros/`
+- **Pagos**: `/tesoreria/pagos/`
+- **Reportes**: `/tesoreria/reportes/`
+
+## Comandos Rápidos
 
 ### 1️⃣ Habilitar Scripts en PowerShell### 1️⃣ Activar Entorno Virtual
 
-```bash```bash
+```bash
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+.\env\Scripts\Activate.ps1
+```
+
+`bash`bash
 
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser.\env\Scripts\Activate.ps1
 
-``````
+````
 
 *Solo necesario la primera vez si da error de permisos*
 
@@ -210,3 +240,4 @@ pip install --force-reinstall -r requirements.txt
 - ✅ **No subir el archivo `.env` al repositorio**
 - ✅ **Hacer migraciones después de cambiar modelos**
 - ✅ **El entorno virtual está en la carpeta `env/` (ignorada por git)**
+````

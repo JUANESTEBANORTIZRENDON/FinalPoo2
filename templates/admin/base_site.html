@@ -5,290 +5,959 @@
 
 {% block extrahead %}
 {{ block.super }}
+<!-- Version: 2024-11-06-22:00 - Sidebar Jerárquico v2.0 -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<!-- CSS personalizado para corregir problemas de contraste -->
-<link rel="stylesheet" type="text/css" href="{% static 'admin/css/custom.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'admin/css/admin_custom.css' %}?v=2.0">
+<script src="{% static 'admin/js/sidebar.js' %}?v=2.0" defer></script>
 <style>
-    /* Personalización del Django Admin para desarrolladores */
+    /* ============================================
+       DJANGO ADMIN - PANEL DESARROLLADOR REDESIGN
+       Diseño moderno, responsive y organizado
+       ============================================ */
+    
     :root {
-        --primary-color: #667eea;
-        --secondary-color: #764ba2;
-        --accent-color: #f093fb;
-        --success-color: #4facfe;
-        --warning-color: #f5576c;
-        --dark-color: #2d3748;
-        --light-color: #f7fafc;
+        /* Tema Negro/Azul/Verde Neón */
+        --neon-green: #39ff14;
+        --neon-blue: #00d4ff;
+        --dark-bg: #0a0e27;
+        --darker-bg: #060818;
+        --card-bg: #101428;
+        --text-primary: #ffffff;
+        --text-secondary: #a0aec0;
+        --admin-sidebar-width: 260px;
+        
+        /* Efectos y sombras neón */
+        --glow-green: 0 0 10px rgba(57, 255, 20, 0.5);
+        --glow-blue: 0 0 10px rgba(0, 212, 255, 0.5);
+        --shadow-dark: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
 
-    /* Header personalizado */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: var(--dark-bg);
+        color: var(--text-primary);
+        overflow-x: hidden;
+    }
+
+    /* ==================
+       HEADER STICKY
+       ================== */
     #header {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: var(--darker-bg);
+        border-bottom: 2px solid var(--neon-blue);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
         color: white;
-        padding: 15px 20px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     #header h1 {
         color: white;
-        font-family: 'Inter', sans-serif;
         font-weight: 600;
+        font-size: 1.5rem;
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     #header h1 a {
         color: white;
         text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: opacity 0.3s ease;
     }
 
     #header h1 a:hover {
-        color: rgba(255, 255, 255, 0.8);
+        opacity: 0.85;
     }
 
-    /* User tools */
     #user-tools {
         color: white;
-        font-family: 'Inter', sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
     #user-tools a {
         color: white;
         text-decoration: none;
-        padding: 5px 10px;
-        border-radius: 5px;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
         transition: background 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     #user-tools a:hover {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.15);
     }
 
-    /* Breadcrumbs */
+    /* Toggle sidebar móvil y backdrop */
+    .mobile-toggle {
+        display: none;
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        margin-right: 1rem;
+    }
+
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .sidebar-backdrop.show {
+        opacity: 1;
+    }
+
+    body.nav-open {
+        overflow: hidden;
+    }
+    .sidebar-toggle {
+        display: none;
+        background: rgba(42, 56, 144, 0.85);
+        border: 1px solid rgba(0, 212, 255, 0.4);
+        color: #ffffff;
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-toggle:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    /* ==================
+       BREADCRUMBS
+       ================== */
     .breadcrumbs {
-        background: var(--light-color);
+        background: white;
         border-bottom: 1px solid #e2e8f0;
-        padding: 10px 20px;
-        font-family: 'Inter', sans-serif;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .breadcrumbs a {
-        color: var(--primary-color);
+        color: var(--admin-primary);
         text-decoration: none;
+        transition: color 0.3s ease;
     }
 
     .breadcrumbs a:hover {
+        color: var(--admin-secondary);
         text-decoration: underline;
     }
 
-    /* Content */
+    /* ==================
+       SIDEBAR NEÓN - ORGANIZADO Y LIMPIO
+       ================== */
+    #nav-sidebar {
+        position: fixed;
+        top: 65px;
+        left: 0;
+        width: var(--admin-sidebar-width);
+        height: calc(100vh - 65px);
+        background: var(--darker-bg) !important;
+        border-right: 1px solid rgba(0, 212, 255, 0.3) !important;
+        overflow-y: auto;
+        overflow-x: hidden;
+        transition: transform 0.3s ease;
+        z-index: 999;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        -webkit-overflow-scrolling: touch;
+        padding: 1.5rem 0;
+    }
+
+    /* Scrollbar personalizado */
+    #nav-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #nav-sidebar::-webkit-scrollbar-track {
+        background: var(--darker-bg);
+    }
+
+    #nav-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(0, 212, 255, 0.3);
+        border-radius: 3px;
+    }
+
+    #nav-sidebar::-webkit-scrollbar-thumb:hover {
+        background: var(--neon-blue);
+    }
+    
+    /* Contenedor de cada aplicación */
+    #nav-sidebar > div[class*="app-"] {
+        margin-bottom: 0.75rem;
+        padding: 0;
+    }
+
+    /* Título de cada app como tarjeta clickeable */
+    #nav-sidebar .app-label {
+        display: block !important;
+        padding: 1rem 1.5rem !important;
+        margin: 0.5rem 1rem !important;
+        color: var(--text-primary) !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        transition: all 0.3s ease !important;
+        font-size: 0.95rem !important;
+        border-radius: 8px !important;
+        background: var(--card-bg) !important;
+        border: 1px solid rgba(0, 212, 255, 0.2) !important;
+        cursor: pointer !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
+        position: relative;
+        overflow: visible;
+    }
+
+    #nav-sidebar .app-label:hover {
+        border-color: var(--neon-blue) !important;
+        box-shadow: var(--glow-blue) !important;
+        transform: translateX(4px) !important;
+        color: var(--neon-blue) !important;
+        background: var(--card-bg) !important;
+    }
+    
+    /* Iconos FontAwesome para apps */
+    #nav-sidebar .app-label::before {
+        margin-right: 12px;
+        font-size: 1.2rem;
+        color: var(--neon-green);
+        filter: drop-shadow(0 0 3px var(--neon-green));
+    }
+
+    /* Hover verde para algunos módulos específicos */
+    #nav-sidebar .app-accounts .app-label:hover,
+    #nav-sidebar .app-empresas .app-label:hover,
+    #nav-sidebar .app-catalogos .app-label:hover {
+        border-color: var(--neon-green) !important;
+        box-shadow: var(--glow-green) !important;
+        color: var(--neon-green) !important;
+    }
+
+    /* OCULTAR elementos innecesarios del sidebar */
+    #nav-sidebar .model-list,
+    #nav-sidebar ul,
+    #nav-sidebar .app-label + * {
+        display: none !important;
+    }
+
+    /* Ocultar todos los enlaces que no sean app-label */
+    #nav-sidebar a:not(.app-label),
+    #nav-sidebar .app-label ~ a {
+        display: none !important;
+    }
+
+    /* Ocultar iconos de toggle y SVG */
+    #nav-sidebar .app-label svg,
+    #nav-sidebar .app-label i.fa-angle-down,
+    #nav-sidebar .app-label i.fa-chevron-down,
+    #nav-sidebar .app-label .icon {
+        display: none !important;
+    }
+    
+    /* Iconos por app usando FontAwesome */
+    #nav-sidebar .app-accounts .app-label::before { font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", sans-serif; content: "\f007"; font-weight: 900; }
+    #nav-sidebar .app-auth .app-label::before { font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", sans-serif; content: "\f023"; font-weight: 900; }
+    #nav-sidebar .app-empresas .app-label::before { font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", sans-serif; content: "\f1ad"; font-weight: 900; }
+    #nav-sidebar .app-catalogos .app-label::before { font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", sans-serif; content: "\f466"; font-weight: 900; }
+    #nav-sidebar .app-facturacion .app-label::before { font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", sans-serif; content: "\f571"; font-weight: 900; }
+    #nav-sidebar .app-tesoreria .app-label::before { font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", sans-serif; content: "\f81d"; font-weight: 900; }
+    #nav-sidebar .app-contabilidad .app-label::before { font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", sans-serif; content: "\f200"; font-weight: 900; }
+    #nav-sidebar .app-reportes .app-label::before { font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", sans-serif; content: "\f201"; font-weight: 900; }
+    #nav-sidebar .app-ventas .app-label::before { font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", sans-serif; content: "\f290"; font-weight: 900; }
+    #nav-sidebar .app-api .app-label::before { font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", sans-serif; content: "\f1c0"; font-weight: 900; }
+
+    /* ==================
+       CONTENT AREA
+       ================== */
     #content {
-        font-family: 'Inter', sans-serif;
-        padding: 20px;
-        background: var(--light-color);
+        margin-left: var(--admin-sidebar-width);
+        padding: 2rem;
         min-height: calc(100vh - 120px);
+        transition: margin-left 0.3s ease;
     }
 
-    /* Module headers */
-    .module h2 {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-        color: white;
-        padding: 12px 15px;
-        margin: 0;
-        font-family: 'Inter', sans-serif;
-        font-weight: 600;
-        border-radius: 8px 8px 0 0;
-    }
-
-    /* Module content */
+    /* Módulos y cards */
     .module {
+        background: var(--card-bg);
         border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
+        box-shadow: var(--shadow-dark);
+        margin-bottom: 1.5rem;
         overflow: hidden;
+        border: 1px solid rgba(0, 212, 255, 0.2);
+        animation: slideIn 0.4s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .module h2 {
+        background: var(--darker-bg);
+        color: var(--neon-blue);
+        border-bottom: 2px solid var(--neon-blue);
+        padding: 1rem 1.25rem;
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+
+    .module caption {
+        background: var(--darker-bg);
+        color: var(--neon-blue);
+        border-bottom: 2px solid var(--neon-blue);
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+        text-align: left;
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+
+    /* ==================
+       TABLES RESPONSIVE
+       ================== */
+    .results {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
         background: white;
     }
 
-    /* Tables */
-    table {
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    thead th {
+        background: var(--darker-bg);
+        color: var(--neon-green);
+        border-bottom: 2px solid var(--neon-green);
+        font-weight: 600;
+        padding: 1rem;
+        text-align: left;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
 
-    thead th {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-        color: white;
-        font-weight: 600;
-        padding: 12px;
+    tbody tr {
+        border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        transition: all 0.2s ease;
     }
 
     tbody tr:nth-child(even) {
-        background: rgba(102, 126, 234, 0.05);
+        background: rgba(16, 20, 40, 0.5);
     }
 
     tbody tr:hover {
-        background: rgba(102, 126, 234, 0.1);
+        background: rgba(0, 212, 255, 0.1);
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
     }
 
-    /* Buttons */
-    .button, input[type=submit], input[type=button], .submit-row input, button {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-        border: none;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 6px;
-        font-family: 'Inter', sans-serif;
+    tbody td {
+        padding: 1rem;
+        color: var(--text-secondary);
+    }
+
+    /* ==================
+       RESPONSIVE DESIGN
+       ================== */
+    @media (max-width: 992px) {
+        :root {
+            --admin-sidebar-width: 240px;
+        }
+        
+        .mobile-toggle {
+            display: block;
+        }
+        
+        #nav-sidebar {
+            transform: translateX(-100%);
+        }
+        
+        body.nav-open #nav-sidebar {
+            transform: translateX(0);
+        }
+        
+        body.nav-open .sidebar-backdrop {
+            display: block;
+        }
+        
+        #content {
+            margin-left: 0 !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        #header {
+            padding: 0.75rem 1rem;
+        }
+        
+        #header h1 {
+            font-size: 1.25rem;
+        }
+        
+        #user-tools {
+            font-size: 0.9rem;
+        }
+        
+        #content {
+            padding: 1rem;
+        }
+        
+        .module {
+            border-radius: var(--admin-border-radius);
+            margin-bottom: 1rem;
+        }
+        
+        .module h2,
+        .module caption {
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+        }
+        
+        thead th {
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        tbody td {
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        #header h1 {
+            font-size: 1.1rem;
+        }
+        
+        #user-tools {
+            display: none;
+        }
+        
+        #content {
+            padding: 0.75rem;
+        }
+        
+        .module {
+            border-radius: var(--admin-border-radius);
+            margin-bottom: 0.75rem;
+        }
+        
+        .button, input[type=submit], input[type=button] {
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .aligned label {
+            width: 100%;
+            padding: 0.5rem 0;
+        }
+        
+        form .aligned p.help {
+            margin-left: 0;
+            padding-left: 0;
+        }
+    }
+
+
+
+    /* ==================
+       INPUTS Y FORMS NEÓN
+       ================== */
+    input[type="text"], input[type="password"], input[type="email"], 
+    input[type="number"], input[type="date"], textarea, select {
+        background: var(--card-bg) !important;
+        border: 1px solid rgba(0, 212, 255, 0.3) !important;
+        color: var(--text-primary) !important;
+        padding: 0.5rem !important;
+        border-radius: 4px !important;
+        transition: all 0.3s ease;
+    }
+    
+    input[type="text"]:focus, input[type="password"]:focus, 
+    input[type="email"]:focus, textarea:focus, select:focus {
+        border-color: var(--neon-blue) !important;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.4) !important;
+        outline: none !important;
+    }
+    
+    label {
+        color: var(--text-secondary) !important;
         font-weight: 500;
+    }
+
+    /* ==================
+       BUTTONS & FORMS
+       ================== */
+    .button, input[type=submit], input[type=button], .submit-row input, button[type="submit"] {
+        background: var(--card-bg);
+        border: 2px solid var(--neon-blue);
+        color: var(--neon-blue);
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
         text-decoration: none;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
     }
-
-    .button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    
+    .button:hover, input[type=submit]:hover, input[type=button]:hover, button[type="submit"]:hover {
+        background: var(--neon-blue);
         color: white;
-        text-decoration: none;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+        transform: translateY(-2px);
     }
 
-    /* Default buttons */
-    .default {
-        background: linear-gradient(135deg, var(--success-color) 0%, #00f2fe 100%);
+    .button.default, .default {
+        background: linear-gradient(135deg, var(--admin-success) 0%, #00f2fe 100%);
     }
 
-    /* Delete buttons */
-    .deletelink {
-        background: linear-gradient(135deg, var(--warning-color) 0%, #f093fb 100%);
+    .deletelink, .deletelink-box {
+        background: linear-gradient(135deg, var(--admin-warning) 0%, #f093fb 100%);
     }
 
-    /* Forms */
-    .form-row {
-        margin-bottom: 15px;
-    }
-
-    .form-row label {
-        font-weight: 600;
-        color: var(--dark-color);
-        margin-bottom: 5px;
-        display: block;
-    }
-
+    /* Form inputs */
     input[type=text], input[type=password], input[type=email], input[type=url], 
-    input[type=number], input[type=tel], textarea, select {
+    input[type=number], input[type=tel], input[type=date], input[type=time],
+    textarea, select, .vTextField, .vDateField, .vTimeField {
         border: 2px solid #e2e8f0;
-        border-radius: 6px;
-        padding: 10px;
-        font-family: 'Inter', sans-serif;
-        transition: border-color 0.3s ease;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
         width: 100%;
-        max-width: 400px;
+        max-width: 600px;
     }
 
-    input[type=text]:focus, input[type=password]:focus, input[type=email]:focus, 
-    input[type=url]:focus, input[type=number]:focus, input[type=tel]:focus, 
-    textarea:focus, select:focus {
-        border-color: var(--primary-color);
+    input:focus, textarea:focus, select:focus {
+        border-color: var(--admin-primary);
         outline: none;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
-    /* Dashboard modules */
-    .dashboard .module {
-        float: left;
-        width: 48%;
-        margin-right: 2%;
-        margin-bottom: 20px;
+    .form-row {
+        margin-bottom: 1.25rem;
     }
 
-    .dashboard .module:nth-child(2n) {
-        margin-right: 0;
+    .form-row label {
+        font-weight: 600;
+        color: var(--admin-dark);
+        margin-bottom: 0.5rem;
+        display: block;
     }
 
-    /* Messages */
+    /* ==================
+       MESSAGES
+       ================== */
     .messagelist {
-        margin: 0 0 20px 0;
+        margin: 0 0 1.5rem 0;
         padding: 0;
         list-style: none;
     }
 
     .messagelist li {
-        padding: 12px 15px;
-        margin-bottom: 10px;
-        border-radius: 6px;
-        font-family: 'Inter', sans-serif;
+        padding: 1rem 1.25rem;
+        margin-bottom: 0.75rem;
+        border-radius: 8px;
         font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
     }
 
     .messagelist .success {
         background: rgba(79, 172, 254, 0.1);
-        color: var(--success-color);
-        border-left: 4px solid var(--success-color);
+        color: var(--admin-success);
+        border-left: 4px solid var(--admin-success);
+    }
+
+    .messagelist .success::before {
+        content: "✅";
+        font-size: 1.2rem;
     }
 
     .messagelist .warning {
         background: rgba(245, 87, 108, 0.1);
-        color: var(--warning-color);
-        border-left: 4px solid var(--warning-color);
+        color: var(--admin-warning);
+        border-left: 4px solid var(--admin-warning);
+    }
+
+    .messagelist .warning::before {
+        content: "⚠️";
+        font-size: 1.2rem;
     }
 
     .messagelist .error {
-        background: rgba(245, 87, 108, 0.1);
-        color: var(--warning-color);
-        border-left: 4px solid var(--warning-color);
+        background: rgba(245, 87, 108, 0.3); /* Aumentado de 0.25 a 0.3 */
+        color: #4a0a0d; /* Oscurecido más de #5a0a0f a #4a0a0d para mejor contraste */
+        border-left: 4px solid #4a0a0d;
+        font-weight: 600; /* Agregado para mejor legibilidad */
     }
 
-    /* Navigation */
-    #nav-sidebar {
-        background: white;
-        border-right: 1px solid #e2e8f0;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    .messagelist .error::before {
+        content: "❌";
+        font-size: 1.2rem;
     }
 
-    #nav-sidebar .current-app {
-        background: rgba(102, 126, 234, 0.1);
-        border-radius: 6px;
-        margin: 5px;
-    }
-
-    #nav-sidebar .current-app .section {
-        color: var(--primary-color);
-        font-weight: 600;
-    }
-
-    /* Footer personalizado */
+    /* ==================
+       FOOTER
+       ================== */
     #footer {
-        background: var(--dark-color);
-        color: white;
+        background: var(--admin-dark);
+        color: #ffffff;
         text-align: center;
-        padding: 15px;
-        margin-top: 40px;
-        font-family: 'Inter', sans-serif;
+        padding: 1.5rem;
+        margin-top: 3rem;
     }
 
-    /* Responsive */
+    /* ==================
+       RESPONSIVE
+       ================== */
+    @media (max-width: 992px) {
+        #nav-sidebar {
+            transform: translateX(-100%);
+        }
+
+        #nav-sidebar.show {
+            transform: translateX(0);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+        }
+
+        #content {
+            margin-left: 0;
+        }
+
+        .sidebar-toggle {
+            display: block;
+        }
+
+        /* Backdrop */
+        body.sidebar-open::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+        }
+    }
+
     @media (max-width: 768px) {
+        #header {
+            padding: 0.75rem 1rem;
+        }
+
+        #header h1 {
+            font-size: 1.2rem;
+        }
+
+        #content {
+            padding: 1rem;
+        }
+
+        .module h2 {
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+        }
+
+        table {
+            font-size: 0.9rem;
+        }
+
+        thead th, tbody td {
+            padding: 0.5rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        #user-tools {
+            font-size: 0.85rem;
+        }
+
+        #user-tools a {
+            padding: 0.4rem 0.75rem;
+        }
+
+        .breadcrumbs {
+            font-size: 0.8rem;
+            padding: 0.5rem 1rem;
+        }
+    }
+
+    /* ==================
+       DASHBOARD ESPECÍFICO
+       ================== */
+    .dashboard .module {
+        float: none;
+        width: 100%;
+    }
+
+    @media (min-width: 768px) {
         .dashboard .module {
-            width: 100%;
+            float: left;
+            width: 48%;
+            margin-right: 2%;
+        }
+
+        .dashboard .module:nth-child(2n) {
             margin-right: 0;
         }
-        
-        #content {
-            padding: 10px;
+    }
+
+    /* ==================
+       ANIMACIONES
+       ================== */
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
         }
-        
-        #header {
-            padding: 10px;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
     }
+
+    /* ==================
+       FORZAR ESTILOS SIDEBAR - MÁXIMA PRIORIDAD
+       ================== */
+    /* Limpiar el sidebar - ocultar todo lo que no sea app-label */
+    #nav-sidebar div:not([class*="app-"]) {
+        display: none !important;
+    }
+    
+    #nav-sidebar [class*="app-"] > *:not(.app-label) {
+        display: none !important;
+    }
+    
+    #nav-sidebar .model-list,
+    #nav-sidebar ul,
+    #nav-sidebar li,
+    #nav-sidebar .app-label + div,
+    #nav-sidebar .app-label + ul,
+    #nav-sidebar .app-label + * {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* Solo mostrar app-labels */
+    #nav-sidebar [class*="app-"] {
+        display: block !important;
+    }
 </style>
+
+<script>
+// Crear backdrop para el sidebar
+function createBackdrop(sidebar) {
+    let backdrop = document.querySelector('.sidebar-backdrop');
+    if (!backdrop && sidebar) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'sidebar-backdrop';
+        document.body.appendChild(backdrop);
+    }
+    return backdrop;
+}
+
+// Toggle del sidebar en móvil
+function setupSidebarToggle(sidebarToggle, sidebar, backdrop) {
+    if (!sidebarToggle || !sidebar) return;
+    
+    sidebarToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        sidebar.classList.toggle('show');
+        document.body.classList.toggle('nav-open');
+        if (backdrop) {
+            backdrop.classList.toggle('show');
+        }
+        console.log('📱 Sidebar toggled');
+    });
+}
+
+// Cerrar sidebar con backdrop
+function setupBackdropClick(backdrop, sidebar) {
+    if (!backdrop || !sidebar) return;
+    
+    backdrop.addEventListener('click', function() {
+        sidebar.classList.remove('show');
+        document.body.classList.remove('nav-open');
+        backdrop.classList.remove('show');
+        console.log('🚪 Sidebar cerrado por backdrop');
+    });
+}
+
+// Cerrar sidebar al hacer clic fuera
+function setupOutsideClick(sidebar, sidebarToggle, backdrop) {
+    document.addEventListener('click', function(e) {
+        const isMobile = window.innerWidth <= 992;
+        const sidebarOpen = sidebar && sidebar.classList.contains('show');
+        const clickedOutside = !sidebar.contains(e.target) && !sidebarToggle.contains(e.target);
+        
+        if (isMobile && sidebarOpen && clickedOutside) {
+            sidebar.classList.remove('show');
+            document.body.classList.remove('nav-open');
+            if (backdrop) {
+                backdrop.classList.remove('show');
+            }
+        }
+    });
+}
+
+// Limpiar elementos innecesarios del sidebar
+function cleanupSidebar(sidebar) {
+    if (!sidebar) return;
+    
+    // Ocultar listas de modelos
+    const modelLists = sidebar.querySelectorAll('.model-list, ul, li');
+    for (const list of modelLists) {
+        list.style.display = 'none';
+        list.style.visibility = 'hidden';
+        list.style.height = '0';
+    }
+    
+    // Ocultar enlaces dentro de apps (excepto app-label)
+    const appDivs = sidebar.querySelectorAll('[class*="app-"]');
+    for (const appDiv of appDivs) {
+        const linksInApp = appDiv.querySelectorAll('a:not(.app-label)');
+        for (const link of linksInApp) {
+            link.style.display = 'none';
+            link.style.visibility = 'hidden';
+        }
+    }
+    
+    // Asegurar visibilidad de app-label
+    const appLabels = sidebar.querySelectorAll('.app-label');
+    for (const label of appLabels) {
+        label.style.display = 'block';
+        label.style.visibility = 'visible';
+    }
+    
+    console.log(`✅ Sidebar limpiado: ${modelLists.length} listas ocultas`);
+}
+
+// Navegar a URL de app
+function navigateToApp(parentDiv) {
+    const changeLink = parentDiv.querySelector('a[href*="/admin/"][href*="/"]');
+    
+    if (changeLink && changeLink.href) {
+        console.log(`  ➡️ Navegando a: ${changeLink.href}`);
+        globalThis.location.href = changeLink.href;
+        return;
+    }
+    
+    // Construir URL si no se encuentra enlace
+    const appClass = parentDiv.className.match(/app-(\w+)/);
+    if (appClass && appClass[1]) {
+        const appUrl = `/admin/${appClass[1]}/`;
+        console.log(`  ➡️ Navegando a URL construida: ${appUrl}`);
+        globalThis.location.href = appUrl;
+    } else {
+        console.log('  ⚠️ No se encontró enlace changelist');
+    }
+}
+
+// Configurar clicks en app labels
+function setupAppLabels() {
+    const appLabels = document.querySelectorAll('#nav-sidebar .app-label');
+    console.log(`📦 Encontradas ${appLabels.length} apps en el sidebar`);
+    
+    let index = 0;
+    for (const label of appLabels) {
+        index++;
+        const appName = label.textContent.trim();
+        console.log(`  ${index}. ${appName}`);
+        
+        label.style.cursor = 'pointer';
+        label.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log(`🎯 Click en app: ${appName}`);
+            
+            const parentDiv = this.closest('[class*="app-"]');
+            if (parentDiv) {
+                navigateToApp(parentDiv);
+            }
+        });
+    }
+}
+
+// Inicialización principal
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Inicializando Panel Desarrollador');
+    
+    const sidebar = document.getElementById('nav-sidebar');
+    const sidebarToggle = document.querySelector('.sidebar-toggle, .mobile-toggle');
+    const backdrop = createBackdrop(sidebar);
+    
+    setupSidebarToggle(sidebarToggle, sidebar, backdrop);
+    setupBackdropClick(backdrop, sidebar);
+    setupOutsideClick(sidebar, sidebarToggle, backdrop);
+    cleanupSidebar(sidebar);
+    setupAppLabels();
+    
+    console.log('✨ Panel Desarrollador inicializado correctamente');
+});
+</script>
 {% endblock %}
 
 {% block branding %}
 <h1 id="site-name">
+    <button data-toggle="sidebar" class="sidebar-toggle" aria-label="Abrir menú" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;margin-right:1rem;">
+        <i class="fas fa-bars"></i>
+    </button>
     <a href="{% url 'admin:index' %}">
-        🔧 S_CONTABLE - Panel Desarrollador
+        <i class="fas fa-cogs"></i>
+        S_CONTABLE - Panel Desarrollador
     </a>
 </h1>
+{% endblock %}
+
+{% block nav-sidebar %}
+    {% include "admin/partials/sidebar.html" %}
 {% endblock %}
 
 {% block nav-global %}{% endblock %}
@@ -296,8 +965,10 @@
 {% block footer %}
 <div id="footer">
     <p>
-        <strong>🔧 Panel de Desarrollador</strong> - Sistema Contable Colombiano<br>
-        <small>Herramientas técnicas y administración avanzada</small>
+        <strong><i class="fas fa-wrench"></i> Panel de Desarrollador</strong> - Sistema Contable Colombiano
+    </p>
+    <p style="font-size: 0.9em; opacity: 0.8; margin-top: 0.5rem;">
+        Herramientas técnicas y administración avanzada del sistema
     </p>
 </div>
 {% endblock %}

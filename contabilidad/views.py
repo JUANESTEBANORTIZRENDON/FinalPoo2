@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 from .models import CuentaContable, Asiento, Partida
 
@@ -84,37 +85,46 @@ class ConsultaCuentaView(LoginRequiredMixin, TemplateView):
     template_name = 'contabilidad/consulta_cuenta.html'
 
 @login_required
+@require_http_methods(["POST"])
 def crear_plan_cuentas_basico(request):
     return redirect('contabilidad:cuentas_lista')
 
 @login_required
+@require_http_methods(["POST"])
 def confirmar_asiento(request, pk):
     return redirect(ASIENTOS_DETALLE_URL, pk=pk)
 
 @login_required
+@require_http_methods(["POST"])
 def anular_asiento(request, pk):
     return redirect(ASIENTOS_DETALLE_URL, pk=pk)
 
 @login_required
+@require_http_methods(["POST"])
 def duplicar_asiento(request, pk):
     return redirect('contabilidad:asientos_crear')
 
 @login_required
+@require_http_methods(["POST"])
 def reversar_asiento(request, pk):
     return redirect(ASIENTOS_DETALLE_URL, pk=pk)
 
 @login_required
+@require_http_methods(["GET"])
 def obtener_siguiente_numero_asiento(request):
     return JsonResponse({'numero': '000001'})
 
 @login_required
+@require_http_methods(["GET"])
 def buscar_cuentas(request):
     return JsonResponse({'results': []})
 
 @login_required
+@require_http_methods(["POST"])
 def validar_cuadre_asiento(request):
     return JsonResponse({'cuadrado': True})
 
 @login_required
+@require_http_methods(["GET"])
 def obtener_saldo_cuenta(request, pk):
     return JsonResponse({'saldo': 0})

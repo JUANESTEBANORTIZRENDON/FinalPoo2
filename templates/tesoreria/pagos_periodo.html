@@ -1,0 +1,191 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Pagos por Período - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-calendar-alt text-primary"></i>
+                                Pagos por Período
+                            </h2>
+                            <p class="text-muted mb-0">Reporte de pagos y cobros de {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="{% url 'tesoreria:index' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter"></i>
+                        Filtros de Búsqueda
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha Inicio</label>
+                                <input type="date" name="fecha_inicio" class="form-control" 
+                                       value="{{ fecha_inicio|default:'' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha Fin</label>
+                                <input type="date" name="fecha_fin" class="form-control" 
+                                       value="{{ fecha_fin|default:'' }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Tipo</label>
+                                <select name="tipo_pago" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option value="cobro" {% if tipo_pago == 'cobro' %}selected{% endif %}>Cobros</option>
+                                    <option value="egreso" {% if tipo_pago == 'egreso' %}selected{% endif %}>Egresos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Estado</label>
+                                <select name="estado" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option value="pendiente" {% if estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                                    <option value="activo" {% if estado == 'activo' %}selected{% endif %}>Activo</option>
+                                    <option value="pagado" {% if estado == 'pagado' %}selected{% endif %}>Pagado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total del Período</h6>
+                            <h3 class="mb-0 text-info">${{ total_pagos|floatformat:2|default:'0.00' }}</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-dollar-sign fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-secondary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Cantidad de Transacciones</h6>
+                            <h3 class="mb-0 text-secondary">{{ count_pagos|default:0 }}</h3>
+                        </div>
+                        <div class="bg-secondary bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-list-ol fa-2x text-secondary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Pagos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i>
+                        Listado de Transacciones
+                        {% if count_pagos > 100 %}
+                            <span class="badge bg-warning">Mostrando primeros 100 de {{ count_pagos }}</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if pagos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Tipo</th>
+                                        <th>Tercero</th>
+                                        <th>Concepto</th>
+                                        <th>Método</th>
+                                        <th class="text-end">Valor</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pago in pagos %}
+                                    <tr>
+                                        <td>{{ pago.fecha_pago|date:'d/m/Y' }}</td>
+                                        <td>
+                                            {% if pago.tipo_pago == 'cobro' %}
+                                                <span class="badge bg-success">Cobro</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Egreso</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ pago.tercero.nombre|truncatewords:3 }}</td>
+                                        <td>{{ pago.concepto|truncatewords:5 }}</td>
+                                        <td>{{ pago.metodo_pago.nombre|default:'-' }}</td>
+                                        <td class="text-end"><strong>${{ pago.valor|floatformat:2 }}</strong></td>
+                                        <td>
+                                            {% if pago.estado == 'pendiente' %}
+                                                <span class="badge bg-warning">Pendiente</span>
+                                            {% elif pago.estado == 'activo' %}
+                                                <span class="badge bg-info">Activo</span>
+                                            {% elif pago.estado == 'pagado' %}
+                                                <span class="badge bg-success">Pagado</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'tesoreria:pagos_detalle' pago.pk %}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               title="Ver detalle">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay transacciones en el período seleccionado.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

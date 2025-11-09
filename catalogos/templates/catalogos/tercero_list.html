@@ -115,36 +115,20 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <fieldset class="btn-group" style="border: none; padding: 0; margin: 0; min-width: auto;">
-                                                    <legend class="visually-hidden">Acciones para el tercero {{ tercero.razon_social }}</legend>
+                                                <div class="btn-group" aria-label="Acciones para {{ tercero.razon_social }}">
                                                     <a href="{% url 'catalogos:tercero_detail' tercero.pk %}" 
                                                        class="btn btn-sm btn-outline-info" 
-                                                       title="Ver Detalles"
-                                                       aria-label="Ver detalles del tercero {{ tercero.razon_social }}">
+                                                       title="Ver detalles del tercero {{ tercero.razon_social }}">"
                                                         <i class="bi bi-eye" aria-hidden="true"></i>
+                                                        <span class="visually-hidden">Ver detalles</span>
                                                     </a>
                                                     <a href="{% url 'catalogos:tercero_update' tercero.pk %}" 
                                                        class="btn btn-sm btn-outline-warning" 
-                                                       title="Editar"
-                                                       aria-label="Editar tercero {{ tercero.razon_social }}">
+                                                       title="Editar tercero {{ tercero.razon_social }}">
                                                         <i class="bi bi-pencil" aria-hidden="true"></i>
+                                                        <span class="visually-hidden">Editar</span>
                                                     </a>
-                                                    {% if tercero.activo %}
-                                                        <button class="btn btn-sm btn-outline-danger" 
-                                                                onclick="toggleEstado('{{ tercero.pk }}', false)"
-                                                                title="Desactivar"
-                                                                aria-label="Desactivar tercero {{ tercero.razon_social }}">
-                                                            <i class="bi bi-toggle-on" aria-hidden="true"></i>
-                                                        </button>
-                                                    {% else %}
-                                                        <button class="btn btn-sm btn-outline-success" 
-                                                                onclick="toggleEstado('{{ tercero.pk }}', true)"
-                                                                title="Activar"
-                                                                aria-label="Activar tercero {{ tercero.razon_social }}">
-                                                            <i class="bi bi-toggle-off" aria-hidden="true"></i>
-                                                        </button>
-                                                    {% endif %}
-                                                </fieldset>
+                                                </div>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -217,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    document.getElementById('buscar_tercero').addEventListener('input', filtrarTabla);
+    buscar.addEventListener('input', filtrarTabla);
     filtroTipo.addEventListener('change', filtrarTabla);
     filtroEstado.addEventListener('change', filtrarTabla);
 });
@@ -231,28 +215,6 @@ function limpiarFiltros() {
     const filas = document.querySelectorAll('#tabla-terceros tbody tr');
     for (const fila of filas) {
         fila.style.display = '';
-    }
-}
-
-function toggleEstado(terceroId, nuevoEstado) {
-    if (confirm('¿Estás seguro de cambiar el estado de este tercero?')) {
-        // Aquí iría la llamada AJAX para cambiar el estado
-        fetch(`/catalogos/terceros/${terceroId}/toggle-estado/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({activo: nuevoEstado})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error al cambiar el estado');
-            }
-        });
     }
 }
 </script>

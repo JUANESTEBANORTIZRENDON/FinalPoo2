@@ -19,7 +19,10 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from django.shortcuts import redirect
 from django.http import HttpResponse
+from django.views.decorators.http import require_safe
+from core.admin_site import admin_site
 
+@require_safe
 def home_view(request):
     """Vista de inicio que redirige según el estado de autenticación"""
     if request.user.is_authenticated:
@@ -31,7 +34,8 @@ def home_view(request):
  #Holi
 urlpatterns = [
     # ===== ADMINISTRACIÓN =====
-    path('admin/', admin.site.urls),
+    # Admin site personalizado con sidebar jerárquico y estadísticas
+    path('admin/', admin_site.urls),
     
     # ===== AUTENTICACIÓN MVT (HTML/Sesiones) =====
     # Mantiene el sistema existente intacto

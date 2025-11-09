@@ -22,8 +22,19 @@ urlpatterns = [
     path('cambiar-empresa/', views.CambiarEmpresaView.as_view(), name='cambiar_empresa'),
     path('seleccionar/', views.seleccionar_empresa, name='seleccionar_empresa'),
     
+    # Dashboards por rol
+    path('contador/dashboard/', views.contador_dashboard, name='contador_dashboard'),
+    path('operador/dashboard/', views.operador_dashboard, name='operador_dashboard'),
+    path('observador/dashboard/', views.observador_dashboard, name='observador_dashboard'),
+    
     # URLs del módulo administrador
     path('admin/dashboard/', views_admin.dashboard_admin, name='admin_dashboard'),
+    
+    # Dashboards por rol
+    path('contador/dashboard/', views_admin.dashboard_contador, name='contador_dashboard'),
+    path('operador/dashboard/', views_admin.dashboard_operador, name='operador_dashboard'),
+    path('observador/dashboard/', views_admin.dashboard_observador, name='observador_dashboard'),
+    
     path('admin/empresas/', views_admin.gestionar_empresas, name='admin_gestionar_empresas'),
     path('admin/empresas/crear/', views_admin.crear_empresa, name='admin_crear_empresa'),
     path('admin/empresas/<int:empresa_id>/', views_admin.ver_empresa, name='admin_ver_empresa'),
