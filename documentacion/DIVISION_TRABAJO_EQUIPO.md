@@ -1,4 +1,5 @@
 # 📋 DIVISIÓN DE TRABAJO - SISTEMA CONTABLE S_CONTABLE
+
 **Fecha:** 5 de Noviembre de 2025  
 **Proyecto:** Sistema Contable Multiempresa con Django  
 **Equipo:** 4 desarrolladores (Gabo, Wiki, Sneyder, Estiven)
@@ -10,7 +11,9 @@
 ### Estado Actual (Lo que llevamos completado)
 
 #### ✅ **COMPLETADO AL 100%**
+
 1. **Infraestructura Base:**
+
    - Proyecto Django 5.2.7 configurado y funcionando
    - Base de datos PostgreSQL (Neon) conectada
    - Sistema de autenticación con sesiones (MVT)
@@ -19,6 +22,7 @@
    - Sistema de migraciones aplicadas correctamente
 
 2. **Módulo de Empresas (Holding):**
+
    - ✅ Modelo `Empresa` completo
    - ✅ Modelo `PerfilEmpresa` (usuarios-empresas-roles)
    - ✅ Dashboard de administrador holding COMPLETO
@@ -32,6 +36,7 @@
    - ✅ Templates completos y funcionales
 
 3. **Módulo de Autenticación (Accounts):**
+
    - ✅ Registro de usuarios completo (colombiano)
    - ✅ Login/Logout funcional
    - ✅ Recuperación de contraseña por email
@@ -41,6 +46,7 @@
    - ✅ API REST para registro y autenticación JWT
 
 4. **Módulo de Catálogos:**
+
    - ✅ Modelo `Tercero` (clientes/proveedores/ambos)
    - ✅ Modelo `Impuesto` (IVA, ICA, etc.)
    - ✅ Modelo `MetodoPago` (efectivo, transferencia, tarjeta)
@@ -49,6 +55,7 @@
    - ⚠️ Templates básicos creados PERO necesitan mejora UX/UI
 
 5. **Módulo de Contabilidad:**
+
    - ✅ Modelo `CuentaContable` (plan de cuentas PUC Colombia)
    - ✅ Modelo `Asiento` (asientos contables)
    - ✅ Modelo `Partida` (débito/crédito de asientos)
@@ -58,6 +65,7 @@
    - ⚠️ Templates básicos PERO funcionalidad avanzada pendiente
 
 6. **Módulo de Facturación:**
+
    - ✅ Modelo `Factura` (facturas de venta)
    - ✅ Modelo `FacturaDetalle` (líneas de factura)
    - ✅ Relación con asientos contables
@@ -68,14 +76,18 @@
    - ❌ PDF/impresión PENDIENTE
    - ❌ Templates funcionales PENDIENTES
 
-7. **Módulo de Tesorería:**
+7. **Módulo de Tesorería (Sneyder) - COMPLETADO ✅**
+
    - ✅ Modelo `Pago` (pagos/cobros/egresos)
    - ✅ Modelo `CuentaBancaria`
-   - ✅ Relación con facturas y asientos
-   - ✅ Vistas CBV básicas
-   - ⚠️ Templates básicos (algunos creados en rama Gabo)
-   - ❌ Flujo de caja PENDIENTE
-   - ❌ Conciliación bancaria PENDIENTE
+   - ✅ Modelo `ExtractoBancario` para conciliación
+   - ✅ Vistas CBV completas con lógica de negocio
+   - ✅ Templates completos y responsivos
+   - ✅ Flujo de caja con filtros por fechas
+   - ✅ Reporte de saldos por cuenta
+   - ✅ Reporte de pagos con exportación CSV
+   - ✅ Integración con envío de facturas por email
+   - ✅ Conciliación bancaria básica
 
 8. **Módulo de Reportes:**
    - ✅ Modelo `ReporteGenerado`
@@ -92,6 +104,7 @@
    - ❌ Templates funcionales PENDIENTES
 
 #### ⚠️ **EN PROGRESO / PARCIAL**
+
 - Templates de catálogos (existen pero mejorar UX)
 - Templates de facturación (estructura básica)
 - Templates de tesorería (algunos en rama Gabo)
@@ -99,6 +112,7 @@
 - Lógica de negocio avanzada en módulos transaccionales
 
 #### ❌ **PENDIENTE / NO INICIADO**
+
 - Tests unitarios completos
 - Documentación de usuario final
 - Funciones avanzadas de reportes
@@ -112,11 +126,13 @@
 ## 👥 DIVISIÓN EQUITATIVA DEL TRABAJO
 
 ### 🔵 **RAMA: wiki** → Administrador (Wiki)
+
 **Responsabilidad:** Módulo de Empresas y Administración del Holding
 
 #### 📦 Tareas Asignadas:
 
 **1. Garantizar calidad del módulo de Empresas (YA HECHO - revisar/mejorar):**
+
 - [ ] Revisar y probar exhaustivamente el dashboard del administrador
 - [ ] Verificar CRUD de empresas (crear, editar, ver, eliminar)
 - [ ] Verificar CRUD de usuarios
@@ -128,6 +144,7 @@
 - [ ] Documentar flujos de trabajo del administrador
 
 **2. Mejorar y completar funcionalidades administrativas:**
+
 - [ ] Añadir filtros avanzados en gestión de empresas
 - [ ] Añadir búsqueda en gestión de usuarios
 - [ ] Implementar paginación optimizada
@@ -138,17 +155,20 @@
 - [ ] Mejorar UX/UI de templates administrativos
 
 **3. Integración con otros módulos:**
+
 - [ ] Validar que el cambio de empresa activa funcione en TODOS los módulos
 - [ ] Asegurar que los permisos se respeten en facturación/tesorería/reportes
 - [ ] Crear middleware de auditoría avanzada (quién hizo qué y cuándo)
 
 **4. Tests y Documentación:**
+
 - [ ] Crear tests unitarios para models de empresas
 - [ ] Crear tests de vistas del administrador
 - [ ] Documentar manual de administrador (con capturas)
 - [ ] Crear guía de troubleshooting común
 
 #### 📁 Archivos Principales:
+
 ```
 empresas/
 ├── models.py (Empresa, PerfilEmpresa, HistorialCambios)
@@ -172,11 +192,13 @@ empresas/
 ---
 
 ### 🟢 **RAMA: Gabo** → Facturación y Ventas (Gabo)
+
 **Responsabilidad:** Módulo de Facturación completo y funcional
 
 #### 📦 Tareas Asignadas:
 
 **1. Completar lógica de negocio de Facturación:**
+
 - [ ] Implementar función `confirmar_factura()` (cambiar estado a confirmada)
 - [ ] Implementar función `anular_factura()` (cambiar estado a anulada)
 - [ ] Implementar función `duplicar_factura()` (clonar factura existente)
@@ -187,6 +209,7 @@ empresas/
   - Validar totales (subtotal + impuestos = total)
 
 **2. Integración con Contabilidad:**
+
 - [ ] Al confirmar factura → generar asiento contable automático
   - Débito: Clientes (1305 PUC)
   - Crédito: Ingresos (4135 PUC)
@@ -195,6 +218,7 @@ empresas/
 - [ ] Probar integración con `ServicioContabilidad`
 
 **3. Templates funcionales y UX:**
+
 - [ ] Crear/mejorar `factura_list.html` (listado con filtros)
 - [ ] Crear/mejorar `factura_form.html` (crear/editar con líneas dinámicas)
 - [ ] Crear/mejorar `factura_detail.html` (ver factura completa)
@@ -206,24 +230,28 @@ empresas/
 - [ ] Diseñar interfaz responsive (móvil/tablet/desktop)
 
 **4. Generación de PDF e Impresión:**
+
 - [ ] Implementar `factura_pdf()` usando ReportLab o WeasyPrint
 - [ ] Diseñar template de factura profesional (logo, datos empresa, etc.)
 - [ ] Implementar `factura_imprimir()` (versión para impresora térmica)
 - [ ] Añadir botón "Descargar PDF" en detalle de factura
 
 **5. Reportes y Consultas:**
+
 - [ ] Crear vista de facturas por cliente
 - [ ] Crear vista de facturas por período
 - [ ] Implementar reporte de ventas (diario/semanal/mensual)
 - [ ] Añadir gráficos de ventas (Chart.js o similar)
 
 **6. Tests y Documentación:**
+
 - [ ] Tests unitarios para modelo Factura
 - [ ] Tests de integración con contabilidad
 - [ ] Tests de generación de PDF
 - [ ] Documentar proceso de facturación (manual de usuario)
 
 #### 📁 Archivos Principales:
+
 ```
 facturacion/
 ├── models.py (Factura, FacturaDetalle)
@@ -248,28 +276,32 @@ static/js/
 ---
 
 ### 🟡 **RAMA: Sneyder** → Tesorería y Flujo de Caja (Sneyder)
+
 **Responsabilidad:** Módulo de Tesorería completo y funcional
 
 #### 📦 Tareas Asignadas:
 
 **1. Completar lógica de negocio de Tesorería:**
-- [ ] Implementar función `confirmar_pago()` (cambiar estado y actualizar saldos)
-- [ ] Implementar función `anular_pago()` (reversar estado y saldos)
-- [ ] Implementar función `cobrar_factura()` (crear cobro desde factura)
-- [ ] Añadir validaciones de negocio:
+
+- [x] Implementar función `confirmar_pago()` (cambiar estado y actualizar saldos)
+- [x] Implementar función `anular_pago()` (reversar estado y saldos)
+- [x] Implementar función `cobrar_factura()` (crear cobro desde factura)
+- [x] Añadir validaciones de negocio:
   - Validar saldo de cuenta bancaria para egresos
   - Validar monto de cobro vs saldo pendiente factura
   - Validar método de pago (requiere referencia si es transferencia)
 
 **2. Integración con Contabilidad:**
-- [ ] Al confirmar pago/cobro → generar asiento contable automático
+
+- [x] Al confirmar pago/cobro → generar asiento contable automático
   - Cobro: Débito Bancos, Crédito Clientes
   - Pago: Débito Proveedores, Crédito Bancos
   - Egreso: Débito Gastos, Crédito Bancos
-- [ ] Al anular → reversar asiento contable
-- [ ] Probar integración con `ServicioContabilidad`
+- [x] Al anular → reversar asiento contable
+- [x] Probar integración con `ServicioContabilidad`
 
 **3. Templates funcionales y UX:**
+
 - [ ] Crear/mejorar `pagos_lista.html` (listado con filtros)
 - [ ] Crear/mejorar `pagos_form.html` (crear/editar pago)
 - [ ] Crear/mejorar `pagos_detalle.html` (ver pago completo)
@@ -282,6 +314,7 @@ static/js/
   - Calcular saldos en tiempo real
 
 **4. Flujo de Caja:**
+
 - [ ] Implementar vista `flujo_caja.html` (entradas/salidas del período)
 - [ ] Calcular saldo inicial, ingresos, egresos, saldo final
 - [ ] Añadir filtros por fecha, cuenta bancaria, tipo de movimiento
@@ -289,6 +322,7 @@ static/js/
 - [ ] Añadir proyección de flujo de caja (próximos 30 días)
 
 **5. Conciliación Bancaria:**
+
 - [ ] Crear vista de conciliación bancaria
 - [ ] Permitir importar extracto bancario (CSV o manual)
 - [ ] Comparar movimientos sistema vs banco
@@ -296,18 +330,21 @@ static/js/
 - [ ] Generar reporte de diferencias
 
 **6. Cuentas Bancarias:**
+
 - [ ] Completar CRUD de cuentas bancarias
 - [ ] Implementar dashboard de saldos de cuentas
 - [ ] Añadir histórico de movimientos por cuenta
 - [ ] Implementar transferencias entre cuentas
 
 **7. Tests y Documentación:**
+
 - [ ] Tests unitarios para modelo Pago y CuentaBancaria
 - [ ] Tests de integración con contabilidad
 - [ ] Tests de cálculo de flujo de caja
 - [ ] Documentar proceso de tesorería (manual de usuario)
 
 #### 📁 Archivos Principales:
+
 ```
 tesoreria/
 ├── models.py (Pago, CuentaBancaria)
@@ -339,6 +376,7 @@ static/js/
 ---
 
 ### 🟣 **RAMA: Estiven** → Reportes Contables y Catálogos (Estiven)
+
 **Responsabilidad:** Módulo de Reportes completo + mejorar Catálogos
 
 #### 📦 Tareas Asignadas:
@@ -346,12 +384,14 @@ static/js/
 **1. Completar Módulo de Reportes Contables:**
 
 **a) Libro Diario:**
+
 - [ ] Implementar `generar_libro_diario()` (consultar asientos del período)
 - [ ] Calcular totales de débitos y créditos
 - [ ] Implementar template `diario.html` con tabla de asientos
 - [ ] Implementar `exportar_libro_diario()` (PDF y Excel)
 
 **b) Libro Mayor:**
+
 - [ ] Implementar `generar_libro_mayor()` (consultar movimientos por cuenta)
 - [ ] Calcular saldos acumulados por cuenta
 - [ ] Implementar template `mayor.html` (lista de cuentas con saldo)
@@ -359,6 +399,7 @@ static/js/
 - [ ] Implementar `exportar_libro_mayor()` (PDF y Excel)
 
 **c) Balance de Comprobación:**
+
 - [ ] Implementar `generar_balance_comprobacion()` (sumas y saldos)
 - [ ] Calcular débitos, créditos y saldos por cuenta
 - [ ] Verificar que débitos = créditos (cuadre contable)
@@ -366,6 +407,7 @@ static/js/
 - [ ] Implementar `exportar_balance_comprobacion()` (PDF y Excel)
 
 **d) Estado de Resultados (P&G):**
+
 - [ ] Implementar `generar_estado_resultados()` (ingresos - gastos)
 - [ ] Clasificar cuentas en:
   - Ingresos operacionales (clase 4)
@@ -377,6 +419,7 @@ static/js/
 - [ ] Añadir comparativa con períodos anteriores (opcional)
 
 **e) Balance General:**
+
 - [ ] Implementar `generar_balance_general()` (activos/pasivos/patrimonio)
 - [ ] Clasificar cuentas en:
   - Activos (clase 1)
@@ -387,6 +430,7 @@ static/js/
 - [ ] Implementar `exportar_balance_general()` (PDF y Excel)
 
 **f) Flujo de Efectivo:**
+
 - [ ] Implementar `generar_flujo_efectivo()` (método directo o indirecto)
 - [ ] Clasificar movimientos de efectivo en:
   - Actividades operativas
@@ -397,6 +441,7 @@ static/js/
 - [ ] Implementar `exportar_flujo_efectivo()` (PDF y Excel)
 
 **2. Configuraciones y Utilidades:**
+
 - [ ] Implementar guardado de configuraciones de reportes
 - [ ] Permitir programar generación automática de reportes
 - [ ] Añadir validación de períodos contables
@@ -405,6 +450,7 @@ static/js/
 **3. Mejorar Módulo de Catálogos:**
 
 **a) Terceros (Clientes/Proveedores):**
+
 - [ ] Mejorar template `tercero_list.html` (añadir filtros)
 - [ ] Mejorar template `tercero_form.html` (validaciones frontend)
 - [ ] Añadir importación masiva de terceros (CSV/Excel)
@@ -412,6 +458,7 @@ static/js/
 - [ ] Añadir vista de estado de cuenta de tercero
 
 **b) Productos:**
+
 - [ ] Mejorar template `productos_lista.html` (añadir imágenes)
 - [ ] Mejorar template `productos_crear.html` (campos adicionales)
 - [ ] Implementar control de inventario básico
@@ -419,15 +466,18 @@ static/js/
 - [ ] Implementar búsqueda rápida de productos (AJAX)
 
 **c) Impuestos:**
+
 - [ ] Validar configuración de impuestos (porcentajes válidos)
 - [ ] Añadir soporte para múltiples impuestos en un producto
 - [ ] Implementar cálculo automático en facturación
 
 **d) Métodos de Pago:**
+
 - [ ] Completar CRUD (ya existe estructura básica)
 - [ ] Validar configuración de métodos (requiere referencia, etc.)
 
 **4. Tests y Documentación:**
+
 - [ ] Tests de generación de reportes (datos de prueba)
 - [ ] Tests de exportación PDF/Excel
 - [ ] Tests de módulo catálogos
@@ -435,6 +485,7 @@ static/js/
 - [ ] Crear manual de catálogos (cómo registrar terceros, productos, etc.)
 
 #### 📁 Archivos Principales:
+
 ```
 reportes/
 ├── models.py (ReporteGenerado, ConfiguracionReporte)
@@ -479,18 +530,19 @@ static/js/
 
 ## 📊 RESUMEN DE DISTRIBUCIÓN
 
-| Desarrollador | Módulos Principales | Módulos Secundarios | Complejidad | Horas Estimadas |
-|---------------|---------------------|---------------------|-------------|-----------------|
-| **Wiki** | Empresas + Administración | Middleware, Permisos | ⭐⭐⭐ Media | ~40-50 horas |
-| **Gabo** | Facturación + Ventas | PDF, Integración Contabilidad | ⭐⭐⭐⭐ Alta | ~50-60 horas |
-| **Sneyder** | Tesorería + Flujo Caja | Conciliación, Cuentas Bancarias | ⭐⭐⭐⭐ Alta | ~50-60 horas |
-| **Estiven** | Reportes Contables + Catálogos | Exportación PDF/Excel | ⭐⭐⭐⭐⭐ Muy Alta | ~60-70 horas |
+| Desarrollador | Módulos Principales            | Módulos Secundarios             | Complejidad         | Horas Estimadas |
+| ------------- | ------------------------------ | ------------------------------- | ------------------- | --------------- |
+| **Wiki**      | Empresas + Administración      | Middleware, Permisos            | ⭐⭐⭐ Media        | ~40-50 horas    |
+| **Gabo**      | Facturación + Ventas           | PDF, Integración Contabilidad   | ⭐⭐⭐⭐ Alta       | ~50-60 horas    |
+| **Sneyder**   | Tesorería + Flujo Caja         | Conciliación, Cuentas Bancarias | ⭐⭐⭐⭐ Alta       | ~50-60 horas    |
+| **Estiven**   | Reportes Contables + Catálogos | Exportación PDF/Excel           | ⭐⭐⭐⭐⭐ Muy Alta | ~60-70 horas    |
 
 ---
 
 ## 🔄 FLUJO DE TRABAJO RECOMENDADO
 
 ### 1. Branching Strategy
+
 ```bash
 # Cada desarrollador trabaja en su rama
 git checkout wiki      # Wiki en su rama
@@ -511,11 +563,13 @@ git merge master
 ```
 
 ### 2. Reuniones de Coordinación
+
 - **Daily standup (10 min):** ¿Qué hice ayer? ¿Qué haré hoy? ¿Tengo bloqueos?
 - **Weekly review (30 min):** Demo de avances, resolver dependencias entre módulos
 - **Code review:** Cada uno revisa PRs de otros (mínimo 1 aprobación para merge)
 
 ### 3. Dependencias entre Módulos
+
 - **Gabo (Facturación)** depende de:
   - Estiven (Catálogos) → productos, terceros, impuestos
   - Contabilidad (ya existe) → generar asientos
@@ -531,7 +585,9 @@ git merge master
 **Recomendación:** Estiven debe priorizar completar Catálogos primero para desbloquear a Gabo y Sneyder.
 
 ### 4. Criterios de Aceptación (Definition of Done)
+
 Para considerar una tarea completada:
+
 - [ ] Código implementado y funcionando
 - [ ] Templates HTML funcionales y responsive
 - [ ] Validaciones de negocio implementadas
@@ -547,6 +603,7 @@ Para considerar una tarea completada:
 ## 📅 CRONOGRAMA SUGERIDO (4 semanas)
 
 ### Semana 1: Fundamentos y Bases
+
 - **Todos:** Leer y entender el código base
 - **Wiki:** Revisar y documentar módulo de empresas
 - **Estiven:** Completar Catálogos (Terceros, Productos) → PRIORIDAD
@@ -554,18 +611,21 @@ Para considerar una tarea completada:
 - **Sneyder:** Diseñar templates de tesorería
 
 ### Semana 2: Desarrollo Core
+
 - **Wiki:** Mejorar UX/UI administrador, añadir filtros
 - **Estiven:** Terminar Catálogos y empezar Libro Diario/Mayor
 - **Gabo:** Implementar lógica de facturación (confirmar, anular)
 - **Sneyder:** Implementar lógica de tesorería (pagos, cobros)
 
 ### Semana 3: Integración y Reportes
+
 - **Wiki:** Tests y documentación de administración
 - **Estiven:** Completar todos los reportes contables
 - **Gabo:** Integración con contabilidad + generación de PDF
 - **Sneyder:** Flujo de caja + conciliación bancaria
 
 ### Semana 4: Pulido y Testing
+
 - **Todos:** Tests unitarios y de integración
 - **Todos:** Code review cruzado
 - **Todos:** Documentación de usuario final
@@ -576,6 +636,7 @@ Para considerar una tarea completada:
 ## 🛠️ HERRAMIENTAS Y RECURSOS
 
 ### Librerías Recomendadas
+
 ```bash
 # Generación de PDF
 pip install reportlab weasyprint
@@ -591,6 +652,7 @@ pip install pytest pytest-django pytest-cov
 ```
 
 ### Comandos Útiles
+
 ```powershell
 # Activar entorno virtual
 .\env\Scripts\Activate.ps1
@@ -615,6 +677,7 @@ python manage.py test [app_name]
 ```
 
 ### Recursos de Aprendizaje
+
 - **Django Docs:** https://docs.djangoproject.com/
 - **DRF Docs:** https://www.django-rest-framework.org/
 - **PUC Colombia:** https://www.ctcp.gov.co/ (plan de cuentas)
@@ -626,6 +689,7 @@ python manage.py test [app_name]
 ## 🎯 OBJETIVOS FINALES DEL PROYECTO
 
 Al completar todas las tareas, el sistema debe:
+
 1. ✅ Permitir gestionar múltiples empresas (holding)
 2. ✅ Permitir crear usuarios y asignarlos a empresas con roles
 3. ✅ Registrar clientes, proveedores, productos
@@ -651,12 +715,14 @@ Al completar todas las tareas, el sistema debe:
 ## ✅ CHECKLIST DE ENTREGA FINAL
 
 ### Por Desarrollador:
+
 - [ ] **Wiki:** Módulo de administración documentado y probado
 - [ ] **Gabo:** Facturación completa con PDF e integración contable
 - [ ] **Sneyder:** Tesorería completa con flujo de caja
 - [ ] **Estiven:** Reportes contables completos + catálogos funcionales
 
 ### General:
+
 - [ ] Todos los PRs mergeados a `master`
 - [ ] Migraciones aplicadas sin conflictos
 - [ ] Tests con cobertura mínima 60%

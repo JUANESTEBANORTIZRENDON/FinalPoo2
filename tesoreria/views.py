@@ -11,6 +11,7 @@ from decimal import Decimal
 import json
 from .models import Pago, CuentaBancaria, PagoDetalle
 from .forms import CobroForm
+from .services import ServicioTesoreria
 from facturacion.models import Factura
 from catalogos.models import Producto, Tercero
 from empresas.middleware import EmpresaFilterMixin
@@ -254,9 +255,15 @@ class EgresoCreateView(LoginRequiredMixin, CreateView):
     template_name = 'tesoreria/egresos_crear.html'
     fields = '__all__'
 
-class CuentaBancariaListView(LoginRequiredMixin, ListView):
+class CuentaBancariaListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_lista.html'
+    context_object_name = 'object_list'
+    paginate_by = 50
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.select_related('empresa', 'cuenta_contable').order_by('nombre')
 
 class CuentaBancariaDetailView(LoginRequiredMixin, DetailView):
     model = CuentaBancaria
@@ -278,12 +285,190 @@ class CuentaBancariaDeleteView(LoginRequiredMixin, DeleteView):
 
 class FlujoCajaView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/flujo_caja.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        empresa_activa = getattr(self.request, 'empresa_activa', None)
+        
+        if not empresa_activa:
+            return context
+        
+        # Obtener parámetros de filtro
+        fecha_inicio = self.request.GET.get('fecha_inicio')
+        fecha_fin = self.request.GET.get('fecha_fin')
+        cuenta_id = self.request.GET.get('cuenta')
+        
+        # Base queryset: solo pagos pagados de la empresa activa
+        movimientos = Pago.objects.filter(
+            empresa=empresa_activa,
+            estado='pagado'
+        ).select_related('tercero', 'cuenta_bancaria', 'metodo_pago')
+        
+        # Aplicar filtros
+        if fecha_inicio:
+            movimientos = movimientos.filter(fecha_pago__gte=fecha_inicio)
+            context['fecha_inicio'] = fecha_inicio
+        
+        if fecha_fin:
+            movimientos = movimientos.filter(fecha_pago__lte=fecha_fin)
+            context['fecha_fin'] = fecha_fin
+        
+        if cuenta_id:
+            movimientos = movimientos.filter(cuenta_bancaria_id=cuenta_id)
+            context['cuenta_id'] = cuenta_id
+        
+        # Ordenar por fecha
+        movimientos = movimientos.order_by('fecha_pago', 'id')
+        
+        # Calcular totales
+        total_ingresos = movimientos.filter(tipo_pago='cobro').aggregate(
+            total=models.Sum('valor')
+        )['total'] or 0
+        
+        total_egresos = movimientos.filter(tipo_pago='egreso').aggregate(
+            total=models.Sum('valor')
+        )['total'] or 0
+        
+        count_ingresos = movimientos.filter(tipo_pago='cobro').count()
+        count_egresos = movimientos.filter(tipo_pago='egreso').count()
+        
+        flujo_neto = total_ingresos - total_egresos
+        
+        # Calcular saldo acumulado para cada movimiento
+        saldo_acumulado = 0
+        movimientos_con_saldo = []
+        for mov in movimientos:
+            if mov.tipo_pago == 'cobro':
+                saldo_acumulado += mov.valor
+            else:
+                saldo_acumulado -= mov.valor
+            mov.saldo_acumulado = saldo_acumulado
+            movimientos_con_saldo.append(mov)
+        
+        # Obtener todas las cuentas bancarias para el filtro
+        cuentas = CuentaBancaria.objects.filter(
+            empresa=empresa_activa,
+            activo=True
+        ).order_by('nombre_banco')
+        
+        context.update({
+            'movimientos': movimientos_con_saldo,
+            'total_ingresos': total_ingresos,
+            'total_egresos': total_egresos,
+            'count_ingresos': count_ingresos,
+            'count_egresos': count_egresos,
+            'flujo_neto': flujo_neto,
+            'cuentas': cuentas,
+        })
+        
+        return context
 
 class SaldosCuentasView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/saldos_cuentas.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        empresa_activa = getattr(self.request, 'empresa_activa', None)
+        
+        if not empresa_activa:
+            return context
+        
+        # Obtener todas las cuentas bancarias activas
+        cuentas = CuentaBancaria.objects.filter(
+            empresa=empresa_activa,
+            activo=True
+        ).order_by('nombre_banco')
+        
+        cuentas_con_saldo = []
+        saldo_total = 0
+        
+        for cuenta in cuentas:
+            # Calcular ingresos (cobros)
+            ingresos = Pago.objects.filter(
+                empresa=empresa_activa,
+                cuenta_bancaria=cuenta,
+                tipo_pago='cobro',
+                estado='pagado'
+            ).aggregate(total=models.Sum('valor'))['total'] or 0
+            
+            # Calcular egresos
+            egresos = Pago.objects.filter(
+                empresa=empresa_activa,
+                cuenta_bancaria=cuenta,
+                tipo_pago='egreso',
+                estado='pagado'
+            ).aggregate(total=models.Sum('valor'))['total'] or 0
+            
+            # Saldo de la cuenta
+            saldo_cuenta = cuenta.saldo_inicial + ingresos - egresos
+            saldo_total += saldo_cuenta
+            
+            cuentas_con_saldo.append({
+                'cuenta': cuenta,
+                'ingresos': ingresos,
+                'egresos': egresos,
+                'saldo': saldo_cuenta,
+            })
+        
+        context.update({
+            'cuentas_con_saldo': cuentas_con_saldo,
+            'saldo_total': saldo_total,
+        })
+        
+        return context
 
 class PagosPeriodoView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/pagos_periodo.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        empresa_activa = getattr(self.request, 'empresa_activa', None)
+        
+        if not empresa_activa:
+            return context
+        
+        # Obtener parámetros de filtro
+        fecha_inicio = self.request.GET.get('fecha_inicio')
+        fecha_fin = self.request.GET.get('fecha_fin')
+        tipo_pago = self.request.GET.get('tipo_pago', '')
+        estado = self.request.GET.get('estado', '')
+        
+        # Base queryset
+        pagos = Pago.objects.filter(
+            empresa=empresa_activa
+        ).select_related('tercero', 'cuenta_bancaria', 'metodo_pago')
+        
+        # Aplicar filtros
+        if fecha_inicio:
+            pagos = pagos.filter(fecha_pago__gte=fecha_inicio)
+            context['fecha_inicio'] = fecha_inicio
+        
+        if fecha_fin:
+            pagos = pagos.filter(fecha_pago__lte=fecha_fin)
+            context['fecha_fin'] = fecha_fin
+        
+        if tipo_pago:
+            pagos = pagos.filter(tipo_pago=tipo_pago)
+            context['tipo_pago'] = tipo_pago
+        
+        if estado:
+            pagos = pagos.filter(estado=estado)
+            context['estado'] = estado
+        
+        # Ordenar por fecha descendente
+        pagos = pagos.order_by('-fecha_pago', '-id')
+        
+        # Calcular totales
+        total_pagos = pagos.aggregate(total=models.Sum('valor'))['total'] or 0
+        count_pagos = pagos.count()
+        
+        context.update({
+            'pagos': pagos[:100],  # Limitar a 100 registros
+            'total_pagos': total_pagos,
+            'count_pagos': count_pagos,
+        })
+        
+        return context
 
 @login_required
 @require_http_methods(["POST"])
@@ -688,3 +873,157 @@ def crear_cliente_ajax(request):
             'success': False,
             'error': f'Error al crear el cliente: {str(e)}'
         }, status=500)
+
+
+from django.views.generic import TemplateView
+from django.db.models import Sum, Count, Q
+from django.utils.dateparse import parse_date
+from django.http import HttpResponse
+import csv
+
+class PagosReporteView(LoginRequiredMixin, TemplateView):
+    template_name = 'tesoreria/pagos_reporte.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        qs = Pago.objects.all()
+        empresa = getattr(self.request, 'empresa_activa', None)
+        if empresa:
+            qs = qs.filter(empresa=empresa)
+
+        fecha_desde = self.request.GET.get('desde')
+        fecha_hasta = self.request.GET.get('hasta')
+        tipo = self.request.GET.get('tipo')
+        estado = self.request.GET.get('estado')
+
+        if fecha_desde:
+            qs = qs.filter(fecha__date__gte=parse_date(fecha_desde))
+        if fecha_hasta:
+            qs = qs.filter(fecha__date__lte=parse_date(fecha_hasta))
+        if tipo in dict(Pago.TIPO_PAGO_CHOICES):
+            qs = qs.filter(tipo=tipo)
+        if estado in dict(Pago.ESTADO_CHOICES):
+            qs = qs.filter(estado=estado)
+
+        agregados = qs.aggregate(
+            total_valor=Sum('valor'),
+            total_registros=Count('id'),
+            total_pendientes=Count('id', filter=Q(estado='pendiente')),
+            total_aprobados=Count('id', filter=Q(estado='aprobado')),
+            total_anulados=Count('id', filter=Q(estado='anulado')),
+        )
+        ctx['pagos'] = qs.select_related('empresa', 'cliente')
+        ctx['agregados'] = agregados
+        return ctx
+
+@login_required
+def pagos_reporte_csv(request):
+    qs = Pago.objects.all()
+    empresa = getattr(request, 'empresa_activa', None)
+    if empresa:
+        qs = qs.filter(empresa=empresa)
+
+    fecha_desde = request.GET.get('desde')
+    fecha_hasta = request.GET.get('hasta')
+    tipo = request.GET.get('tipo')
+    estado = request.GET.get('estado')
+
+    if fecha_desde:
+        qs = qs.filter(fecha__date__gte=parse_date(fecha_desde))
+    if fecha_hasta:
+        qs = qs.filter(fecha__date__lte=parse_date(fecha_hasta))
+    if tipo in dict(Pago.TIPO_PAGO_CHOICES):
+        qs = qs.filter(tipo=tipo)
+    if estado in dict(Pago.ESTADO_CHOICES):
+        qs = qs.filter(estado=estado)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="reporte_pagos.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'Fecha', 'Tipo', 'Estado', 'Cliente', 'Valor'])
+    for p in qs.select_related('cliente'):
+        writer.writerow([p.id, getattr(p, 'fecha', ''), p.tipo, p.estado, getattr(p.cliente, 'razon_social', ''), p.valor])
+    return response
+
+
+@login_required
+@require_http_methods(["POST"])
+def enviar_factura_email(request, factura_pk):
+    factura = get_object_or_404(Factura, pk=factura_pk)
+    empresa_activa = getattr(request, 'empresa_activa', None)
+    if factura.empresa != empresa_activa:
+        messages.error(request, 'No tienes permiso para enviar esta factura.')
+        return redirect('facturacion:facturas_lista')
+
+    # Reusar PDF generado por la vista existente
+    response = generar_factura_pdf(request, factura_pk)
+    if getattr(response, 'status_code', 500) != 200 or response.get('Content-Type') != 'application/pdf':
+        messages.error(request, 'No fue posible generar el PDF.')
+        return redirect('facturacion:facturas_detalle', pk=factura_pk)
+
+    pdf_bytes = response.content
+    from .services.emailing import send_invoice_email
+    destinatario = getattr(factura.cliente, 'email', None)
+    try:
+        send_invoice_email(factura, pdf_bytes, destinatario)
+        messages.success(request, 'Factura enviada correctamente.')
+    except Exception as e:
+        messages.error(request, f'Error enviando email: {e}')
+    return redirect('facturacion:facturas_detalle', pk=factura_pk)
+
+
+# ========== VISTAS DE ACCIONES DE TESORERÍA ==========
+
+@login_required
+@require_http_methods(["POST"])
+def confirmar_pago(request, pk):
+    """
+    Confirma un pago pendiente.
+    """
+    pago = get_object_or_404(Pago, pk=pk, empresa=request.empresa_activa)
+    
+    success, message = ServicioTesoreria.confirmar_pago(pago, request.user)
+    
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+    
+    return redirect('tesoreria:pagos_detalle', pk=pk)
+
+
+@login_required
+@require_http_methods(["POST"])
+def anular_pago(request, pk):
+    """
+    Anula un pago.
+    """
+    pago = get_object_or_404(Pago, pk=pk, empresa=request.empresa_activa)
+    motivo = request.POST.get('motivo', '')
+    
+    success, message = ServicioTesoreria.anular_pago(pago, motivo)
+    
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+    
+    return redirect('tesoreria:pagos_detalle', pk=pk)
+
+
+@login_required
+@require_http_methods(["POST"])
+def marcar_pago_pagado(request, pk):
+    """
+    Marca un pago como pagado.
+    """
+    pago = get_object_or_404(Pago, pk=pk, empresa=request.empresa_activa)
+    
+    success, message = ServicioTesoreria.marcar_pago_como_pagado(pago, request.user)
+    
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+    
+    return redirect('tesoreria:pagos_detalle', pk=pk)

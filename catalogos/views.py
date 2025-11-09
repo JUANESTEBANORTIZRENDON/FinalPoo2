@@ -87,27 +87,40 @@ class ImpuestoDeleteView(LoginRequiredMixin, DeleteView):
     model = Impuesto
     template_name = 'catalogos/impuestos_eliminar.html'
 
-class MetodoPagoListView(LoginRequiredMixin, ListView):
+class MetodoPagoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_lista.html'
+    context_object_name = 'object_list'
+    paginate_by = 50
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.order_by('nombre')
 
-class MetodoPagoDetailView(LoginRequiredMixin, DetailView):
+class MetodoPagoDetailView(LoginRequiredMixin, EmpresaFilterMixin, DetailView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_detalle.html'
 
-class MetodoPagoCreateView(LoginRequiredMixin, CreateView):
+class MetodoPagoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_crear.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_metodo', 'requiere_referencia', 'activo']
+    success_url = reverse_lazy('catalogos:metodos_pago_lista')
+    
+    def form_valid(self, form):
+        form.instance.empresa = self.request.empresa_activa
+        return super().form_valid(form)
 
-class MetodoPagoUpdateView(LoginRequiredMixin, UpdateView):
+class MetodoPagoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_editar.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_metodo', 'requiere_referencia', 'activo']
+    success_url = reverse_lazy('catalogos:metodos_pago_lista')
 
-class MetodoPagoDeleteView(LoginRequiredMixin, DeleteView):
+class MetodoPagoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_eliminar.html'
+    success_url = reverse_lazy('catalogos:metodos_pago_lista')
 
 class ProductoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = Producto

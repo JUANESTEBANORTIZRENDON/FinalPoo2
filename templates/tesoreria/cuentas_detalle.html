@@ -1,0 +1,114 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Detalle Cuenta - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-university text-primary"></i>
+                                {{ object.nombre }}
+                            </h2>
+                            <p class="text-muted mb-0">Código: {{ object.codigo }}</p>
+                        </div>
+                        <div>
+                            <a href="{% url 'tesoreria:cuentas_editar' object.pk %}" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="{% url 'tesoreria:cuentas_lista' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de la Cuenta -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Información General</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Código:</th>
+                            <td>{{ object.codigo }}</td>
+                        </tr>
+                        <tr>
+                            <th>Nombre:</th>
+                            <td>{{ object.nombre }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tipo de Cuenta:</th>
+                            <td>
+                                {% if object.tipo_cuenta == 'ahorros' %}
+                                    <span class="badge bg-info">Ahorros</span>
+                                {% elif object.tipo_cuenta == 'corriente' %}
+                                    <span class="badge bg-primary">Corriente</span>
+                                {% elif object.tipo_cuenta == 'caja' %}
+                                    <span class="badge bg-success">Caja</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Banco:</th>
+                            <td>{{ object.banco|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Número de Cuenta:</th>
+                            <td>{{ object.numero_cuenta|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Estado:</th>
+                            <td>
+                                {% if object.activa %}
+                                    <span class="badge bg-success">Activa</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactiva</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign"></i> Saldo</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Saldo Actual</h6>
+                    <h1 class="{% if object.saldo_actual >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        ${{ object.saldo_actual|floatformat:2 }}
+                    </h1>
+                </div>
+            </div>
+
+            {% if object.cuenta_contable %}
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-book"></i> Cuenta Contable</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">
+                        <strong>{{ object.cuenta_contable.codigo }}</strong> - {{ object.cuenta_contable.nombre }}
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Flujo de Caja - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-chart-line text-primary"></i>
+                                Flujo de Caja
+                            </h2>
+                            <p class="text-muted mb-0">Análisis de ingresos y egresos de {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="{% url 'tesoreria:index' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter"></i>
+                        Filtros de Búsqueda
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" id="filtroForm">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha Inicio</label>
+                                <input type="date" name="fecha_inicio" class="form-control" 
+                                       value="{{ fecha_inicio|default:'' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha Fin</label>
+                                <input type="date" name="fecha_fin" class="form-control" 
+                                       value="{{ fecha_fin|default:'' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Cuenta Bancaria</label>
+                                <select name="cuenta" class="form-select">
+                                    <option value="">Todas las cuentas</option>
+                                    {% for cuenta in cuentas %}
+                                        <option value="{{ cuenta.id }}" {% if cuenta_id == cuenta.id|stringformat:'s' %}selected{% endif %}>
+                                            {{ cuenta.nombre_banco }} - {{ cuenta.numero_cuenta }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Ingresos</h6>
+                            <h3 class="mb-0 text-success">${{ total_ingresos|floatformat:2|default:'0.00' }}</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-arrow-up fa-2x text-success"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ count_ingresos|default:0 }} transacciones</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Egresos</h6>
+                            <h3 class="mb-0 text-danger">${{ total_egresos|floatformat:2|default:'0.00' }}</h3>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-arrow-down fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ count_egresos|default:0 }} transacciones</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Flujo Neto</h6>
+                            <h3 class="mb-0 {% if flujo_neto >= 0 %}text-primary{% else %}text-warning{% endif %}">
+                                ${{ flujo_neto|floatformat:2|default:'0.00' }}
+                            </h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-balance-scale fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">Diferencia neta</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Movimientos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i>
+                        Detalle de Movimientos
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if movimientos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Tipo</th>
+                                        <th>Tercero</th>
+                                        <th>Concepto</th>
+                                        <th>Cuenta</th>
+                                        <th>Método</th>
+                                        <th class="text-end">Ingresos</th>
+                                        <th class="text-end">Egresos</th>
+                                        <th class="text-end">Saldo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mov in movimientos %}
+                                    <tr>
+                                        <td>{{ mov.fecha_pago|date:'d/m/Y' }}</td>
+                                        <td>
+                                            {% if mov.tipo_pago == 'cobro' %}
+                                                <span class="badge bg-success">Cobro</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Egreso</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ mov.tercero.nombre|truncatewords:3 }}</td>
+                                        <td>{{ mov.concepto|truncatewords:5 }}</td>
+                                        <td>{{ mov.cuenta_bancaria.nombre_banco|default:'-' }}</td>
+                                        <td>{{ mov.metodo_pago.nombre|default:'-' }}</td>
+                                        <td class="text-end text-success">
+                                            {% if mov.tipo_pago == 'cobro' %}
+                                                ${{ mov.valor|floatformat:2 }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end text-danger">
+                                            {% if mov.tipo_pago == 'egreso' %}
+                                                ${{ mov.valor|floatformat:2 }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end"><strong>${{ mov.saldo_acumulado|floatformat:2 }}</strong></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay movimientos en el período seleccionado.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

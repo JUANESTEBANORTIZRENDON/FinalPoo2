@@ -1,0 +1,53 @@
+
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h1>Reporte de Pagos</h1>
+<form method="get" class="grid grid-cols-5 gap-2">
+  <input type="date" name="desde" value="{{ request.GET.desde }}"/>
+  <input type="date" name="hasta" value="{{ request.GET.hasta }}"/>
+  <select name="tipo">
+    <option value="">Todos</option>
+    {% for val,label in object.model.TIPO_PAGO_CHOICES %}
+      <option value="{{ val }}" {% if request.GET.tipo == val %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="estado">
+    <option value="">Todos</option>
+    {% for val,label in object.model.ESTADO_CHOICES %}
+      <option value="{{ val }}" {% if request.GET.estado == val %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Filtrar</button>
+  <a href="{% url 'tesoreria:pagos_reporte_csv' %}?{{ request.META.QUERY_STRING }}">Exportar CSV</a>
+</form>
+
+<section>
+  <h3>Totales</h3>
+  <ul>
+    <li>Total Valor: {{ agregados.total_valor|default:0 }}</li>
+    <li>Registros: {{ agregados.total_registros|default:0 }}</li>
+    <li>Pendientes: {{ agregados.total_pendientes|default:0 }}</li>
+    <li>Aprobados: {{ agregados.total_aprobados|default:0 }}</li>
+    <li>Anulados: {{ agregados.total_anulados|default:0 }}</li>
+  </ul>
+</section>
+
+<table>
+  <thead><tr><th>ID</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Cliente</th><th>Valor</th></tr></thead>
+  <tbody>
+    {% for p in pagos %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.fecha|date:'Y-m-d H:i' }}</td>
+        <td>{{ p.get_tipo_display }}</td>
+        <td>{{ p.get_estado_display }}</td>
+        <td>{{ p.cliente.razon_social }}</td>
+        <td>{{ p.valor }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">Sin datos</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
