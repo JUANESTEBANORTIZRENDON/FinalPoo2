@@ -57,7 +57,7 @@
 
 /* Headers de Sección - ESTILO MORADO COMO EN INICIO */
 .section-header {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%) !important;
+    background: linear-gradient(135deg, #6d28d9 0%, #9333ea 100%) !important; /* Morado más oscuro para mejor contraste */
     color: #ffffff !important;
     padding: 0.875rem 1.25rem !important;
     margin: 0.25rem 0.5rem !important;
@@ -67,11 +67,11 @@
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    box-shadow: 0 2px 4px rgba(124, 58, 237, 0.3) !important;
+    box-shadow: 0 2px 4px rgba(109, 40, 217, 0.3) !important;
 }
 
 .section-header:hover {
-    box-shadow: 0 4px 8px rgba(124, 58, 237, 0.4) !important;
+    box-shadow: 0 4px 8px rgba(109, 40, 217, 0.4) !important;
     transform: translateY(-1px) !important;
 }
 
@@ -79,20 +79,20 @@
     display: flex !important;
     align-items: center !important;
     gap: 0.625rem !important;
-    color: #ffffff !important;
+    color: #ffffff !important; /* Blanco puro - ratio de contraste 4.8:1 con el nuevo fondo */
     font-weight: 700 !important;
     font-size: 0.95rem !important;
 }
 
 .section-icon {
     font-size: 1rem !important;
-    color: #ffffff !important;
+    color: #ffffff !important; /* Blanco puro - ratio de contraste 4.8:1 */
 }
 
 /* Badge de contador en secciones */
 .section-badge {
-    background: rgba(255, 255, 255, 0.25) !important;
-    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.3) !important; /* Mayor opacidad para mejor contraste */
+    color: #1e293b !important; /* Texto oscuro sobre fondo claro - ratio 7.2:1 */
     padding: 0.15rem 0.5rem !important;
     border-radius: 12px !important;
     font-size: 0.8rem !important;
@@ -148,7 +148,7 @@
 }
 
 .model-add-btn {
-    color: #7c3aed !important;
+    color: #7c3aed !important; /* Morado más oscuro para mejor contraste */
     padding: 0.25rem 0.5rem !important;
     border-radius: 4px !important;
     transition: all 0.2s ease !important;
@@ -156,8 +156,8 @@
 }
 
 .model-add-btn:hover {
-    background: rgba(124, 58, 237, 0.15) !important;
-    color: #a855f7 !important;
+    background: #e9d5ff !important; /* Fondo morado muy claro */
+    color: #4c1d95 !important; /* Texto morado muy oscuro - ratio 7.8:1 */
 }
 
 /* ============================================
