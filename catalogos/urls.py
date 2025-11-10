@@ -33,7 +33,7 @@ urlpatterns = [
     path('productos/crear/', views.ProductoCreateView.as_view(), name='producto_create'),
     path('productos/<int:pk>/', views.ProductoDetailView.as_view(), name='producto_detail'),
     path('productos/<int:pk>/editar/', views.ProductoUpdateView.as_view(), name='producto_update'),
-    path('productos/<int:pk>/eliminar/', views.ProductoDeleteView.as_view(), name='producto_delete'),
+    path('productos/<int:pk>/toggle-activo/', views.producto_toggle_activo, name='producto_toggle_activo'),
     
     # AJAX endpoints para búsquedas
     path('api/terceros/buscar/', views.buscar_terceros, name='api_buscar_terceros'),
