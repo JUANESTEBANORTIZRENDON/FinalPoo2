@@ -339,7 +339,7 @@ function agregarFila() {
         <td>
             <select class="form-select form-select-sm" name="producto_${filaCounter}" onchange="actualizarPrecio(${filaCounter})" required>
                 <option value="">Seleccionar...</option>
-                ${productos.map(p => `<option value="${p.id}" data-precio="${p.precio}">${p.nombre} - $${parseFloat(p.precio).toFixed(2)}</option>`).join('')}
+                ${productos.map(p => `<option value="${p.id}" data-precio="${p.precio}">${p.nombre} - $${Number.parseFloat(p.precio).toFixed(2)}</option>`).join('')}
             </select>
         </td>
         <td>
@@ -372,7 +372,7 @@ function actualizarPrecio(index) {
     
     if (select.value) {
         const option = select.options[select.selectedIndex];
-        const precio = parseFloat(option.getAttribute('data-precio'));
+        const precio = Number.parseFloat(option.getAttribute('data-precio'));
         precioInput.value = precio.toFixed(2);
         calcularSubtotal(index);
     } else {
@@ -383,8 +383,8 @@ function actualizarPrecio(index) {
 
 // Calcular subtotal de una fila
 function calcularSubtotal(index) {
-    const cantidad = parseFloat(document.querySelector(`input[name="cantidad_${index}"]`).value) || 0;
-    const precio = parseFloat(document.querySelector(`input[name="precio_${index}"]`).value) || 0;
+    const cantidad = Number.parseFloat(document.querySelector(`input[name="cantidad_${index}"]`).value) || 0;
+    const precio = Number.parseFloat(document.querySelector(`input[name="precio_${index}"]`).value) || 0;
     const subtotal = cantidad * precio;
     
     document.getElementById(`subtotal_${index}`).value = `$${subtotal.toFixed(2)}`;
@@ -398,8 +398,8 @@ function calcularTotal() {
     for (let i = 0; i < filaCounter; i++) {
         const fila = document.getElementById(`fila-${i}`);
         if (fila) {
-            const cantidad = parseFloat(document.querySelector(`input[name="cantidad_${i}"]`).value) || 0;
-            const precio = parseFloat(document.querySelector(`input[name="precio_${i}"]`).value) || 0;
+            const cantidad = Number.parseFloat(document.querySelector(`input[name="cantidad_${i}"]`).value) || 0;
+            const precio = Number.parseFloat(document.querySelector(`input[name="precio_${i}"]`).value) || 0;
             total += cantidad * precio;
         }
     }
@@ -431,7 +431,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
         return false;
     }
     
-    const total = parseFloat(document.getElementById('valor-total').value);
+    const total = Number.parseFloat(document.getElementById('valor-total').value);
     if (total <= 0) {
         e.preventDefault();
         alert('El total del cobro debe ser mayor a cero');
