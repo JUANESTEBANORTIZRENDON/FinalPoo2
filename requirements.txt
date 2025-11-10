@@ -14,6 +14,7 @@ psycopg2-binary==2.9.11
 PyJWT==2.10.1
 python-dotenv==1.1.1
 pytz==2025.2
+sendgrid==6.11.0
 setuptools==80.9.0
 sqlparse==0.5.3
 typing_extensions==4.15.0
