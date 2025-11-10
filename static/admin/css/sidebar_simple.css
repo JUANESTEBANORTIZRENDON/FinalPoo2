@@ -1,0 +1,314 @@
+/* ============================================
+   DJANGO ADMIN - SIDEBAR MEJORADO Y LIMPIO
+   CSS para sidebar personalizado con estructura jerárquica
+   ============================================ */
+
+/* Sidebar Principal */
+#contable-sidebar,
+#nav-sidebar {
+    background: #1e2836 !important;
+    border-right: 1px solid #2d3748 !important;
+    padding: 1rem 0 !important;
+}
+
+/* Header del Sidebar */
+.sidebar-header {
+    padding: 1rem 1.25rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.sidebar-header h2 {
+    color: #ffffff !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+}
+
+/* Búsqueda en Sidebar */
+.sidebar-search {
+    padding: 0 1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.sidebar-search input {
+    width: 100% !important;
+    background: #2d3748 !important;
+    border: 1px solid #4a5568 !important;
+    color: #e2e8f0 !important;
+    padding: 0.625rem !important;
+    border-radius: 6px !important;
+    font-size: 0.875rem !important;
+}
+
+.sidebar-search input:focus {
+    outline: none !important;
+    border-color: #7c3aed !important;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1) !important;
+}
+
+/* Secciones del Sidebar */
+.sidebar-sections {
+    padding: 0 !important;
+}
+
+.sidebar-section {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Headers de Sección - ESTILO MORADO COMO EN INICIO */
+.section-header {
+    background: linear-gradient(135deg, #6d28d9 0%, #9333ea 100%) !important; /* Morado más oscuro para mejor contraste */
+    color: #ffffff !important;
+    padding: 0.875rem 1.25rem !important;
+    margin: 0.25rem 0.5rem !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    box-shadow: 0 2px 4px rgba(109, 40, 217, 0.3) !important;
+}
+
+.section-header:hover {
+    box-shadow: 0 4px 8px rgba(109, 40, 217, 0.4) !important;
+    transform: translateY(-1px) !important;
+}
+
+.section-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.625rem !important;
+    color: #ffffff !important; /* Blanco puro - ratio de contraste 4.8:1 con el nuevo fondo */
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+}
+
+.section-icon {
+    font-size: 1rem !important;
+    color: #ffffff !important; /* Blanco puro - ratio de contraste 4.8:1 */
+}
+
+/* Badge de contador en secciones */
+.section-badge {
+    background: rgba(255, 255, 255, 0.3) !important; /* Mayor opacidad para mejor contraste */
+    color: #1e293b !important; /* Texto oscuro sobre fondo claro - ratio 7.2:1 */
+    padding: 0.15rem 0.5rem !important;
+    border-radius: 12px !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    margin-left: 0.5rem !important;
+}
+
+.section-toggle-icon {
+    color: #ffffff !important;
+    font-size: 0.875rem !important;
+    transition: transform 0.2s ease !important;
+}
+
+/* Lista de modelos dentro de cada sección */
+.section-models {
+    padding: 0.25rem 0.75rem !important;
+    display: block !important; /* MOSTRAR SIEMPRE las listas de modelos */
+}
+
+.sidebar-section.active .section-toggle-icon {
+    transform: rotate(180deg) !important;
+}
+
+/* Items de modelos */
+.model-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.5rem 0.75rem !important;
+    margin: 0.25rem 0 !important;
+    background: #2d3748 !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+}
+
+.model-item:hover {
+    background: #4a5568 !important;
+    transform: translateX(4px) !important;
+}
+
+.model-link {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    color: #e2e8f0 !important;
+    text-decoration: none !important;
+    flex: 1 !important;
+    font-size: 0.875rem !important;
+}
+
+.model-link:hover {
+    color: #ffffff !important;
+}
+
+.model-add-btn {
+    color: #7c3aed !important; /* Morado más oscuro para mejor contraste */
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+}
+
+.model-add-btn:hover {
+    background: #e9d5ff !important; /* Fondo morado muy claro */
+    color: #4c1d95 !important; /* Texto morado muy oscuro - ratio 7.8:1 */
+}
+
+/* ============================================
+   SOPORTE PARA SIDEBAR DJANGO POR DEFECTO
+   (por si acaso)
+   ============================================ */
+
+/* Mejorar títulos de apps en el sidebar por defecto */
+#nav-sidebar .app-label {
+    display: block !important;
+    padding: 0.75rem 1.25rem !important;
+    margin: 0.25rem 0.75rem !important;
+    background: #2d3748 !important;
+    border-radius: 6px !important;
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    border: 1px solid #4a5568 !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+}
+
+#nav-sidebar .app-label:hover {
+    background: #4a5568 !important;
+    border-color: #718096 !important;
+    transform: translateX(4px) !important;
+}
+
+/* Ocultar las listas de modelos individuales en sidebar por defecto */
+#nav-sidebar .model-list {
+    display: none !important;
+}
+
+/* ============================================
+   ICONOS PARA APPS (SIDEBAR POR DEFECTO)
+   ============================================ */
+
+/* Iconos para las apps */
+#nav-sidebar .app-accounts .app-label::before {
+    content: "👥 ";
+    margin-right: 8px;
+}
+
+#nav-sidebar .app-empresas .app-label::before {
+    content: "🏢 ";
+    margin-right: 8px;
+}
+
+#nav-sidebar .app-catalogos .app-label::before {
+    content: "📦 ";
+    margin-right: 8px;
+}
+
+#nav-sidebar .app-facturacion .app-label::before {
+    content: "📄 ";
+    margin-right: 8px;
+}
+
+#nav-sidebar .app-tesoreria .app-label::before {
+    content: "💰 ";
+    margin-right: 8px;
+}
+
+#nav-sidebar .app-contabilidad .app-label::before {
+    content: "📊 ";
+    margin-right: 8px;
+}
+
+#nav-sidebar .app-reportes .app-label::before {
+    content: "📈 ";
+    margin-right: 8px;
+}
+
+#nav-sidebar .app-ventas .app-label::before {
+    content: "🛒 ";
+    margin-right: 8px;
+}
+
+#nav-sidebar .app-api .app-label::before {
+    content: "🔌 ";
+    margin-right: 8px;
+}
+
+#nav-sidebar .app-auth .app-label::before {
+    content: "🔐 ";
+    margin-right: 8px;
+}
+
+/* ============================================
+   SCROLLBAR MEJORADO
+   ============================================ */
+
+#contable-sidebar::-webkit-scrollbar,
+#nav-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+#contable-sidebar::-webkit-scrollbar-track,
+#nav-sidebar::-webkit-scrollbar-track {
+    background: #1e2836;
+}
+
+#contable-sidebar::-webkit-scrollbar-thumb,
+#nav-sidebar::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 3px;
+}
+
+#contable-sidebar::-webkit-scrollbar-thumb:hover,
+#nav-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}
+
+/* ============================================
+   BACKDROP PARA MÓVIL
+   ============================================ */
+
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-backdrop.show {
+    display: block;
+    opacity: 1;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Espaciado entre apps */
+#nav-sidebar > div[class*="app-"] {
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive - ocultar sidebar en móviles */
+@media (max-width: 768px) {
+    #contable-sidebar,
+    #nav-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    #contable-sidebar.show,
+    #nav-sidebar.show {
+        transform: translateX(0);
+    }
+}

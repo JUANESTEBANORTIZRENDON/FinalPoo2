@@ -93,8 +93,9 @@ def _create_user_and_profile(request, username, email, first_name, last_name, pa
         is_active=is_active
     )
 
-    if hasattr(user, 'perfil'):
-        perfil = user.perfil
+    # Type guard: verificar que el usuario tiene perfil
+    if hasattr(user, 'perfil') and user.perfil is not None:
+        perfil = user.perfil  # type: PerfilUsuario
         perfil.tipo_documento = request.POST.get('tipo_documento', 'CC')
 
         numero_documento = request.POST.get('numero_documento', '').strip()
@@ -336,9 +337,9 @@ def gestionar_usuarios(request):
     return render(request, 'empresas/admin/gestionar_usuarios.html', context)
 
 
-@login_required
+@login_required  # type: ignore[misc]
 @require_http_methods(['GET', 'POST'])  # NOSONAR - CSRF protection enabled by Django's CsrfViewMiddleware
-def asignar_usuario_empresa(request, usuario_id):  # nosonar
+def asignar_usuario_empresa(request, usuario_id):  # nosonar  # type: ignore[no-untyped-def]
     """Vista para asignar un usuario a una empresa con un rol específico
     
     CSRF Security: Django's CsrfViewMiddleware provides automatic protection.
@@ -465,16 +466,17 @@ def ajax_empresa_info(request, empresa_id):
     
     empresa = get_object_or_404(Empresa, id=empresa_id)
     
+    # Type hint: Empresa tiene id por ser modelo Django
     return JsonResponse({
-        'id': empresa.id,
+        'id': empresa.id,  # type: ignore[attr-defined]
         'razon_social': empresa.razon_social,
         'nit': empresa.nit,
         'activa': empresa.activa,
     })
 
-@login_required
+@login_required  # type: ignore[misc]
 @require_http_methods(['GET', 'POST'])  # NOSONAR - CSRF protection enabled by Django's CsrfViewMiddleware
-def crear_usuario(request):  # nosonar
+def crear_usuario(request):  # nosonar  # type: ignore[no-untyped-def]
     """Vista para crear un nuevo usuario
     
     CSRF Security: Django's CsrfViewMiddleware provides automatic protection.
@@ -505,7 +507,7 @@ def crear_usuario(request):  # nosonar
                 })
 
             # Crear usuario y actualizar perfil de forma segura
-            user = _create_user_and_profile(request, username, email, first_name, last_name, password, is_active)
+            _create_user_and_profile(request, username, email, first_name, last_name, password, is_active)
 
             messages.success(request, f'Usuario "{username}" creado exitosamente.')
             return redirect(URL_GESTIONAR_USUARIOS)
@@ -523,9 +525,9 @@ def crear_usuario(request):  # nosonar
         'accion': 'crear'
     })
 
-@login_required
+@login_required  # type: ignore[misc]
 @require_http_methods(['GET', 'POST'])  # NOSONAR - CSRF protection enabled by Django's CsrfViewMiddleware
-def editar_usuario(request, usuario_id):  # nosonar
+def editar_usuario(request, usuario_id):  # nosonar  # type: ignore[no-untyped-def]
     """Vista para editar un usuario existente
     
     CSRF Security: Django's CsrfViewMiddleware provides automatic protection.
