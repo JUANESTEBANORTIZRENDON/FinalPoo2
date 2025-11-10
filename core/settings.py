@@ -28,9 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # La SECRET_KEY SIEMPRE debe estar en variables de entorno (archivo .env o Render)
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise ValueError(
         "❌ SECRET_KEY no está configurada.\n"
@@ -40,89 +40,84 @@ if not SECRET_KEY:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 # https://docs.djangoproject.com/en/3.0/ref/settings/#allowed-hosts
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-    ALLOWED_HOSTS.append('*.onrender.com')
+    ALLOWED_HOSTS.append("*.onrender.com")
 
 # CSRF Trusted Origins para Render
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.onrender.com',
-    'https://finalpoo2.onrender.com',
+    "https://*.onrender.com",
+    "https://finalpoo2.onrender.com",
 ]
 if DEBUG:
-    CSRF_TRUSTED_ORIGINS.extend(['http://127.0.0.1:8000', 'http://localhost:8000'])
+    CSRF_TRUSTED_ORIGINS.extend(["http://127.0.0.1:8000", "http://localhost:8000"])
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Django REST Framework + JWT
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',  # Para logout seguro
-    'corsheaders',  # Para CORS en API
-    
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",  # Para logout seguro
+    "corsheaders",  # Para CORS en API
     # Apps del proyecto
-    'core.apps.CoreConfig',  # AdminSite personalizado y template tags
-    'accounts',
-    'api',  # Nueva app para API
-    
+    "core.apps.CoreConfig",  # AdminSite personalizado y template tags
+    "accounts",
+    "api",  # Nueva app para API
     # Apps del sistema contable
-    'empresas',      # Gestión de empresas y roles multi-empresa
-    'catalogos',     # Terceros, impuestos, métodos de pago, productos
-    'facturacion',   # Facturas de venta y detalles
-    'tesoreria',     # Pagos, cobros y cuentas bancarias
-    'contabilidad',  # Plan de cuentas, asientos y partidas
-    'reportes',      # Reportes contables y configuraciones
+    "empresas",  # Gestión de empresas y roles multi-empresa
+    "catalogos",  # Terceros, impuestos, métodos de pago, productos
+    "facturacion",  # Facturas de venta y detalles
+    "tesoreria",  # Pagos, cobros y cuentas bancarias
+    "contabilidad",  # Plan de cuentas, asientos y partidas
+    "reportes",  # Reportes contables y configuraciones
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # DEBE ir justo después de SecurityMiddleware
-    'corsheaders.middleware.CorsMiddleware',  # CORS debe ir temprano
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'core.middleware.DevCSRFMiddleware',  # Middleware personalizado para desarrollo
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # DEBE ir justo después de SecurityMiddleware
+    "corsheaders.middleware.CorsMiddleware",  # CORS debe ir temprano
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "core.middleware.DevCSRFMiddleware",  # Middleware personalizado para desarrollo
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # Middleware personalizado para sistema multi-empresa
-    'empresas.middleware.EmpresaActivaMiddleware',
-    
+    "empresas.middleware.EmpresaActivaMiddleware",
     # Middleware para historial de cambios
-    'empresas.middleware_historial.ThreadLocalMiddleware',
-    'empresas.middleware_historial.HistorialCambiosMiddleware',
+    "empresas.middleware_historial.ThreadLocalMiddleware",
+    "empresas.middleware_historial.HistorialCambiosMiddleware",
 ]
-ROOT_URLCONF = 'core.urls'
+ROOT_URLCONF = "core.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'core.wsgi.application'
+WSGI_APPLICATION = "core.wsgi.application"
 
 
 # Database
@@ -132,14 +127,14 @@ WSGI_APPLICATION = 'core.wsgi.application'
 tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': tmpPostgres.path.replace('/', ''),
-        'USER': tmpPostgres.username,
-        'PASSWORD': tmpPostgres.password,
-        'HOST': tmpPostgres.hostname,
-        'PORT': 5432,
-        'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": tmpPostgres.path.replace("/", ""),
+        "USER": tmpPostgres.username,
+        "PASSWORD": tmpPostgres.password,
+        "HOST": tmpPostgres.hostname,
+        "PORT": 5432,
+        "OPTIONS": dict(parse_qsl(tmpPostgres.query)),
     }
 }
 
@@ -149,16 +144,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -166,9 +161,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'es-co'  # Español de Colombia
+LANGUAGE_CODE = "es-co"  # Español de Colombia
 
-TIME_ZONE = 'America/Bogota'  # Zona horaria de Colombia
+TIME_ZONE = "America/Bogota"  # Zona horaria de Colombia
 
 USE_I18N = True
 
@@ -176,17 +171,17 @@ USE_TZ = True
 
 # Configuración de localización
 LOCALE_PATHS = [
-    BASE_DIR / 'locale',
+    BASE_DIR / "locale",
 ]
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+    BASE_DIR / "static",
 ]
 
 # Configuración de almacenamiento de archivos estáticos (Django 5.2+)
@@ -202,12 +197,12 @@ STORAGES = {
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Authentication settings
-LOGIN_URL = 'accounts:login'
+LOGIN_URL = "accounts:login"
 # LOGIN_REDIRECT_URL manejado por CustomLoginView según tipo de usuario
-LOGOUT_REDIRECT_URL = 'accounts:login'
+LOGOUT_REDIRECT_URL = "accounts:login"
 
 # Email configuration - Gmail SMTP con clave de aplicación
 # IMPORTANTE: Para generar clave de aplicación de Gmail:
@@ -217,13 +212,15 @@ LOGOUT_REDIRECT_URL = 'accounts:login'
 # 4. Usar esa clave de 16 caracteres en GOOGLE_APP_PASSWORD
 # NUNCA subir la clave de aplicación al repositorio
 
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', True)
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')  # Tu email de Gmail
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')  # Clave de aplicación
-DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+)
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = os.getenv("EMAIL_PORT", 587)
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", True)
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")  # Tu email de Gmail
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")  # Clave de aplicación
+DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER", "")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # ===== CONFIGURACIÓN DE CONVIVENCIA: SESIONES + JWT =====
@@ -231,55 +228,51 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Django REST Framework - SOLO para rutas /api/
 # Las vistas MVT (HTML) siguen usando sesiones normalmente
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
+    "DEFAULT_AUTHENTICATION_CLASSES": [
         # JWT SOLO para API (/api/*) - No afecta vistas MVT
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         # Sesiones para compatibilidad con browsable API
-        'rest_framework.authentication.SessionAuthentication',
+        "rest_framework.authentication.SessionAuthentication",
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
     ],
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',  # Solo en desarrollo
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",  # Solo en desarrollo
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
 }
 
 # Simple JWT Configuration
 # Access token: 15 minutos (seguridad)
 # Refresh token: 1 día (usabilidad)
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': True,  # Rota refresh tokens por seguridad
-    'BLACKLIST_AFTER_ROTATION': True,  # Invalida tokens antiguos
-    'UPDATE_LAST_LOGIN': True,  # Actualiza last_login en cada token
-    
-    'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
-    'VERIFYING_KEY': None,
-    'AUDIENCE': None,
-    'ISSUER': None,
-    'JWK_URL': None,
-    'LEEWAY': 0,
-    
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
-    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
-    
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-    'TOKEN_TYPE_CLAIM': 'token_type',
-    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
-    
-    'JTI_CLAIM': 'jti',
-    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=15),
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,  # Rota refresh tokens por seguridad
+    "BLACKLIST_AFTER_ROTATION": True,  # Invalida tokens antiguos
+    "UPDATE_LAST_LOGIN": True,  # Actualiza last_login en cada token
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "VERIFYING_KEY": None,
+    "AUDIENCE": None,
+    "ISSUER": None,
+    "JWK_URL": None,
+    "LEEWAY": 0,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
+    "JTI_CLAIM": "jti",
+    "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=15),
+    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
 }
 
 # CORS Configuration - Seguro para producción, HTTP solo en desarrollo
@@ -294,9 +287,9 @@ if DEBUG:
 else:
     # En producción, solo HTTPS
     CORS_ALLOWED_ORIGINS = os.getenv(
-        'CORS_ALLOWED_ORIGINS',
-        'https://example.com'  # Reemplazar con tu dominio de producción
-    ).split(',')
+        "CORS_ALLOWED_ORIGINS",
+        "https://example.com",  # Reemplazar con tu dominio de producción
+    ).split(",")
 
 CORS_ALLOW_CREDENTIALS = True  # Para cookies de sesión si es necesario
 
@@ -304,26 +297,26 @@ CORS_ALLOW_CREDENTIALS = True  # Para cookies de sesión si es necesario
 if DEBUG:
     # Solo en desarrollo local se permite HTTP
     CSRF_TRUSTED_ORIGINS = [
-        'http://127.0.0.1:8000',
-        'http://localhost:8000',
-        'http://127.0.0.1:57765',  # Browser preview
-        'http://localhost:57765',
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+        "http://127.0.0.1:57765",  # Browser preview
+        "http://localhost:57765",
     ]
     # Configuraciones de CSRF para desarrollo
     CSRF_COOKIE_SECURE = False
     CSRF_COOKIE_HTTPONLY = False
     CSRF_USE_SESSIONS = False
-    CSRF_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = "Lax"
 else:
     # En producción, solo HTTPS (más seguro)
     CSRF_TRUSTED_ORIGINS = os.getenv(
-        'CSRF_TRUSTED_ORIGINS',
-        'https://example.com'  # Reemplazar con tu dominio de producción
-    ).split(',')
+        "CSRF_TRUSTED_ORIGINS",
+        "https://example.com",  # Reemplazar con tu dominio de producción
+    ).split(",")
     # Configuraciones de seguridad para producción
     CSRF_COOKIE_SECURE = True  # Requiere HTTPS
     CSRF_COOKIE_HTTPONLY = True  # Previene acceso desde JavaScript
-    CSRF_COOKIE_SAMESITE = 'Strict'  # Protección contra CSRF
+    CSRF_COOKIE_SAMESITE = "Strict"  # Protección contra CSRF
 
 # Configuración de sesiones
 SESSION_COOKIE_AGE = 3600  # 1 hora
@@ -334,17 +327,17 @@ SESSION_SAVE_EVERY_REQUEST = True
 if not DEBUG:
     # Forzar HTTPS en producción
     SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
     # Configuración de cookies seguras
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Strict'
-    
+    SESSION_COOKIE_SAMESITE = "Strict"
+
     # Cabeceras de seguridad
     SECURE_HSTS_SECONDS = 31536000  # 1 año
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_BROWSER_XSS_FILTER = True
-    X_FRAME_OPTIONS = 'DENY'
+    X_FRAME_OPTIONS = "DENY"
