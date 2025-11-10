@@ -4,8 +4,10 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 
 
-# Constante para evitar duplicación del literal 'empresas.Empresa'
+# Constantes para evitar duplicación de literales
 EMPRESA_MODEL = 'empresas.Empresa'
+VERBOSE_FECHA_CREACION = 'Fecha de Creación'
+VERBOSE_ULTIMA_ACTUALIZACION = 'Última Actualización'
 
 
 class Pago(models.Model):
@@ -102,12 +104,12 @@ class Pago(models.Model):
     # Información del sistema
     fecha_creacion = models.DateTimeField(
         auto_now_add=True,
-        verbose_name="Fecha de Creación"
+        verbose_name=VERBOSE_FECHA_CREACION
     )
     
     fecha_actualizacion = models.DateTimeField(
         auto_now=True,
-        verbose_name="Última Actualización"
+        verbose_name=VERBOSE_ULTIMA_ACTUALIZACION
     )
     
     creado_por = models.ForeignKey(
@@ -271,7 +273,7 @@ class CuentaBancaria(models.Model):
     
     fecha_creacion = models.DateTimeField(
         auto_now_add=True,
-        verbose_name="Fecha de Creación"
+        verbose_name=VERBOSE_FECHA_CREACION
     )
     
     # Relación con cuenta contable
@@ -360,7 +362,7 @@ class PagoDetalle(models.Model):
     # Información del sistema
     fecha_creacion = models.DateTimeField(
         auto_now_add=True,
-        verbose_name="Fecha de Creación"
+        verbose_name=VERBOSE_FECHA_CREACION
     )
     
     class Meta:

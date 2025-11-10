@@ -505,7 +505,7 @@ def crear_usuario(request):  # nosonar
                 })
 
             # Crear usuario y actualizar perfil de forma segura
-            user = _create_user_and_profile(request, username, email, first_name, last_name, password, is_active)
+            _create_user_and_profile(request, username, email, first_name, last_name, password, is_active)
 
             messages.success(request, f'Usuario "{username}" creado exitosamente.')
             return redirect(URL_GESTIONAR_USUARIOS)

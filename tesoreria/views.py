@@ -22,7 +22,10 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 
-# Constantes para evitar duplicación
+# Constantes para evitar duplicación de literales
+URL_COBROS_LISTA = 'tesoreria:cobros_lista'
+CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
+MSG_SELECCIONAR_EMPRESA = 'Debes seleccionar una empresa.'
 CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
 
 # Constante para evitar duplicación del literal de URL
@@ -128,7 +131,7 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = Pago
     form_class = CobroForm
     template_name = 'tesoreria/cobros_crear.html'
-    success_url = reverse_lazy('tesoreria:cobros_lista')
+    success_url = reverse_lazy(URL_COBROS_LISTA)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -165,7 +168,7 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
         empresa_activa = getattr(self.request, 'empresa_activa', None)
         
         if not empresa_activa:
-            messages.error(self.request, 'Debes seleccionar una empresa.')
+            messages.error(self.request, MSG_SELECCIONAR_EMPRESA)
             return redirect(CAMBIAR_EMPRESA_URL)
         
         # Generar número de cobro automático
@@ -227,7 +230,7 @@ class CobroUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = Pago
     form_class = CobroForm
     template_name = 'tesoreria/cobros_editar.html'
-    success_url = reverse_lazy('tesoreria:cobros_lista')
+    success_url = reverse_lazy(URL_COBROS_LISTA)
     
     def get_queryset(self):
         # Solo permitir editar cobros en estado pendiente
@@ -295,13 +298,13 @@ def activar_cobro(request, pk):
     empresa_activa = getattr(request, 'empresa_activa', None)
     
     if not empresa_activa:
-        messages.error(request, 'Debes seleccionar una empresa.')
+        messages.error(request, MSG_SELECCIONAR_EMPRESA)
         return redirect(CAMBIAR_EMPRESA_URL)
     
     # Verificar que el cobro esté en pendiente
     if cobro.estado != 'pendiente':
         messages.error(request, 'Solo se pueden activar cobros en estado pendiente.')
-        return redirect('tesoreria:cobros_lista')
+        return redirect(URL_COBROS_LISTA)
     
     # Generar número de factura automático
     ultima_factura = Factura.objects.filter(
@@ -352,7 +355,7 @@ def activar_cobro(request, pk):
         f'Cobro {cobro.numero_pago} activado exitosamente. Factura {nuevo_numero} generada.'
     )
     
-    return redirect('tesoreria:cobros_lista')
+    return redirect(URL_COBROS_LISTA)
 
 
 @login_required
@@ -366,7 +369,7 @@ def marcar_cobro_pagado(request, pk):
     
     if cobro.estado != 'activo':
         messages.error(request, 'Solo se pueden marcar como pagados los cobros activos.')
-        return redirect('tesoreria:cobros_lista')
+        return redirect(URL_COBROS_LISTA)
     
     # Obtener datos del pago
     metodo_pago = request.POST.get('metodo_pago', 'efectivo')
@@ -444,7 +447,7 @@ def marcar_cobro_pagado(request, pk):
     else:
         messages.success(request, f'Cobro {cobro.numero_pago} marcado como pagado.')
     
-    return redirect('tesoreria:cobros_lista')
+    return redirect(URL_COBROS_LISTA)
 
 
 @login_required
@@ -633,7 +636,7 @@ def crear_cliente_ajax(request):
         if not empresa_activa:
             return JsonResponse({
                 'success': False,
-                'error': 'Debes seleccionar una empresa.'
+                'error': MSG_SELECCIONAR_EMPRESA
             }, status=400)
         
         # Obtener datos del formulario
