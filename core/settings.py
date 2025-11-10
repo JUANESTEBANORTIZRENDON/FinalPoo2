@@ -222,6 +222,7 @@ if SENDGRID_API_KEY:
     # ✅ PRODUCCIÓN: Usar SendGrid (funciona en Render gratuito)
     EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
     SENDGRID_API_KEY = SENDGRID_API_KEY
+    SENDGRID_SANDBOX_MODE_IN_DEBUG = False  # Desactivar sandbox para enviar emails reales
     EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "").strip()
     DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER).strip()
     SERVER_EMAIL = DEFAULT_FROM_EMAIL
