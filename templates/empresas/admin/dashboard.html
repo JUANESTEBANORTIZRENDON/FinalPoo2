@@ -10,47 +10,45 @@
 <!-- Métricas principales -->
 <div class="row">
     <div class="col-md-3">
-        <div class="metric-card">
-            <i class="fas fa-building metric-icon"></i>
-            <div class="metric-number">{{ total_empresas }}</div>
-            <div class="metric-label">Empresas Activas</div>
-        </div>
+        <a href="{% url 'empresas:admin_gestionar_empresas' %}" class="metric-card-link">
+            <div class="metric-card">
+                <i class="fas fa-building metric-icon"></i>
+                <div class="metric-number">{{ total_empresas }}</div>
+                <div class="metric-label">Empresas Activas</div>
+            </div>
+        </a>
     </div>
     <div class="col-md-3">
-        <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <i class="fas fa-users metric-icon"></i>
-            <div class="metric-number">{{ total_usuarios }}</div>
-            <div class="metric-label">Usuarios Totales</div>
-        </div>
+        <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="metric-card-link">
+            <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <i class="fas fa-users metric-icon"></i>
+                <div class="metric-number">{{ total_usuarios }}</div>
+                <div class="metric-label">Usuarios Totales</div>
+            </div>
+        </a>
     </div>
     <div class="col-md-3">
-        <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-            <i class="fas fa-exclamation-triangle metric-icon"></i>
-            <div class="metric-number">{{ empresas_sin_contador }}</div>
-            <div class="metric-label">Sin Contador Asignado</div>
-        </div>
+        <a href="{% url 'empresas:admin_gestionar_empresas' %}" class="metric-card-link">
+            <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <i class="fas fa-exclamation-triangle metric-icon"></i>
+                <div class="metric-number">{{ empresas_sin_contador }}</div>
+                <div class="metric-label">Sin Contador Asignado</div>
+            </div>
+        </a>
     </div>
     <div class="col-md-3">
-        <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-            <i class="fas fa-user-clock metric-icon"></i>
-            <div class="metric-number">{{ usuarios_pendientes }}</div>
-            <div class="metric-label">Usuarios Pendientes</div>
-        </div>
+        <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="metric-card-link">
+            <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <i class="fas fa-user-clock metric-icon"></i>
+                <div class="metric-number">{{ usuarios_pendientes }}</div>
+                <div class="metric-label">Usuarios Pendientes</div>
+            </div>
+        </a>
     </div>
 </div>
 
-<!-- Acciones rápidas -->
+<!-- Acciones rápidas (solo las que no tienen tarjeta asociada) -->
 <div class="quick-actions">
-    <a href="{% url 'empresas:admin_gestionar_empresas' %}" class="quick-action">
-        <i class="fas fa-building"></i>
-        <h6>Gestionar Empresas</h6>
-        <small class="text-muted">Administrar empresas del holding</small>
-    </a>
-    <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="quick-action">
-        <i class="fas fa-users"></i>
-        <h6>Gestionar Usuarios</h6>
-        <small class="text-muted">Asignar roles y permisos</small>
-    </a>
     <a href="{% url 'empresas:admin_estadisticas' %}" class="quick-action">
         <i class="fas fa-chart-bar"></i>
         <h6>Estadísticas</h6>

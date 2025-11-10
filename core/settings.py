@@ -212,16 +212,47 @@ LOGOUT_REDIRECT_URL = "accounts:login"
 # 4. Usar esa clave de 16 caracteres en GOOGLE_APP_PASSWORD
 # NUNCA subir la clave de aplicación al repositorio
 
-EMAIL_BACKEND = os.getenv(
-    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
-)
-EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-EMAIL_PORT = os.getenv("EMAIL_PORT", 587)
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", True)
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")  # Tu email de Gmail
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")  # Clave de aplicación
-DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER", "")
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
+# ===== CONFIGURACIÓN DE EMAIL =====
+# Render Free Tier bloquea conexiones SMTP (puertos 25, 587, 465)
+# Usar SendGrid API en producción y SMTP en desarrollo
+
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
+
+if SENDGRID_API_KEY:
+    # ✅ PRODUCCIÓN: Usar SendGrid (funciona en Render gratuito)
+    EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+    SENDGRID_SANDBOX_MODE_IN_DEBUG = False  # Desactivar sandbox para enviar emails reales
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "").strip()
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER).strip()
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
+    
+    # SendGrid no necesita estas configuraciones SMTP
+    EMAIL_HOST = None
+    EMAIL_PORT = None
+    EMAIL_USE_SSL = False
+    EMAIL_USE_TLS = False
+    EMAIL_HOST_PASSWORD = None
+    
+    print("📧 Email: Usando SendGrid API (producción)")
+else:
+    # 🏠 DESARROLLO: Usar Gmail SMTP (solo funciona localmente)
+    EMAIL_BACKEND = os.getenv(
+        "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+    )
+    EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+    EMAIL_PORT = int(os.getenv("EMAIL_PORT", "465"))
+    EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "True").lower() in ('true', '1', 'yes')
+    EMAIL_USE_TLS = False
+    
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "").strip()
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "").strip()
+    DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER", "").strip()
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
+    
+    print("📧 Email: Usando Gmail SMTP (desarrollo local)")
+
+# Timeout para envío de emails
+EMAIL_TIMEOUT = 30
 
 # ===== CONFIGURACIÓN DE CONVIVENCIA: SESIONES + JWT =====
 
