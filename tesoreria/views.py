@@ -390,9 +390,9 @@ def marcar_cobro_pagado(request, pk):
         descripcion = request.POST.get('descripcion', '')
         monto_transferencia = request.POST.get('monto_transferencia', '0')
         
-        info_pago = f"Pago por transferencia bancaria\n"
+        info_pago = "Pago por transferencia bancaria\n"
         info_pago += f"Cuenta Origen: {cuenta_origen}\n"
-        info_pago += f"Cuenta Destino: 1234-5678-9012 (Bancolombia)\n"
+        info_pago += "Cuenta Destino: 1234-5678-9012 (Bancolombia)\n"
         info_pago += f"Monto: ${monto_transferencia}"
         if descripcion:
             info_pago += f"\nDescripción: {descripcion}"
@@ -424,7 +424,7 @@ def marcar_cobro_pagado(request, pk):
             descripcion = request.POST.get('descripcion', '')
             monto_transferencia = request.POST.get('monto_transferencia', '0')
             
-            info_factura = f"Pagado por transferencia bancaria\n"
+            info_factura = "Pagado por transferencia bancaria\n"
             info_factura += f"Cuenta Origen: {cuenta_origen}\n"
             info_factura += f"Monto: ${monto_transferencia}"
             if descripcion:
@@ -508,7 +508,7 @@ def generar_factura_pdf(request, factura_pk):
     )
     
     # Título
-    elements.append(Paragraph(f"FACTURA DE VENTA", title_style))
+    elements.append(Paragraph("FACTURA DE VENTA", title_style))
     elements.append(Spacer(1, 0.3*inch))
     
     # Información de la empresa
