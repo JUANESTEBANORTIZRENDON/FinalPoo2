@@ -226,8 +226,9 @@ EMAIL_PORT = int(os.getenv("EMAIL_PORT", "465"))
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "True").lower() in ('true', '1', 'yes')
 EMAIL_USE_TLS = False  # Desactivar TLS cuando usamos SSL
 
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")  # Tu email de Gmail
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")  # Clave de aplicación
+# Limpiar espacios en blanco de las credenciales (común en copy-paste)
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "").strip()
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "").strip()
 DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER", "")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
