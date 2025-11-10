@@ -68,7 +68,9 @@
                     <h5 class="mb-0">
                         <i class="fas fa-list"></i>
                         Listado de Productos
-                        {% if productos %}
+                        {% if page_obj %}
+                            <span class="badge bg-primary">{{ page_obj.paginator.count }}</span>
+                        {% elif productos %}
                             <span class="badge bg-primary">{{ productos|length }}</span>
                         {% endif %}
                     </h5>
@@ -79,14 +81,14 @@
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Código</th>
-                                        <th>Nombre</th>
-                                        <th>Tipo</th>
-                                        <th>Precio Venta</th>
-                                        <th>Precio Costo</th>
-                                        <th>Stock</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
+                                        <th><i class="fas fa-barcode"></i> Código</th>
+                                        <th><i class="fas fa-tag"></i> Nombre</th>
+                                        <th><i class="fas fa-layer-group"></i> Tipo</th>
+                                        <th><i class="fas fa-dollar-sign"></i> Precio Venta</th>
+                                        <th><i class="fas fa-receipt"></i> Precio Costo</th>
+                                        <th><i class="fas fa-boxes"></i> Stock</th>
+                                        <th><i class="fas fa-toggle-on"></i> Estado</th>
+                                        <th><i class="fas fa-cog"></i> Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -105,48 +107,69 @@
                                         </td>
                                         <td>
                                             {% if producto.tipo_producto == 'producto' %}
-                                                <span class="badge bg-info">Producto</span>
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-cube"></i> Producto
+                                                </span>
                                             {% else %}
-                                                <span class="badge bg-secondary">Servicio</span>
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-concierge-bell"></i> Servicio
+                                                </span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <strong class="text-success">${{ producto.precio_venta|floatformat:2 }}</strong>
+                                            <div>
+                                                <i class="fas fa-dollar-sign text-success"></i>
+                                                <strong class="text-success">${{ producto.precio_venta|floatformat:2 }}</strong>
+                                            </div>
                                             {% if producto.impuesto %}
-                                                <br>
                                                 <small class="text-muted">
-                                                    Con IVA: ${{ producto.precio_con_impuesto|floatformat:2 }}
+                                                    <i class="fas fa-plus-circle"></i> Con IVA: ${{ producto.precio_con_impuesto|floatformat:2 }}
                                                 </small>
                                             {% endif %}
                                         </td>
                                         <td>
                                             {% if producto.precio_costo > 0 %}
-                                                ${{ producto.precio_costo|floatformat:2 }}
-                                                <br>
+                                                <div>
+                                                    <i class="fas fa-tag text-info"></i>
+                                                    ${{ producto.precio_costo|floatformat:2 }}
+                                                </div>
                                                 <small class="text-success">
-                                                    Margen: {{ producto.margen_utilidad|floatformat:1 }}%
+                                                    <i class="fas fa-chart-line"></i> Margen: {{ producto.margen_utilidad|floatformat:1 }}%
                                                 </small>
                                             {% else %}
-                                                <span class="text-muted">-</span>
+                                                <span class="text-muted">
+                                                    <i class="fas fa-minus"></i> -
+                                                </span>
                                             {% endif %}
                                         </td>
                                         <td>
                                             {% if producto.inventariable %}
-                                                <div>{{ producto.stock_actual|floatformat:0 }}</div>
+                                                <div>
+                                                    <i class="fas fa-boxes text-success"></i>
+                                                    <strong>{{ producto.stock_actual }}</strong>
+                                                </div>
                                                 {% if producto.requiere_reposicion %}
                                                     <small class="text-danger">
                                                         <i class="fas fa-exclamation-triangle"></i> Bajo stock
                                                     </small>
+                                                {% else %}
+                                                    <small class="text-muted">unidades</small>
                                                 {% endif %}
                                             {% else %}
-                                                <span class="text-muted">N/A</span>
+                                                <span class="text-muted">
+                                                    <i class="fas fa-ban"></i> N/A
+                                                </span>
                                             {% endif %}
                                         </td>
                                         <td>
                                             {% if producto.activo %}
-                                                <span class="badge bg-success">Activo</span>
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle"></i> Activo
+                                                </span>
                                             {% else %}
-                                                <span class="badge bg-danger">Inactivo</span>
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times-circle"></i> Inactivo
+                                                </span>
                                             {% endif %}
                                         </td>
                                         <td>
@@ -163,12 +186,29 @@
                                                     <i class="fas fa-edit" aria-hidden="true"></i>
                                                     <span class="visually-hidden">Editar</span>
                                                 </a>
-                                                <a href="{% url 'catalogos:producto_delete' producto.pk %}" 
-                                                   class="btn btn-outline-danger" 
-                                                   title="Eliminar producto">
-                                                    <i class="fas fa-trash" aria-hidden="true"></i>
-                                                    <span class="visually-hidden">Eliminar</span>
-                                                </a>
+                                                {% if producto.activo %}
+                                                    <form method="post" action="{% url 'catalogos:producto_toggle_activo' producto.pk %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit" 
+                                                                class="btn btn-outline-danger" 
+                                                                title="Desactivar producto"
+                                                                onclick="return confirm('¿Desactivar este producto? No podrá ser vendido mientras esté inactivo.')">
+                                                            <i class="fas fa-ban" aria-hidden="true"></i>
+                                                            <span class="visually-hidden">Desactivar</span>
+                                                        </button>
+                                                    </form>
+                                                {% else %}
+                                                    <form method="post" action="{% url 'catalogos:producto_toggle_activo' producto.pk %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit" 
+                                                                class="btn btn-outline-success" 
+                                                                title="Activar producto"
+                                                                onclick="return confirm('¿Activar este producto?')">
+                                                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                                            <span class="visually-hidden">Activar</span>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
                                             </div>
                                         </td>
                                     </tr>
@@ -193,41 +233,44 @@
     <!-- Resumen -->
     {% if productos %}
     <div class="row mt-4">
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6 mb-3">
             <div class="card shadow-sm border-primary">
                 <div class="card-body text-center">
-                    <h6 class="text-muted mb-2">Total Productos</h6>
+                    <h6 class="text-muted mb-2">
+                        <i class="fas fa-box"></i> Total Productos
+                    </h6>
                     <h3 class="text-primary mb-0">{{ productos|length }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6 mb-3">
             <div class="card shadow-sm border-info">
                 <div class="card-body text-center">
-                    <h6 class="text-muted mb-2">Productos Físicos</h6>
-                    <h3 class="text-info mb-0">
-                        {% for p in productos %}{% if p.tipo_producto == 'producto' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% endfor %}
-                    </h3>
+                    <h6 class="text-muted mb-2">
+                        <i class="fas fa-cube"></i> Productos Físicos
+                    </h6>
+                    <h3 class="text-info mb-0">{{ productos_fisicos }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-secondary">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-success">
                 <div class="card-body text-center">
-                    <h6 class="text-muted mb-2">Servicios</h6>
-                    <h3 class="text-secondary mb-0">
-                        {% for p in productos %}{% if p.tipo_producto == 'servicio' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% endfor %}
-                    </h3>
+                    <h6 class="text-muted mb-2">
+                        <i class="fas fa-boxes"></i> Stock Total
+                    </h6>
+                    <h3 class="text-success mb-0">{{ total_stock }}</h3>
+                    <small class="text-muted">unidades</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6 mb-3">
             <div class="card shadow-sm border-warning">
                 <div class="card-body text-center">
-                    <h6 class="text-muted mb-2">Requieren Reposición</h6>
-                    <h3 class="text-warning mb-0">
-                        {% for p in productos %}{% if p.requiere_reposicion %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% endfor %}
-                    </h3>
+                    <h6 class="text-muted mb-2">
+                        <i class="fas fa-exclamation-triangle"></i> Bajo Stock
+                    </h6>
+                    <h3 class="text-warning mb-0">{{ productos_bajo_stock }}</h3>
                 </div>
             </div>
         </div>

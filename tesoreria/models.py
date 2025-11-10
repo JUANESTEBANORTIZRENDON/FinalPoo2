@@ -178,6 +178,29 @@ class Pago(models.Model):
         """Verifica si es un egreso a proveedor"""
         return self.tipo_pago == 'egreso'
     
+    def disminuir_stock(self):
+        """
+        Disminuye el stock de los productos en el cobro.
+        Se ejecuta cuando el cobro se marca como pagado.
+        """
+        for detalle in self.detalles.all():
+            producto = detalle.producto
+            
+            # Solo disminuir stock si el producto es inventariable
+            if producto.inventariable:
+                # Verificar que haya stock suficiente
+                if producto.stock_actual >= detalle.cantidad:
+                    producto.stock_actual -= detalle.cantidad
+                    producto.save()
+                else:
+                    # Si no hay stock suficiente, lanzar excepción
+                    from django.core.exceptions import ValidationError
+                    raise ValidationError(
+                        f'Stock insuficiente para {producto.nombre}. '
+                        f'Disponible: {producto.stock_actual}, '
+                        f'Requerido: {detalle.cantidad}'
+                    )
+    
     def clean(self):
         """
         Validaciones personalizadas del modelo.
@@ -337,10 +360,8 @@ class PagoDetalle(models.Model):
     )
     
     # Cantidad y valores
-    cantidad = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
+    cantidad = models.IntegerField(
+        validators=[MinValueValidator(1)],
         verbose_name="Cantidad"
     )
     
@@ -372,6 +393,21 @@ class PagoDetalle(models.Model):
     
     def __str__(self):
         return f"{self.producto.nombre} - {self.cantidad} × ${self.precio_unitario}"
+    
+    def clean(self):
+        """
+        Validaciones personalizadas del detalle.
+        """
+        from django.core.exceptions import ValidationError
+        
+        # Validar stock disponible solo para productos inventariables
+        if self.producto and self.producto.inventariable:
+            if self.cantidad > self.producto.stock_actual:
+                raise ValidationError({
+                    'cantidad': f'Stock insuficiente para {self.producto.nombre}. '
+                               f'Disponible: {self.producto.stock_actual}, '
+                               f'Solicitado: {self.cantidad}'
+                })
     
     def save(self, *args, **kwargs):
         """Calcular subtotal antes de guardar"""

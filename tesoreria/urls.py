@@ -22,6 +22,7 @@ urlpatterns = [
     path('cobros/', views.CobroListView.as_view(), name='cobros_lista'),
     path('cobros/crear/', views.CobroCreateView.as_view(), name='cobros_crear'),
     path('cobros/<int:pk>/editar/', views.CobroUpdateView.as_view(), name='cobros_editar'),
+    path('cobros/<int:pk>/eliminar/', views.eliminar_cobro, name='cobros_eliminar'),
     path('cobros/<int:pk>/activar/', views.activar_cobro, name='cobros_activar'),
     path('cobros/<int:pk>/marcar-pagado/', views.marcar_cobro_pagado, name='cobros_marcar_pagado'),
     path('cobros/factura/<int:factura_pk>/', views.cobrar_factura, name='cobrar_factura'),

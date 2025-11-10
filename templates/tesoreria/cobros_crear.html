@@ -342,11 +342,14 @@ function agregarFila() {
     const fila = document.createElement('tr');
     fila.id = `fila-${filaCounter}`;
     
-    // Construir opciones sanitizadas
+    // Construir opciones sanitizadas con información de stock
     const opcionesHtml = productos.map(p => {
         const nombre = escapeHtml(p.nombre);
         const precio = Number.parseFloat(p.precio).toFixed(2);
-        return `<option value="${p.id}" data-precio="${p.precio}">${nombre} - $${precio}</option>`;
+        const stock = p.stock || 0;
+        const inventariable = p.inventariable || false;
+        const stockInfo = inventariable ? ` (Stock: ${stock})` : '';
+        return `<option value="${p.id}" data-precio="${p.precio}" data-stock="${stock}" data-inventariable="${inventariable}">${nombre}${stockInfo} - $${precio}</option>`;
     }).join('');
     
     fila.innerHTML = `
@@ -358,7 +361,8 @@ function agregarFila() {
         </td>
         <td>
             <input type="number" class="form-control form-control-sm" name="cantidad_${filaCounter}" 
-                   min="0.01" step="0.01" value="1" onchange="calcularSubtotal(${filaCounter})" required>
+                   min="0.01" step="1" value="1" onchange="validarStock(${filaCounter})" required>
+            <small class="text-danger d-none" id="alerta-stock-${filaCounter}"></small>
         </td>
         <td>
             <input type="number" class="form-control form-control-sm" name="precio_${filaCounter}" 
@@ -388,11 +392,40 @@ function actualizarPrecio(index) {
         const option = select.options[select.selectedIndex];
         const precio = Number.parseFloat(option.getAttribute('data-precio'));
         precioInput.value = precio.toFixed(2);
-        calcularSubtotal(index);
+        validarStock(index);
     } else {
         precioInput.value = '0.00';
         calcularSubtotal(index);
     }
+}
+
+// Validar stock disponible
+function validarStock(index) {
+    const select = document.querySelector(`select[name="producto_${index}"]`);
+    const cantidadInput = document.querySelector(`input[name="cantidad_${index}"]`);
+    const alerta = document.getElementById(`alerta-stock-${index}`);
+    
+    if (!select.value) {
+        alerta.classList.add('d-none');
+        calcularSubtotal(index);
+        return;
+    }
+    
+    const option = select.options[select.selectedIndex];
+    const inventariable = option.getAttribute('data-inventariable') === 'true';
+    const stock = parseInt(option.getAttribute('data-stock')) || 0;
+    const cantidad = parseInt(cantidadInput.value) || 0;
+    
+    if (inventariable && cantidad > stock) {
+        alerta.textContent = `⚠️ Stock insuficiente. Disponible: ${stock}`;
+        alerta.classList.remove('d-none');
+        cantidadInput.classList.add('is-invalid');
+    } else {
+        alerta.classList.add('d-none');
+        cantidadInput.classList.remove('is-invalid');
+    }
+    
+    calcularSubtotal(index);
 }
 
 // Calcular subtotal de una fila
