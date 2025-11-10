@@ -358,6 +358,59 @@ def activar_cobro(request, pk):
     return redirect(URL_COBROS_LISTA)
 
 
+def _construir_info_pago_efectivo(request):
+    """Construye la información de pago en efectivo."""
+    monto_recibido = request.POST.get('monto_recibido', '0')
+    cambio = request.POST.get('cambio', '0')
+    return f"Pago en efectivo - Recibido: ${monto_recibido} - Cambio: ${cambio}"
+
+
+def _construir_info_pago_transferencia(request):
+    """Construye la información de pago por transferencia."""
+    cuenta_origen = request.POST.get('cuenta_origen', 'N/A')
+    descripcion = request.POST.get('descripcion', '')
+    monto_transferencia = request.POST.get('monto_transferencia', '0')
+    
+    info_pago = "Pago por transferencia bancaria\n"
+    info_pago += f"Cuenta Origen: {cuenta_origen}\n"
+    info_pago += "Cuenta Destino: 1234-5678-9012 (Bancolombia)\n"
+    info_pago += f"Monto: ${monto_transferencia}"
+    
+    if descripcion:
+        info_pago += f"\nDescripción: {descripcion}"
+    
+    return info_pago
+
+
+def _agregar_observacion(objeto, nueva_info):
+    """Agrega información a las observaciones de un objeto."""
+    if objeto.observaciones:
+        objeto.observaciones += f"\n{nueva_info}"
+    else:
+        objeto.observaciones = nueva_info
+
+
+def _actualizar_info_pago(cobro, metodo_pago, request):
+    """Actualiza la información del pago en el cobro y factura asociada."""
+    # Construir información según método de pago
+    if metodo_pago == 'efectivo':
+        info_pago = _construir_info_pago_efectivo(request)
+    elif metodo_pago == 'transferencia':
+        info_pago = _construir_info_pago_transferencia(request)
+    else:
+        info_pago = f"Pago con método: {metodo_pago}"
+    
+    # Actualizar observaciones del cobro
+    _agregar_observacion(cobro, info_pago)
+    
+    # Actualizar factura si existe
+    if cobro.factura:
+        info_factura = info_pago.replace("Pago ", "Pagado ")
+        _agregar_observacion(cobro.factura, info_factura)
+        cobro.factura.estado = 'pagada'
+        cobro.factura.save()
+
+
 @login_required
 @require_http_methods(["POST"])
 def marcar_cobro_pagado(request, pk):
@@ -371,75 +424,20 @@ def marcar_cobro_pagado(request, pk):
         messages.error(request, 'Solo se pueden marcar como pagados los cobros activos.')
         return redirect(URL_COBROS_LISTA)
     
-    # Obtener datos del pago
+    # Obtener método de pago
     metodo_pago = request.POST.get('metodo_pago', 'efectivo')
     
-    # Actualizar el cobro
+    # Actualizar estado del cobro
     cobro.estado = 'pagado'
     
-    # Guardar información del pago en observaciones según el método
-    if metodo_pago == 'efectivo':
-        monto_recibido = request.POST.get('monto_recibido', '0')
-        cambio = request.POST.get('cambio', '0')
-        info_pago = f"Pago en efectivo - Recibido: ${monto_recibido} - Cambio: ${cambio}"
-        
-        if cobro.observaciones:
-            cobro.observaciones += f"\n{info_pago}"
-        else:
-            cobro.observaciones = info_pago
-            
-    elif metodo_pago == 'transferencia':
-        cuenta_origen = request.POST.get('cuenta_origen', 'N/A')
-        descripcion = request.POST.get('descripcion', '')
-        monto_transferencia = request.POST.get('monto_transferencia', '0')
-        
-        info_pago = "Pago por transferencia bancaria\n"
-        info_pago += f"Cuenta Origen: {cuenta_origen}\n"
-        info_pago += "Cuenta Destino: 1234-5678-9012 (Bancolombia)\n"
-        info_pago += f"Monto: ${monto_transferencia}"
-        if descripcion:
-            info_pago += f"\nDescripción: {descripcion}"
-        
-        if cobro.observaciones:
-            cobro.observaciones += f"\n{info_pago}"
-        else:
-            cobro.observaciones = info_pago
+    # Actualizar información de pago
+    _actualizar_info_pago(cobro, metodo_pago, request)
     
+    # Guardar cobro
     cobro.save()
     
-    # Actualizar la factura asociada si existe
+    # Mensaje de éxito
     if cobro.factura:
-        cobro.factura.estado = 'pagada'
-        
-        # Agregar información de pago a la factura
-        if metodo_pago == 'efectivo':
-            monto_recibido = request.POST.get('monto_recibido', '0')
-            cambio = request.POST.get('cambio', '0')
-            info_factura = f"Pagado en efectivo - Recibido: ${monto_recibido} - Cambio: ${cambio}"
-            
-            if cobro.factura.observaciones:
-                cobro.factura.observaciones += f"\n{info_factura}"
-            else:
-                cobro.factura.observaciones = info_factura
-                
-        elif metodo_pago == 'transferencia':
-            cuenta_origen = request.POST.get('cuenta_origen', 'N/A')
-            descripcion = request.POST.get('descripcion', '')
-            monto_transferencia = request.POST.get('monto_transferencia', '0')
-            
-            info_factura = "Pagado por transferencia bancaria\n"
-            info_factura += f"Cuenta Origen: {cuenta_origen}\n"
-            info_factura += f"Monto: ${monto_transferencia}"
-            if descripcion:
-                info_factura += f"\nDescripción: {descripcion}"
-            
-            if cobro.factura.observaciones:
-                cobro.factura.observaciones += f"\n{info_factura}"
-            else:
-                cobro.factura.observaciones = info_factura
-        
-        cobro.factura.save()
-        
         messages.success(
             request, 
             f'✓ Pago procesado exitosamente\nCobro: {cobro.numero_pago}\nFactura: {cobro.factura.numero_factura}\nMétodo: {metodo_pago.capitalize()}'
