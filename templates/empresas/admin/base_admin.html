@@ -205,6 +205,21 @@
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
         }
 
+        .metric-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card-link:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-card-link:hover .metric-card {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
         .metric-card {
             background: var(--admin-gradient);
             color: white;
@@ -213,6 +228,8 @@
             margin-bottom: 20px;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
 
         .metric-card::before {

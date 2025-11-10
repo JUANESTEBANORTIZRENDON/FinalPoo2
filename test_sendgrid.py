@@ -44,7 +44,7 @@ try:
     response = sg.send(message)
     
     # Verificar respuesta
-    print(f"\n✅ Email enviado exitosamente!")
+    print("\n✅ Email enviado exitosamente!")
     print(f"📊 Status Code: {response.status_code}")
     print(f"📊 Headers: {response.headers}")
     
@@ -56,7 +56,7 @@ try:
         print(f"\n⚠️ Status code inesperado: {response.status_code}")
         
 except Exception as e:
-    print(f"\n❌ Error al enviar email:")
+    print("\n❌ Error al enviar email:")
     print(f"   Tipo: {type(e).__name__}")
     print(f"   Mensaje: {str(e)}")
     
