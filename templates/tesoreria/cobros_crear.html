@@ -130,11 +130,11 @@
                                     <table class="table table-bordered" id="tabla-productos">
                                         <thead class="table-light">
                                             <tr>
-                                                <th width="40%">Producto</th>
-                                                <th width="15%">Cantidad</th>
-                                                <th width="20%">Precio Unit.</th>
-                                                <th width="20%">Subtotal</th>
-                                                <th width="5%"></th>
+                                                <th style="width: 40%">Producto</th>
+                                                <th style="width: 15%">Cantidad</th>
+                                                <th style="width: 20%">Precio Unit.</th>
+                                                <th style="width: 20%">Subtotal</th>
+                                                <th style="width: 5%"></th>
                                             </tr>
                                         </thead>
                                         <tbody id="productos-body">
@@ -242,7 +242,7 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Tipo de Documento <span class="text-danger">*</span></label>
+                                <label for="tipo_documento" class="form-label">Tipo de Documento <span class="text-danger">*</span></label>
                                 <select class="form-select" id="tipo_documento" name="tipo_documento" required>
                                     <option value="">Seleccionar...</option>
                                     <option value="CC">Cédula de Ciudadanía</option>
@@ -254,13 +254,13 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Número de Documento <span class="text-danger">*</span></label>
+                                <label for="numero_documento" class="form-label">Número de Documento <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="numero_documento" name="numero_documento" 
                                        placeholder="Ej: 1234567890" required>
                             </div>
                             
                             <div class="col-12 mb-3">
-                                <label class="form-label">Razón Social / Nombre Completo <span class="text-danger">*</span></label>
+                                <label for="razon_social" class="form-label">Razón Social / Nombre Completo <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="razon_social" name="razon_social" 
                                        placeholder="Ej: Juan Pérez o Empresa S.A.S" required>
                             </div>
@@ -275,19 +275,19 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Teléfono</label>
+                                <label for="telefono" class="form-label">Teléfono</label>
                                 <input type="text" class="form-control" id="telefono" name="telefono" 
                                        placeholder="Ej: 3001234567">
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Email</label>
+                                <label for="email" class="form-label">Email</label>
                                 <input type="email" class="form-control" id="email" name="email" 
                                        placeholder="Ej: cliente@email.com">
                             </div>
                             
                             <div class="col-12 mb-3">
-                                <label class="form-label">Dirección</label>
+                                <label for="direccion" class="form-label">Dirección</label>
                                 <input type="text" class="form-control" id="direccion" name="direccion" 
                                        placeholder="Ej: Calle 123 #45-67">
                             </div>
@@ -327,6 +327,13 @@
 // Productos disponibles (pasados desde la vista)
 const productos = {{ productos_json|safe }};
 
+// Función para escapar HTML y prevenir XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 let filaCounter = 0;
 
 // Agregar una fila de producto
@@ -335,11 +342,18 @@ function agregarFila() {
     const fila = document.createElement('tr');
     fila.id = `fila-${filaCounter}`;
     
+    // Construir opciones sanitizadas
+    const opcionesHtml = productos.map(p => {
+        const nombre = escapeHtml(p.nombre);
+        const precio = Number.parseFloat(p.precio).toFixed(2);
+        return `<option value="${p.id}" data-precio="${p.precio}">${nombre} - $${precio}</option>`;
+    }).join('');
+    
     fila.innerHTML = `
         <td>
             <select class="form-select form-select-sm" name="producto_${filaCounter}" onchange="actualizarPrecio(${filaCounter})" required>
                 <option value="">Seleccionar...</option>
-                ${productos.map(p => `<option value="${p.id}" data-precio="${p.precio}">${p.nombre} - $${parseFloat(p.precio).toFixed(2)}</option>`).join('')}
+                ${opcionesHtml}
             </select>
         </td>
         <td>
@@ -372,7 +386,7 @@ function actualizarPrecio(index) {
     
     if (select.value) {
         const option = select.options[select.selectedIndex];
-        const precio = parseFloat(option.getAttribute('data-precio'));
+        const precio = Number.parseFloat(option.getAttribute('data-precio'));
         precioInput.value = precio.toFixed(2);
         calcularSubtotal(index);
     } else {
@@ -383,8 +397,8 @@ function actualizarPrecio(index) {
 
 // Calcular subtotal de una fila
 function calcularSubtotal(index) {
-    const cantidad = parseFloat(document.querySelector(`input[name="cantidad_${index}"]`).value) || 0;
-    const precio = parseFloat(document.querySelector(`input[name="precio_${index}"]`).value) || 0;
+    const cantidad = Number.parseFloat(document.querySelector(`input[name="cantidad_${index}"]`).value) || 0;
+    const precio = Number.parseFloat(document.querySelector(`input[name="precio_${index}"]`).value) || 0;
     const subtotal = cantidad * precio;
     
     document.getElementById(`subtotal_${index}`).value = `$${subtotal.toFixed(2)}`;
@@ -398,8 +412,8 @@ function calcularTotal() {
     for (let i = 0; i < filaCounter; i++) {
         const fila = document.getElementById(`fila-${i}`);
         if (fila) {
-            const cantidad = parseFloat(document.querySelector(`input[name="cantidad_${i}"]`).value) || 0;
-            const precio = parseFloat(document.querySelector(`input[name="precio_${i}"]`).value) || 0;
+            const cantidad = Number.parseFloat(document.querySelector(`input[name="cantidad_${i}"]`).value) || 0;
+            const precio = Number.parseFloat(document.querySelector(`input[name="precio_${i}"]`).value) || 0;
             total += cantidad * precio;
         }
     }
@@ -431,7 +445,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
         return false;
     }
     
-    const total = parseFloat(document.getElementById('valor-total').value);
+    const total = Number.parseFloat(document.getElementById('valor-total').value);
     if (total <= 0) {
         e.preventDefault();
         alert('El total del cobro debe ser mayor a cero');

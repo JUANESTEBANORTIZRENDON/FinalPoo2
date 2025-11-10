@@ -22,7 +22,10 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 
-# Constantes para evitar duplicación
+# Constantes para evitar duplicación de literales
+URL_COBROS_LISTA = 'tesoreria:cobros_lista'
+CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
+MSG_SELECCIONAR_EMPRESA = 'Debes seleccionar una empresa.'
 CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
 
 # Constante para evitar duplicación del literal de URL
@@ -128,7 +131,7 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = Pago
     form_class = CobroForm
     template_name = 'tesoreria/cobros_crear.html'
-    success_url = reverse_lazy('tesoreria:cobros_lista')
+    success_url = reverse_lazy(URL_COBROS_LISTA)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -165,7 +168,7 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
         empresa_activa = getattr(self.request, 'empresa_activa', None)
         
         if not empresa_activa:
-            messages.error(self.request, 'Debes seleccionar una empresa.')
+            messages.error(self.request, MSG_SELECCIONAR_EMPRESA)
             return redirect(CAMBIAR_EMPRESA_URL)
         
         # Generar número de cobro automático
@@ -210,7 +213,8 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
                         cantidad=Decimal(cantidad),
                         precio_unitario=Decimal(precio)
                     )
-                except (Producto.DoesNotExist, ValueError, Decimal.InvalidOperation):
+                except (Producto.DoesNotExist, ValueError):  # type: ignore[misc]
+                    # InvalidOperation es una excepción interna de Decimal
                     pass
             
             i += 1
@@ -227,7 +231,7 @@ class CobroUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = Pago
     form_class = CobroForm
     template_name = 'tesoreria/cobros_editar.html'
-    success_url = reverse_lazy('tesoreria:cobros_lista')
+    success_url = reverse_lazy(URL_COBROS_LISTA)
     
     def get_queryset(self):
         # Solo permitir editar cobros en estado pendiente
@@ -295,13 +299,13 @@ def activar_cobro(request, pk):
     empresa_activa = getattr(request, 'empresa_activa', None)
     
     if not empresa_activa:
-        messages.error(request, 'Debes seleccionar una empresa.')
+        messages.error(request, MSG_SELECCIONAR_EMPRESA)
         return redirect(CAMBIAR_EMPRESA_URL)
     
     # Verificar que el cobro esté en pendiente
     if cobro.estado != 'pendiente':
         messages.error(request, 'Solo se pueden activar cobros en estado pendiente.')
-        return redirect('tesoreria:cobros_lista')
+        return redirect(URL_COBROS_LISTA)
     
     # Generar número de factura automático
     ultima_factura = Factura.objects.filter(
@@ -344,7 +348,7 @@ def activar_cobro(request, pk):
     cobro.estado = 'activo'
     cobro.confirmado_por = request.user
     cobro.fecha_confirmacion = timezone.now()
-    cobro.factura = factura
+    cobro.factura = factura  # type: ignore[assignment]
     cobro.save()
     
     messages.success(
@@ -352,7 +356,60 @@ def activar_cobro(request, pk):
         f'Cobro {cobro.numero_pago} activado exitosamente. Factura {nuevo_numero} generada.'
     )
     
-    return redirect('tesoreria:cobros_lista')
+    return redirect(URL_COBROS_LISTA)
+
+
+def _construir_info_pago_efectivo(request):
+    """Construye la información de pago en efectivo."""
+    monto_recibido = request.POST.get('monto_recibido', '0')
+    cambio = request.POST.get('cambio', '0')
+    return f"Pago en efectivo - Recibido: ${monto_recibido} - Cambio: ${cambio}"
+
+
+def _construir_info_pago_transferencia(request):
+    """Construye la información de pago por transferencia."""
+    cuenta_origen = request.POST.get('cuenta_origen', 'N/A')
+    descripcion = request.POST.get('descripcion', '')
+    monto_transferencia = request.POST.get('monto_transferencia', '0')
+    
+    info_pago = "Pago por transferencia bancaria\n"
+    info_pago += f"Cuenta Origen: {cuenta_origen}\n"
+    info_pago += "Cuenta Destino: 1234-5678-9012 (Bancolombia)\n"
+    info_pago += f"Monto: ${monto_transferencia}"
+    
+    if descripcion:
+        info_pago += f"\nDescripción: {descripcion}"
+    
+    return info_pago
+
+
+def _agregar_observacion(objeto, nueva_info):
+    """Agrega información a las observaciones de un objeto."""
+    if objeto.observaciones:
+        objeto.observaciones += f"\n{nueva_info}"
+    else:
+        objeto.observaciones = nueva_info
+
+
+def _actualizar_info_pago(cobro, metodo_pago, request):
+    """Actualiza la información del pago en el cobro y factura asociada."""
+    # Construir información según método de pago
+    if metodo_pago == 'efectivo':
+        info_pago = _construir_info_pago_efectivo(request)
+    elif metodo_pago == 'transferencia':
+        info_pago = _construir_info_pago_transferencia(request)
+    else:
+        info_pago = f"Pago con método: {metodo_pago}"
+    
+    # Actualizar observaciones del cobro
+    _agregar_observacion(cobro, info_pago)
+    
+    # Actualizar factura si existe
+    if cobro.factura:
+        info_factura = info_pago.replace("Pago ", "Pagado ")
+        _agregar_observacion(cobro.factura, info_factura)
+        cobro.factura.estado = 'pagada'
+        cobro.factura.save()
 
 
 @login_required
@@ -366,77 +423,22 @@ def marcar_cobro_pagado(request, pk):
     
     if cobro.estado != 'activo':
         messages.error(request, 'Solo se pueden marcar como pagados los cobros activos.')
-        return redirect('tesoreria:cobros_lista')
+        return redirect(URL_COBROS_LISTA)
     
-    # Obtener datos del pago
+    # Obtener método de pago
     metodo_pago = request.POST.get('metodo_pago', 'efectivo')
     
-    # Actualizar el cobro
+    # Actualizar estado del cobro
     cobro.estado = 'pagado'
     
-    # Guardar información del pago en observaciones según el método
-    if metodo_pago == 'efectivo':
-        monto_recibido = request.POST.get('monto_recibido', '0')
-        cambio = request.POST.get('cambio', '0')
-        info_pago = f"Pago en efectivo - Recibido: ${monto_recibido} - Cambio: ${cambio}"
-        
-        if cobro.observaciones:
-            cobro.observaciones += f"\n{info_pago}"
-        else:
-            cobro.observaciones = info_pago
-            
-    elif metodo_pago == 'transferencia':
-        cuenta_origen = request.POST.get('cuenta_origen', 'N/A')
-        descripcion = request.POST.get('descripcion', '')
-        monto_transferencia = request.POST.get('monto_transferencia', '0')
-        
-        info_pago = f"Pago por transferencia bancaria\n"
-        info_pago += f"Cuenta Origen: {cuenta_origen}\n"
-        info_pago += f"Cuenta Destino: 1234-5678-9012 (Bancolombia)\n"
-        info_pago += f"Monto: ${monto_transferencia}"
-        if descripcion:
-            info_pago += f"\nDescripción: {descripcion}"
-        
-        if cobro.observaciones:
-            cobro.observaciones += f"\n{info_pago}"
-        else:
-            cobro.observaciones = info_pago
+    # Actualizar información de pago
+    _actualizar_info_pago(cobro, metodo_pago, request)
     
+    # Guardar cobro
     cobro.save()
     
-    # Actualizar la factura asociada si existe
+    # Mensaje de éxito
     if cobro.factura:
-        cobro.factura.estado = 'pagada'
-        
-        # Agregar información de pago a la factura
-        if metodo_pago == 'efectivo':
-            monto_recibido = request.POST.get('monto_recibido', '0')
-            cambio = request.POST.get('cambio', '0')
-            info_factura = f"Pagado en efectivo - Recibido: ${monto_recibido} - Cambio: ${cambio}"
-            
-            if cobro.factura.observaciones:
-                cobro.factura.observaciones += f"\n{info_factura}"
-            else:
-                cobro.factura.observaciones = info_factura
-                
-        elif metodo_pago == 'transferencia':
-            cuenta_origen = request.POST.get('cuenta_origen', 'N/A')
-            descripcion = request.POST.get('descripcion', '')
-            monto_transferencia = request.POST.get('monto_transferencia', '0')
-            
-            info_factura = f"Pagado por transferencia bancaria\n"
-            info_factura += f"Cuenta Origen: {cuenta_origen}\n"
-            info_factura += f"Monto: ${monto_transferencia}"
-            if descripcion:
-                info_factura += f"\nDescripción: {descripcion}"
-            
-            if cobro.factura.observaciones:
-                cobro.factura.observaciones += f"\n{info_factura}"
-            else:
-                cobro.factura.observaciones = info_factura
-        
-        cobro.factura.save()
-        
         messages.success(
             request, 
             f'✓ Pago procesado exitosamente\nCobro: {cobro.numero_pago}\nFactura: {cobro.factura.numero_factura}\nMétodo: {metodo_pago.capitalize()}'
@@ -444,7 +446,7 @@ def marcar_cobro_pagado(request, pk):
     else:
         messages.success(request, f'Cobro {cobro.numero_pago} marcado como pagado.')
     
-    return redirect('tesoreria:cobros_lista')
+    return redirect(URL_COBROS_LISTA)
 
 
 @login_required
@@ -508,7 +510,7 @@ def generar_factura_pdf(request, factura_pk):
     )
     
     # Título
-    elements.append(Paragraph(f"FACTURA DE VENTA", title_style))
+    elements.append(Paragraph("FACTURA DE VENTA", title_style))
     elements.append(Spacer(1, 0.3*inch))
     
     # Información de la empresa
@@ -536,8 +538,8 @@ def generar_factura_pdf(request, factura_pk):
     factura_data = [
         ['FACTURA N°:', factura.numero_factura],
         ['FECHA:', factura.fecha_factura.strftime('%d/%m/%Y')],
-        ['TIPO VENTA:', factura.get_tipo_venta_display()],
-        ['ESTADO:', factura.get_estado_display()],
+        ['TIPO VENTA:', factura.get_tipo_venta_display()],  # type: ignore[attr-defined]
+        ['ESTADO:', factura.get_estado_display()],  # type: ignore[attr-defined]
     ]
     
     factura_table = Table(factura_data, colWidths=[2*inch, 4*inch])
@@ -633,7 +635,7 @@ def crear_cliente_ajax(request):
         if not empresa_activa:
             return JsonResponse({
                 'success': False,
-                'error': 'Debes seleccionar una empresa.'
+                'error': MSG_SELECCIONAR_EMPRESA
             }, status=400)
         
         # Obtener datos del formulario
@@ -675,10 +677,10 @@ def crear_cliente_ajax(request):
         return JsonResponse({
             'success': True,
             'cliente': {
-                'id': cliente.id,
+                'id': cliente.id,  # type: ignore[attr-defined]
                 'razon_social': cliente.razon_social,
                 'numero_documento': cliente.numero_documento,
-                'tipo_documento': cliente.get_tipo_documento_display()
+                'tipo_documento': cliente.get_tipo_documento_display()  # type: ignore[attr-defined]
             },
             'message': f'Cliente {cliente.razon_social} registrado exitosamente.'
         })
