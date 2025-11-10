@@ -130,11 +130,11 @@
                                     <table class="table table-bordered" id="tabla-productos">
                                         <thead class="table-light">
                                             <tr>
-                                                <th width="40%">Producto</th>
-                                                <th width="15%">Cantidad</th>
-                                                <th width="20%">Precio Unit.</th>
-                                                <th width="20%">Subtotal</th>
-                                                <th width="5%"></th>
+                                                <th style="width: 40%">Producto</th>
+                                                <th style="width: 15%">Cantidad</th>
+                                                <th style="width: 20%">Precio Unit.</th>
+                                                <th style="width: 20%">Subtotal</th>
+                                                <th style="width: 5%"></th>
                                             </tr>
                                         </thead>
                                         <tbody id="productos-body">
@@ -242,7 +242,7 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Tipo de Documento <span class="text-danger">*</span></label>
+                                <label for="tipo_documento" class="form-label">Tipo de Documento <span class="text-danger">*</span></label>
                                 <select class="form-select" id="tipo_documento" name="tipo_documento" required>
                                     <option value="">Seleccionar...</option>
                                     <option value="CC">Cédula de Ciudadanía</option>
@@ -254,13 +254,13 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Número de Documento <span class="text-danger">*</span></label>
+                                <label for="numero_documento" class="form-label">Número de Documento <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="numero_documento" name="numero_documento" 
                                        placeholder="Ej: 1234567890" required>
                             </div>
                             
                             <div class="col-12 mb-3">
-                                <label class="form-label">Razón Social / Nombre Completo <span class="text-danger">*</span></label>
+                                <label for="razon_social" class="form-label">Razón Social / Nombre Completo <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="razon_social" name="razon_social" 
                                        placeholder="Ej: Juan Pérez o Empresa S.A.S" required>
                             </div>
@@ -275,19 +275,19 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Teléfono</label>
+                                <label for="telefono" class="form-label">Teléfono</label>
                                 <input type="text" class="form-control" id="telefono" name="telefono" 
                                        placeholder="Ej: 3001234567">
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Email</label>
+                                <label for="email" class="form-label">Email</label>
                                 <input type="email" class="form-control" id="email" name="email" 
                                        placeholder="Ej: cliente@email.com">
                             </div>
                             
                             <div class="col-12 mb-3">
-                                <label class="form-label">Dirección</label>
+                                <label for="direccion" class="form-label">Dirección</label>
                                 <input type="text" class="form-control" id="direccion" name="direccion" 
                                        placeholder="Ej: Calle 123 #45-67">
                             </div>
