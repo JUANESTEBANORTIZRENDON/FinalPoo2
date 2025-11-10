@@ -217,10 +217,15 @@ EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
 )
 EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+
 # Convertir a int - os.getenv retorna string
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
-# Convertir a bool - os.getenv retorna string
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() in ('true', '1', 'yes')
+# Puerto 465 (SSL) es más confiable en Render que 587 (TLS)
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "465"))
+
+# Usar SSL en vez de TLS para mejor compatibilidad en hosting
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "True").lower() in ('true', '1', 'yes')
+EMAIL_USE_TLS = False  # Desactivar TLS cuando usamos SSL
+
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")  # Tu email de Gmail
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")  # Clave de aplicación
 DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER", "")
