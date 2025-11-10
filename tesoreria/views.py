@@ -213,7 +213,8 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
                         cantidad=Decimal(cantidad),
                         precio_unitario=Decimal(precio)
                     )
-                except (Producto.DoesNotExist, ValueError, Decimal.InvalidOperation):
+                except (Producto.DoesNotExist, ValueError):  # type: ignore[misc]
+                    # InvalidOperation es una excepción interna de Decimal
                     pass
             
             i += 1
@@ -347,7 +348,7 @@ def activar_cobro(request, pk):
     cobro.estado = 'activo'
     cobro.confirmado_por = request.user
     cobro.fecha_confirmacion = timezone.now()
-    cobro.factura = factura
+    cobro.factura = factura  # type: ignore[assignment]
     cobro.save()
     
     messages.success(
@@ -537,8 +538,8 @@ def generar_factura_pdf(request, factura_pk):
     factura_data = [
         ['FACTURA N°:', factura.numero_factura],
         ['FECHA:', factura.fecha_factura.strftime('%d/%m/%Y')],
-        ['TIPO VENTA:', factura.get_tipo_venta_display()],
-        ['ESTADO:', factura.get_estado_display()],
+        ['TIPO VENTA:', factura.get_tipo_venta_display()],  # type: ignore[attr-defined]
+        ['ESTADO:', factura.get_estado_display()],  # type: ignore[attr-defined]
     ]
     
     factura_table = Table(factura_data, colWidths=[2*inch, 4*inch])
@@ -676,10 +677,10 @@ def crear_cliente_ajax(request):
         return JsonResponse({
             'success': True,
             'cliente': {
-                'id': cliente.id,
+                'id': cliente.id,  # type: ignore[attr-defined]
                 'razon_social': cliente.razon_social,
                 'numero_documento': cliente.numero_documento,
-                'tipo_documento': cliente.get_tipo_documento_display()
+                'tipo_documento': cliente.get_tipo_documento_display()  # type: ignore[attr-defined]
             },
             'message': f'Cliente {cliente.razon_social} registrado exitosamente.'
         })
