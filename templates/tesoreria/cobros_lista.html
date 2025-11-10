@@ -679,7 +679,12 @@ function procesarTransferencia() {
         // Mostrar mensaje de procesamiento
         const btnConfirmar = document.getElementById('btn-confirmar-pago');
         btnConfirmar.disabled = true;
-        btnConfirmar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        
+        // Usar textContent + manipulación DOM segura en lugar de innerHTML
+        btnConfirmar.textContent = ' Procesando...';
+        const spinner = document.createElement('i');
+        spinner.className = 'fas fa-spinner fa-spin';
+        btnConfirmar.prepend(spinner);
         
         // Simular procesamiento (2 segundos)
         setTimeout(() => {

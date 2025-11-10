@@ -327,6 +327,13 @@
 // Productos disponibles (pasados desde la vista)
 const productos = {{ productos_json|safe }};
 
+// Función para escapar HTML y prevenir XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 let filaCounter = 0;
 
 // Agregar una fila de producto
@@ -335,11 +342,18 @@ function agregarFila() {
     const fila = document.createElement('tr');
     fila.id = `fila-${filaCounter}`;
     
+    // Construir opciones sanitizadas
+    const opcionesHtml = productos.map(p => {
+        const nombre = escapeHtml(p.nombre);
+        const precio = Number.parseFloat(p.precio).toFixed(2);
+        return `<option value="${p.id}" data-precio="${p.precio}">${nombre} - $${precio}</option>`;
+    }).join('');
+    
     fila.innerHTML = `
         <td>
             <select class="form-select form-select-sm" name="producto_${filaCounter}" onchange="actualizarPrecio(${filaCounter})" required>
                 <option value="">Seleccionar...</option>
-                ${productos.map(p => `<option value="${p.id}" data-precio="${p.precio}">${p.nombre} - $${Number.parseFloat(p.precio).toFixed(2)}</option>`).join('')}
+                ${opcionesHtml}
             </select>
         </td>
         <td>
