@@ -5,6 +5,9 @@ Ejecutar en el shell de Render para ver exactamente qué está pasando.
 import os
 import socket
 
+# Constante para valores no configurados
+NOT_CONFIGURED = 'NO CONFIGURADA'
+
 print("=" * 60)
 print("DIAGNÓSTICO DE CONFIGURACIÓN DE EMAIL")
 print("=" * 60)
@@ -13,17 +16,17 @@ print("=" * 60)
 print("\n1️⃣ VARIABLES DE ENTORNO:")
 print("-" * 60)
 email_vars = {
-    'EMAIL_BACKEND': os.getenv('EMAIL_BACKEND', 'NO CONFIGURADA'),
-    'EMAIL_HOST': os.getenv('EMAIL_HOST', 'NO CONFIGURADA'),
-    'EMAIL_PORT': os.getenv('EMAIL_PORT', 'NO CONFIGURADA'),
-    'EMAIL_USE_SSL': os.getenv('EMAIL_USE_SSL', 'NO CONFIGURADA'),
-    'EMAIL_USE_TLS': os.getenv('EMAIL_USE_TLS', 'NO CONFIGURADA'),
-    'EMAIL_HOST_USER': os.getenv('EMAIL_HOST_USER', 'NO CONFIGURADA'),
-    'EMAIL_HOST_PASSWORD': '***' if os.getenv('EMAIL_HOST_PASSWORD') else 'NO CONFIGURADA',
+    'EMAIL_BACKEND': os.getenv('EMAIL_BACKEND', NOT_CONFIGURED),
+    'EMAIL_HOST': os.getenv('EMAIL_HOST', NOT_CONFIGURED),
+    'EMAIL_PORT': os.getenv('EMAIL_PORT', NOT_CONFIGURED),
+    'EMAIL_USE_SSL': os.getenv('EMAIL_USE_SSL', NOT_CONFIGURED),
+    'EMAIL_USE_TLS': os.getenv('EMAIL_USE_TLS', NOT_CONFIGURED),
+    'EMAIL_HOST_USER': os.getenv('EMAIL_HOST_USER', NOT_CONFIGURED),
+    'EMAIL_HOST_PASSWORD': '***' if os.getenv('EMAIL_HOST_PASSWORD') else NOT_CONFIGURED,
 }
 
 for key, value in email_vars.items():
-    status = "✅" if value not in ['NO CONFIGURADA', None, ''] else "❌"
+    status = "✅" if value not in [NOT_CONFIGURED, None, ''] else "❌"
     print(f"{status} {key}: {value}")
 
 # 2. Verificar tipos después de conversión
@@ -109,8 +112,8 @@ try:
         'EMAIL_USE_SSL': f"{settings.EMAIL_USE_SSL} (tipo: {type(settings.EMAIL_USE_SSL).__name__})",
         'EMAIL_USE_TLS': f"{settings.EMAIL_USE_TLS} (tipo: {type(settings.EMAIL_USE_TLS).__name__})",
         'EMAIL_TIMEOUT': settings.EMAIL_TIMEOUT,
-        'EMAIL_HOST_USER': settings.EMAIL_HOST_USER or 'NO CONFIGURADO',
-        'EMAIL_HOST_PASSWORD': '***' if settings.EMAIL_HOST_PASSWORD else 'NO CONFIGURADO',
+        'EMAIL_HOST_USER': settings.EMAIL_HOST_USER or NOT_CONFIGURED,
+        'EMAIL_HOST_PASSWORD': '***' if settings.EMAIL_HOST_PASSWORD else NOT_CONFIGURED,
     }
     
     for key, value in django_email_config.items():

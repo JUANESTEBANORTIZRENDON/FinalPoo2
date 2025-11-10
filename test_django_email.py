@@ -71,7 +71,7 @@ S_CONTABLE - Sistema Contable Colombiano
         fail_silently=False,
     )
     
-    print(f"✅ Email enviado exitosamente!")
+    print("✅ Email enviado exitosamente!")
     print(f"📬 Destinatario: {to_email}")
     print(f"📨 Remitente: {from_email}")
     print("\n🎉 ¡ÉXITO! El sistema de emails está funcionando correctamente.")
