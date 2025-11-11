@@ -9,6 +9,10 @@ from django.urls import reverse_lazy
 from django.db import models
 from empresas.middleware import EmpresaFilterMixin
 from .models import Tercero, Impuesto, MetodoPago, Producto
+from core.base_views import (
+    BaseListView, BaseDetailView, BaseCreateView, 
+    BaseUpdateView, BaseDeleteView, BaseIndexView
+)
 
 # Constantes para evitar duplicación de literales de URL
 TERCERO_LIST_URL = 'catalogos:tercero_list'

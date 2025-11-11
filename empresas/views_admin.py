@@ -40,11 +40,12 @@ from accounts.models import PerfilUsuario
 from facturacion.models import Factura
 from tesoreria.models import Pago
 from contabilidad.models import Asiento
+from core.constants import (
+    MSG_NO_PERMISOS, URL_LOGIN, URL_DASHBOARD,
+    MSG_SELECCIONAR_EMPRESA, URL_CAMBIAR_EMPRESA
+)
 
-# Constantes para evitar duplicación de literales
-MSG_NO_PERMISOS = 'No tienes permisos para acceder a esta sección.'
-URL_LOGIN = 'accounts:login'
-URL_DASHBOARD = 'accounts:dashboard'
+# Constantes específicas del módulo
 URL_GESTIONAR_USUARIOS = 'empresas:admin_gestionar_usuarios'
 URL_GESTIONAR_EMPRESAS = 'empresas:admin_gestionar_empresas'
 TEMPLATE_EMPRESA_FORM = 'empresas/admin/empresa_form.html'

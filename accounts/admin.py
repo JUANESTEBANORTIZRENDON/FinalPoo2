@@ -595,24 +595,9 @@ admin.site.index_title = "🇨🇴 Sistema Contable Colombiano - Panel de Contro
 
 # Contexto personalizado para el admin
 def admin_context():
-    """Agregar estadísticas al contexto del admin"""
-    context = {}
-    try:
-        context.update({
-            'total_users': User.objects.count(),
-            'active_users': User.objects.filter(is_active=True).count(),
-            'total_profiles': PerfilUsuario.objects.count(),
-            'admin_users': User.objects.filter(is_superuser=True).count(),
-        })
-    except (AttributeError, ImportError):
-        # Manejo específico de errores de atributos e importación
-        context.update({
-            'total_users': 0,
-            'active_users': 0,
-            'total_profiles': 0,
-            'admin_users': 0,
-        })
-    return context
+    """Agregar estadísticas al contexto del admin - Usa utilidad centralizada"""
+    from core.utils import get_user_stats
+    return get_user_stats()
 
 # Registrar el contexto
 from django.template import Library

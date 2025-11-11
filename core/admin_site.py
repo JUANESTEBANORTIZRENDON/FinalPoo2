@@ -29,22 +29,18 @@ class ContableAdminSite(AdminSite):
         """
         context = super().each_context(request)
         
-        # Obtener estadísticas del sistema
+        # Obtener estadísticas del sistema usando utilidad centralizada
         try:
-            from accounts.models import PerfilUsuario
-            from empresas.models import Empresa, PerfilEmpresa
+            from core.utils import get_complete_stats
             
-            total_users = User.objects.count()
-            total_companies = Empresa.objects.count()
-            total_profiles = PerfilEmpresa.objects.count()
-            active_users = User.objects.filter(is_active=True).count()
-            system_health = "OK" if total_users > 0 else "ALERTA"
+            stats = get_complete_stats()
+            system_health = "OK" if stats['total_users'] > 0 else "ALERTA"
             
             context.update({
-                'total_users': total_users,
-                'total_companies': total_companies,
-                'total_profiles': total_profiles,
-                'active_users': active_users,
+                'total_users': stats['total_users'],
+                'total_companies': stats.get('total_companies', 0),
+                'total_profiles': stats.get('total_profiles', 0),
+                'active_users': stats['active_users'],
                 'system_health': system_health,
             })
         except Exception as e:

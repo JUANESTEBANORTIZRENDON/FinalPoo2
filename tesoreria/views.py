@@ -22,14 +22,10 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+from core.constants import MSG_SELECCIONAR_EMPRESA, URL_CAMBIAR_EMPRESA
 
-# Constantes para evitar duplicación de literales
+# Constantes específicas del módulo
 URL_COBROS_LISTA = 'tesoreria:cobros_lista'
-CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
-MSG_SELECCIONAR_EMPRESA = 'Debes seleccionar una empresa.'
-CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
-
-# Constante para evitar duplicación del literal de URL
 PAGOS_DETALLE_URL = 'tesoreria:pagos_detalle'
 
 # Vistas temporales básicas
@@ -170,7 +166,7 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
         
         if not empresa_activa:
             messages.error(self.request, MSG_SELECCIONAR_EMPRESA)
-            return redirect(CAMBIAR_EMPRESA_URL)
+            return redirect(URL_CAMBIAR_EMPRESA)
         
         # Generar número de cobro automático
         ultimo_cobro = Pago.objects.filter(
@@ -485,7 +481,7 @@ def activar_cobro(request, pk):
     
     if not empresa_activa:
         messages.error(request, MSG_SELECCIONAR_EMPRESA)
-        return redirect(CAMBIAR_EMPRESA_URL)
+        return redirect(URL_CAMBIAR_EMPRESA)
     
     # Verificar que el cobro esté en pendiente
     if cobro.estado != 'pendiente':
