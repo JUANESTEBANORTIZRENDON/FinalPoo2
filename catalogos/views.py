@@ -13,6 +13,7 @@ from .models import Tercero, Impuesto, MetodoPago, Producto
 # Constantes para evitar duplicación de literales de URL
 TERCERO_LIST_URL = 'catalogos:tercero_list'
 PRODUCTO_LIST_URL = 'catalogos:producto_list'
+METODO_PAGO_LIST_URL = 'catalogos:metodos_pago_lista'
 
 # Vistas temporales básicas
 class CatalogosIndexView(LoginRequiredMixin, TemplateView):
@@ -105,7 +106,7 @@ class MetodoPagoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_crear.html'
     fields = ['codigo', 'nombre', 'tipo_metodo', 'requiere_referencia', 'activo']
-    success_url = reverse_lazy('catalogos:metodos_pago_lista')
+    success_url = reverse_lazy(METODO_PAGO_LIST_URL)
     
     def form_valid(self, form):
         form.instance.empresa = self.request.empresa_activa
@@ -115,12 +116,12 @@ class MetodoPagoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_editar.html'
     fields = ['codigo', 'nombre', 'tipo_metodo', 'requiere_referencia', 'activo']
-    success_url = reverse_lazy('catalogos:metodos_pago_lista')
+    success_url = reverse_lazy(METODO_PAGO_LIST_URL)
 
 class MetodoPagoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_eliminar.html'
-    success_url = reverse_lazy('catalogos:metodos_pago_lista')
+    success_url = reverse_lazy(METODO_PAGO_LIST_URL)
 
 class ProductoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = Producto

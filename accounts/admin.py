@@ -39,6 +39,15 @@ IDENT_SECTION_TITLE = '🆔 Identificación'
 # Constante para el título de la sección de información personal
 PERSONAL_SECTION_TITLE = '👤 Información Personal'
 
+# Constantes para títulos de secciones de fieldsets (SonarCloud: literales duplicados)
+CONTACT_SECTION_TITLE = '📱 Contacto'
+CONTACT_DESC = 'Información de contacto y ubicación'
+PERSONAL_OPT_DESC = 'Información personal opcional'
+PROFESSIONAL_SECTION_TITLE = '💼 Información Profesional'
+PROFESSIONAL_DESC = 'Información laboral y profesional'
+CONFIG_SECTION_TITLE = '⚙️ Configuración'
+CONFIG_DESC = 'Configuración del perfil'
+
 class PerfilUsuarioInline(admin.StackedInline):
     """Inline simplificado para mostrar el perfil en la página de usuario"""
     model = PerfilUsuario
@@ -55,24 +64,24 @@ class PerfilUsuarioInline(admin.StackedInline):
             'fields': ('tipo_documento', 'numero_documento'),
             'description': 'Información de identificación oficial del usuario'
         }),
-        ('📱 Contacto', {
+        (CONTACT_SECTION_TITLE, {
             'fields': ('telefono', 'direccion', 'ciudad', 'departamento', 'codigo_postal'),
-            'description': 'Información de contacto y ubicación'
+            'description': CONTACT_DESC
         }),
         (PERSONAL_SECTION_TITLE, {
             'fields': ('fecha_nacimiento', 'genero', 'estado_civil'),
             'classes': ('collapse',),
-            'description': 'Información personal opcional'
+            'description': PERSONAL_OPT_DESC
         }),
-        ('💼 Información Profesional', {
+        (PROFESSIONAL_SECTION_TITLE, {
             'fields': ('profesion', 'empresa', 'cargo'),
             'classes': ('collapse',),
-            'description': 'Información laboral y profesional'
+            'description': PROFESSIONAL_DESC
         }),
-        ('⚙️ Configuración', {
+        (CONFIG_SECTION_TITLE, {
             'fields': ('activo',),
             'classes': ('collapse',),
-            'description': 'Configuración del perfil'
+            'description': CONFIG_DESC
         }),
     )
     
@@ -394,24 +403,24 @@ class PerfilUsuarioAdmin(admin.ModelAdmin):
                     'fields': ('tipo_documento', 'numero_documento'),
                     'description': 'Información de identificación oficial'
                 }),
-                ('📱 Contacto', {
+                (CONTACT_SECTION_TITLE, {
                     'fields': ('telefono', 'direccion', 'ciudad', 'departamento', 'codigo_postal'),
-                    'description': 'Información de contacto y ubicación'
+                    'description': CONTACT_DESC
                 }),
                 ('👥 Información Personal', {
                     'fields': ('fecha_nacimiento', 'genero', 'estado_civil'),
                     'classes': ('collapse',),
-                    'description': 'Información personal opcional'
+                    'description': PERSONAL_OPT_DESC
                 }),
-                ('💼 Información Profesional', {
+                (PROFESSIONAL_SECTION_TITLE, {
                     'fields': ('profesion', 'empresa', 'cargo'),
                     'classes': ('collapse',),
-                    'description': 'Información laboral y profesional'
+                    'description': PROFESSIONAL_DESC
                 }),
-                ('⚙️ Configuración', {
+                (CONFIG_SECTION_TITLE, {
                     'fields': ('activo',),
                     'classes': ('collapse',),
-                    'description': 'Configuración del perfil'
+                    'description': CONFIG_DESC
                 }),
                 ('📅 Metadatos', {
                     'fields': ('fecha_creacion', 'fecha_actualizacion'),
@@ -438,24 +447,24 @@ class PerfilUsuarioAdmin(admin.ModelAdmin):
                     'fields': ('tipo_documento', 'numero_documento'),
                     'description': 'Información de identificación oficial (requerida)'
                 }),
-                ('📱 Contacto', {
+                (CONTACT_SECTION_TITLE, {
                     'fields': ('telefono', 'direccion', 'ciudad', 'departamento', 'codigo_postal'),
-                    'description': 'Información de contacto y ubicación'
+                    'description': CONTACT_DESC
                 }),
                 ('👥 Información Personal', {
                     'fields': ('fecha_nacimiento', 'genero', 'estado_civil'),
                     'classes': ('collapse',),
-                    'description': 'Información personal opcional'
+                    'description': PERSONAL_OPT_DESC
                 }),
-                ('💼 Información Profesional', {
+                (PROFESSIONAL_SECTION_TITLE, {
                     'fields': ('profesion', 'empresa', 'cargo'),
                     'classes': ('collapse',),
-                    'description': 'Información laboral y profesional'
+                    'description': PROFESSIONAL_DESC
                 }),
-                ('⚙️ Configuración', {
+                (CONFIG_SECTION_TITLE, {
                     'fields': ('activo',),
                     'classes': ('collapse',),
-                    'description': 'Configuración del perfil'
+                    'description': CONFIG_DESC
                 }),
             )
     

@@ -991,7 +991,7 @@ def confirmar_pago(request, pk):
     else:
         messages.error(request, message)
     
-    return redirect('tesoreria:pagos_detalle', pk=pk)
+    return redirect(PAGOS_DETALLE_URL, pk=pk)
 
 
 @login_required
@@ -1010,7 +1010,7 @@ def anular_pago(request, pk):
     else:
         messages.error(request, message)
     
-    return redirect('tesoreria:pagos_detalle', pk=pk)
+    return redirect(PAGOS_DETALLE_URL, pk=pk)
 
 
 @login_required
@@ -1028,4 +1028,4 @@ def marcar_pago_pagado(request, pk):
     else:
         messages.error(request, message)
     
-    return redirect('tesoreria:pagos_detalle', pk=pk)
+    return redirect(PAGOS_DETALLE_URL, pk=pk)
