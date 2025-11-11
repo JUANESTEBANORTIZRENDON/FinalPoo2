@@ -141,7 +141,7 @@ DATABASES = {
         "USER": tmpPostgres.username,
         "PASSWORD": tmpPostgres.password,
         "HOST": tmpPostgres.hostname,
-        "PORT": 5432,
+        "PORT": "5432",
         "OPTIONS": dict(parse_qsl(tmpPostgres.query)),
     }
 }
