@@ -4,36 +4,62 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
+from django.urls import reverse_lazy
+from django.contrib import messages
+from empresas.middleware import EmpresaFilterMixin
 from .models import CuentaContable, Asiento, Partida
 
 # Constante para evitar duplicación del literal 'contabilidad:asientos_detalle'
 ASIENTOS_DETALLE_URL = 'contabilidad:asientos_detalle'
+CUENTAS_LIST_URL = 'contabilidad:cuentas_lista'
 
 # Vistas temporales básicas
 class ContabilidadIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'contabilidad/index.html'
 
-class CuentaContableListView(LoginRequiredMixin, ListView):
+class CuentaContableListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = CuentaContable
     template_name = 'contabilidad/cuentas_lista.html'
+    context_object_name = 'object_list'
+    paginate_by = 100
+    
+    def get_queryset(self):
+        return super().get_queryset().order_by('codigo')
 
-class CuentaContableDetailView(LoginRequiredMixin, DetailView):
+class CuentaContableDetailView(LoginRequiredMixin, EmpresaFilterMixin, DetailView):
     model = CuentaContable
     template_name = 'contabilidad/cuentas_detalle.html'
 
-class CuentaContableCreateView(LoginRequiredMixin, CreateView):
+class CuentaContableCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = CuentaContable
     template_name = 'contabilidad/cuentas_crear.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'descripcion', 'naturaleza', 'tipo_cuenta', 'cuenta_padre', 'nivel', 'acepta_movimiento', 'saldo_inicial', 'activa']
+    success_url = reverse_lazy(CUENTAS_LIST_URL)
+    
+    def form_valid(self, form):
+        form.instance.empresa = getattr(self.request, 'empresa_activa', None)
+        messages.success(self.request, f'Cuenta contable {form.instance.codigo} - {form.instance.nombre} creada exitosamente.')
+        return super().form_valid(form)
 
-class CuentaContableUpdateView(LoginRequiredMixin, UpdateView):
+class CuentaContableUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = CuentaContable
     template_name = 'contabilidad/cuentas_editar.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'descripcion', 'naturaleza', 'tipo_cuenta', 'cuenta_padre', 'nivel', 'acepta_movimiento', 'saldo_inicial', 'activa']
+    success_url = reverse_lazy(CUENTAS_LIST_URL)
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Cuenta contable {form.instance.codigo} - {form.instance.nombre} actualizada exitosamente.')
+        return super().form_valid(form)
 
-class CuentaContableDeleteView(LoginRequiredMixin, DeleteView):
+class CuentaContableDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = CuentaContable
     template_name = 'contabilidad/cuentas_eliminar.html'
+    success_url = reverse_lazy(CUENTAS_LIST_URL)
+    
+    def delete(self, request, *args, **kwargs):
+        cuenta = self.get_object()
+        messages.success(request, f'Cuenta contable {cuenta.codigo} - {cuenta.nombre} eliminada exitosamente.')
+        return super().delete(request, *args, **kwargs)
 
 class AsientoListView(LoginRequiredMixin, ListView):
     model = Asiento

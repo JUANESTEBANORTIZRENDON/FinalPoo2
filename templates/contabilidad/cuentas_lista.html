@@ -1,0 +1,312 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Plan de Cuentas - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:index' %}">Contabilidad</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Plan de Cuentas</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-diagram-3 text-success"></i>
+                        Plan de Cuentas Contables
+                    </h4>
+                    <div>
+                        <a href="{% url 'contabilidad:cuentas_crear' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i>
+                            Nueva Cuenta
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Filtros de búsqueda -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="buscar" placeholder="Buscar por código o nombre...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="filtro_tipo">
+                                <option value="">Todos los tipos</option>
+                                <option value="ACTIVO">Activo</option>
+                                <option value="PASIVO">Pasivo</option>
+                                <option value="PATRIMONIO">Patrimonio</option>
+                                <option value="INGRESO">Ingreso</option>
+                                <option value="GASTO">Gasto</option>
+                                <option value="COSTO">Costo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="filtro_naturaleza">
+                                <option value="">Todas las naturalezas</option>
+                                <option value="D">Débito</option>
+                                <option value="C">Crédito</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <select class="form-select" id="filtro_nivel">
+                                <option value="">Nivel</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary w-100" onclick="limpiarFiltros()">
+                                <i class="bi bi-x-circle"></i>
+                                Limpiar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {% if object_list %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover" id="tabla-cuentas">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th style="width: 120px;">Código</th>
+                                        <th>Nombre</th>
+                                        <th style="width: 100px;">Tipo</th>
+                                        <th style="width: 80px;">Nat.</th>
+                                        <th style="width: 60px;">Nivel</th>
+                                        <th style="width: 120px;" class="text-end">Saldo Débito</th>
+                                        <th style="width: 120px;" class="text-end">Saldo Crédito</th>
+                                        <th style="width: 80px;">Mov.</th>
+                                        <th style="width: 80px;">Estado</th>
+                                        <th style="width: 120px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cuenta in object_list %}
+                                        <tr data-tipo="{{ cuenta.tipo_cuenta }}" 
+                                            data-naturaleza="{{ cuenta.naturaleza }}"
+                                            data-nivel="{{ cuenta.nivel }}"
+                                            data-activa="{{ cuenta.activa }}">
+                                            <td>
+                                                <strong>{{ cuenta.codigo }}</strong>
+                                            </td>
+                                            <td style="{% if cuenta.nivel > 1 %}padding-left: {{ cuenta.nivel|add:"-1"|stringformat:"d" }}em;{% endif %}">
+                                                {{ cuenta.nombre }}
+                                            </td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if cuenta.tipo_cuenta == 'ACTIVO' %}bg-primary
+                                                    {% elif cuenta.tipo_cuenta == 'PASIVO' %}bg-danger
+                                                    {% elif cuenta.tipo_cuenta == 'PATRIMONIO' %}bg-info
+                                                    {% elif cuenta.tipo_cuenta == 'INGRESO' %}bg-success
+                                                    {% elif cuenta.tipo_cuenta == 'GASTO' %}bg-warning
+                                                    {% else %}bg-secondary{% endif %}">
+                                                    {{ cuenta.get_tipo_cuenta_display }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if cuenta.naturaleza == 'D' %}
+                                                    <span class="badge bg-success">D</span>
+                                                {% else %}
+                                                    <span class="badge bg-info">C</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">{{ cuenta.nivel }}</td>
+                                            <td class="text-end">
+                                                <small>{{ cuenta.saldo_debito|floatformat:2 }}</small>
+                                            </td>
+                                            <td class="text-end">
+                                                <small>{{ cuenta.saldo_credito|floatformat:2 }}</small>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if cuenta.acepta_movimiento %}
+                                                    <i class="bi bi-check-circle text-success" title="Acepta movimientos"></i>
+                                                {% else %}
+                                                    <i class="bi bi-x-circle text-muted" title="No acepta movimientos"></i>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if cuenta.activa %}
+                                                    <span class="badge bg-success">Activa</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Inactiva</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{% url 'contabilidad:cuentas_detalle' cuenta.pk %}" 
+                                                       class="btn btn-outline-info" 
+                                                       title="Ver detalles">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'contabilidad:cuentas_editar' cuenta.pk %}" 
+                                                       class="btn btn-outline-warning" 
+                                                       title="Editar">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <a href="{% url 'contabilidad:cuentas_eliminar' cuenta.pk %}" 
+                                                       class="btn btn-outline-danger" 
+                                                       title="Eliminar">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Resumen -->
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <div class="row text-center">
+                                            <div class="col-md-3">
+                                                <h6 class="text-muted">Total Cuentas</h6>
+                                                <h4 id="total-cuentas">{{ object_list|length }}</h4>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h6 class="text-muted">Total Débitos</h6>
+                                                <h4 class="text-success" id="total-debitos">$0.00</h4>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h6 class="text-muted">Total Créditos</h6>
+                                                <h4 class="text-info" id="total-creditos">$0.00</h4>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h6 class="text-muted">Diferencia</h6>
+                                                <h4 id="diferencia">$0.00</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+                            <h5>No hay cuentas contables registradas</h5>
+                            <p class="mb-3">Comienza creando el plan de cuentas para tu empresa.</p>
+                            <a href="{% url 'contabilidad:cuentas_crear' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i>
+                                Crear Primera Cuenta
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buscar = document.getElementById('buscar');
+    const filtroTipo = document.getElementById('filtro_tipo');
+    const filtroNaturaleza = document.getElementById('filtro_naturaleza');
+    const filtroNivel = document.getElementById('filtro_nivel');
+    const tabla = document.getElementById('tabla-cuentas');
+    
+    if (tabla) {
+        calcularTotales();
+        
+        function filtrarTabla() {
+            const textoBusqueda = buscar.value.toLowerCase();
+            const tipoSeleccionado = filtroTipo.value;
+            const naturalezaSeleccionada = filtroNaturaleza.value;
+            const nivelSeleccionado = filtroNivel.value;
+            
+            const filas = tabla.querySelectorAll('tbody tr');
+            
+            for (const fila of filas) {
+                const texto = fila.textContent.toLowerCase();
+                const tipo = fila.dataset.tipo;
+                const naturaleza = fila.dataset.naturaleza;
+                const nivel = fila.dataset.nivel;
+                
+                let mostrar = true;
+                
+                if (textoBusqueda && !texto.includes(textoBusqueda)) {
+                    mostrar = false;
+                }
+                if (tipoSeleccionado && tipo !== tipoSeleccionado) {
+                    mostrar = false;
+                }
+                if (naturalezaSeleccionada && naturaleza !== naturalezaSeleccionada) {
+                    mostrar = false;
+                }
+                if (nivelSeleccionado && nivel !== nivelSeleccionado) {
+                    mostrar = false;
+                }
+                
+                fila.style.display = mostrar ? '' : 'none';
+            }
+            
+            calcularTotales();
+        }
+        
+        function calcularTotales() {
+            let totalDebitos = 0;
+            let totalCreditos = 0;
+            let cuentasVisibles = 0;
+            
+            const filas = tabla.querySelectorAll('tbody tr');
+            filas.forEach(fila => {
+                if (fila.style.display !== 'none') {
+                    cuentasVisibles++;
+                    const debito = parseFloat(fila.cells[5].textContent.replace(/,/g, ''));
+                    const credito = parseFloat(fila.cells[6].textContent.replace(/,/g, ''));
+                    totalDebitos += debito;
+                    totalCreditos += credito;
+                }
+            });
+            
+            const diferencia = totalDebitos - totalCreditos;
+            
+            document.getElementById('total-cuentas').textContent = cuentasVisibles;
+            document.getElementById('total-debitos').textContent = formatearMoneda(totalDebitos);
+            document.getElementById('total-creditos').textContent = formatearMoneda(totalCreditos);
+            
+            const elemDiferencia = document.getElementById('diferencia');
+            elemDiferencia.textContent = formatearMoneda(Math.abs(diferencia));
+            elemDiferencia.className = diferencia === 0 ? 'text-success' : (diferencia > 0 ? 'text-primary' : 'text-info');
+        }
+        
+        function formatearMoneda(valor) {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 2
+            }).format(valor);
+        }
+        
+        buscar.addEventListener('input', filtrarTabla);
+        filtroTipo.addEventListener('change', filtrarTabla);
+        filtroNaturaleza.addEventListener('change', filtrarTabla);
+        filtroNivel.addEventListener('change', filtrarTabla);
+    }
+});
+
+function limpiarFiltros() {
+    document.getElementById('buscar').value = '';
+    document.getElementById('filtro_tipo').value = '';
+    document.getElementById('filtro_naturaleza').value = '';
+    document.getElementById('filtro_nivel').value = '';
+    
+    const filas = document.querySelectorAll('#tabla-cuentas tbody tr');
+    for (const fila of filas) {
+        fila.style.display = '';
+    }
+}
+</script>
+{% endblock %}

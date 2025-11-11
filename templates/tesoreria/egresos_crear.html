@@ -1,0 +1,222 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Registrar Egreso - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tesoreria:index' %}">Tesorería</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tesoreria:egresos_lista' %}">Egresos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Registrar Egreso</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-cash-stack"></i>
+                        Registrar Egreso a Proveedor
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <h5 class="alert-heading">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    Errores en el formulario
+                                </h5>
+                                <ul class="mb-0">
+                                    {% for field in form %}
+                                        {% if field.errors %}
+                                            {% for error in field.errors %}
+                                                <li>{{ field.label }}: {{ error }}</li>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if form.non_field_errors %}
+                                        {% for error in form.non_field_errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    {% endif %}
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Sección 1: Información del Proveedor -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-danger border-bottom pb-2 mb-3">
+                                    <i class="bi bi-building"></i>
+                                    Información del Proveedor
+                                </h6>
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.tercero.id_for_label }}" class="form-label">
+                                    Proveedor <span class="text-danger">*</span>
+                                </label>
+                                {{ form.tercero }}
+                                {% if form.tercero.help_text %}
+                                    <small class="form-text text-muted">{{ form.tercero.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Sección 2: Detalles del Egreso -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-danger border-bottom pb-2 mb-3">
+                                    <i class="bi bi-cash"></i>
+                                    Detalles del Egreso
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.numero_pago.id_for_label }}" class="form-label">
+                                    {{ form.numero_pago.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.numero_pago }}
+                                {% if form.numero_pago.help_text %}
+                                    <small class="form-text text-muted">{{ form.numero_pago.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.fecha_pago.id_for_label }}" class="form-label">
+                                    {{ form.fecha_pago.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.fecha_pago }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.valor.id_for_label }}" class="form-label">
+                                    {{ form.valor.label }} <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.valor }}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.metodo_pago.id_for_label }}" class="form-label">
+                                    {{ form.metodo_pago.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.metodo_pago }}
+                            </div>
+                        </div>
+                        
+                        <!-- Sección 3: Información Adicional -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-danger border-bottom pb-2 mb-3">
+                                    <i class="bi bi-file-text"></i>
+                                    Información Adicional
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.referencia.id_for_label }}" class="form-label">
+                                    {{ form.referencia.label }}
+                                </label>
+                                {{ form.referencia }}
+                                {% if form.referencia.help_text %}
+                                    <small class="form-text text-muted">{{ form.referencia.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.estado.id_for_label }}" class="form-label">
+                                    {{ form.estado.label }}
+                                </label>
+                                {{ form.estado }}
+                            </div>
+                            
+                            {% if form.factura %}
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.factura.id_for_label }}" class="form-label">
+                                    {{ form.factura.label }}
+                                </label>
+                                {{ form.factura }}
+                                {% if form.factura.help_text %}
+                                    <small class="form-text text-muted">{{ form.factura.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.observaciones.id_for_label }}" class="form-label">
+                                    {{ form.observaciones.label }}
+                                </label>
+                                {{ form.observaciones }}
+                            </div>
+                        </div>
+                        
+                        <!-- Campo tipo_pago oculto (siempre será 'egreso') -->
+                        <input type="hidden" name="tipo_pago" value="egreso">
+                        
+                        <!-- Campo empresa oculto -->
+                        <div style="display: none;">
+                            {{ form.empresa }}
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'tesoreria:egresos_lista' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-check-circle"></i>
+                                Registrar Egreso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Añadir clases de Bootstrap a los campos del formulario
+    const formFields = document.querySelectorAll('input:not([type="checkbox"]):not([type="hidden"]), select, textarea');
+    for (const field of formFields) {
+        field.classList.add('form-control');
+    }
+    
+    // Configurar campo de fecha con la fecha actual
+    const fechaPago = document.querySelector('input[name="fecha_pago"]');
+    if (fechaPago && !fechaPago.value) {
+        const hoy = new Date().toISOString().split('T')[0];
+        fechaPago.value = hoy;
+    }
+    
+    // Configurar campo de fecha como tipo date
+    if (fechaPago) {
+        fechaPago.type = 'date';
+    }
+    
+    // Formatear campo de valor
+    const valorInput = document.querySelector('input[name="valor"]');
+    if (valorInput) {
+        valorInput.type = 'number';
+        valorInput.step = '0.01';
+        valorInput.min = '0';
+    }
+});
+</script>
+{% endblock %}

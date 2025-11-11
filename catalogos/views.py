@@ -13,6 +13,8 @@ from .models import Tercero, Impuesto, MetodoPago, Producto
 # Constantes para evitar duplicación de literales de URL
 TERCERO_LIST_URL = 'catalogos:tercero_list'
 PRODUCTO_LIST_URL = 'catalogos:producto_list'
+IMPUESTO_LIST_URL = 'catalogos:impuestos_lista'
+METODO_PAGO_LIST_URL = 'catalogos:metodos_pago_lista'
 
 # Vistas temporales básicas
 class CatalogosIndexView(LoginRequiredMixin, TemplateView):
@@ -65,49 +67,93 @@ class TerceroDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     template_name = 'catalogos/tercero_confirm_delete.html'
     success_url = reverse_lazy(TERCERO_LIST_URL)
 
-class ImpuestoListView(LoginRequiredMixin, ListView):
+class ImpuestoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = Impuesto
     template_name = 'catalogos/impuestos_lista.html'
+    context_object_name = 'object_list'
+    paginate_by = 50
+    
+    def get_queryset(self):
+        return super().get_queryset().order_by('tipo_impuesto', 'nombre')
 
-class ImpuestoDetailView(LoginRequiredMixin, DetailView):
+class ImpuestoDetailView(LoginRequiredMixin, EmpresaFilterMixin, DetailView):
     model = Impuesto
     template_name = 'catalogos/impuestos_detalle.html'
 
-class ImpuestoCreateView(LoginRequiredMixin, CreateView):
+class ImpuestoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = Impuesto
     template_name = 'catalogos/impuestos_crear.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_impuesto', 'porcentaje', 'activo']
+    success_url = reverse_lazy(IMPUESTO_LIST_URL)
+    
+    def form_valid(self, form):
+        form.instance.empresa = getattr(self.request, 'empresa_activa', None)
+        messages.success(self.request, f'Impuesto {form.instance.nombre} creado exitosamente.')
+        return super().form_valid(form)
 
-class ImpuestoUpdateView(LoginRequiredMixin, UpdateView):
+class ImpuestoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = Impuesto
     template_name = 'catalogos/impuestos_editar.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_impuesto', 'porcentaje', 'activo']
+    success_url = reverse_lazy(IMPUESTO_LIST_URL)
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Impuesto {form.instance.nombre} actualizado exitosamente.')
+        return super().form_valid(form)
 
-class ImpuestoDeleteView(LoginRequiredMixin, DeleteView):
+class ImpuestoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = Impuesto
     template_name = 'catalogos/impuestos_eliminar.html'
+    success_url = reverse_lazy(IMPUESTO_LIST_URL)
+    
+    def delete(self, request, *args, **kwargs):
+        impuesto = self.get_object()
+        messages.success(request, f'Impuesto {impuesto.nombre} eliminado exitosamente.')
+        return super().delete(request, *args, **kwargs)
 
-class MetodoPagoListView(LoginRequiredMixin, ListView):
+class MetodoPagoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_lista.html'
+    context_object_name = 'object_list'
+    paginate_by = 50
+    
+    def get_queryset(self):
+        return super().get_queryset().order_by('nombre')
 
-class MetodoPagoDetailView(LoginRequiredMixin, DetailView):
+class MetodoPagoDetailView(LoginRequiredMixin, EmpresaFilterMixin, DetailView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_detalle.html'
 
-class MetodoPagoCreateView(LoginRequiredMixin, CreateView):
+class MetodoPagoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_crear.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_metodo', 'requiere_referencia', 'activo']
+    success_url = reverse_lazy(METODO_PAGO_LIST_URL)
+    
+    def form_valid(self, form):
+        form.instance.empresa = getattr(self.request, 'empresa_activa', None)
+        messages.success(self.request, f'Método de pago {form.instance.nombre} creado exitosamente.')
+        return super().form_valid(form)
 
-class MetodoPagoUpdateView(LoginRequiredMixin, UpdateView):
+class MetodoPagoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_editar.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_metodo', 'requiere_referencia', 'activo']
+    success_url = reverse_lazy(METODO_PAGO_LIST_URL)
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Método de pago {form.instance.nombre} actualizado exitosamente.')
+        return super().form_valid(form)
 
-class MetodoPagoDeleteView(LoginRequiredMixin, DeleteView):
+class MetodoPagoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = MetodoPago
     template_name = 'catalogos/metodos_pago_eliminar.html'
+    success_url = reverse_lazy(METODO_PAGO_LIST_URL)
+    
+    def delete(self, request, *args, **kwargs):
+        metodo = self.get_object()
+        messages.success(request, f'Método de pago {metodo.nombre} eliminado exitosamente.')
+        return super().delete(request, *args, **kwargs)
 
 class ProductoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = Producto

@@ -1,0 +1,138 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Catálogos - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Catálogos</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">
+                <i class="bi bi-book"></i>
+                Catálogos del Sistema
+            </h2>
+            <p class="text-muted">
+                Gestiona toda la información maestra de tu sistema contable: terceros, productos, impuestos y métodos de pago.
+            </p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Terceros -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-people display-3 text-primary"></i>
+                    </div>
+                    <h5 class="card-title">Terceros</h5>
+                    <p class="card-text text-muted">
+                        Clientes, proveedores y contactos de tu empresa
+                    </p>
+                    <a href="{% url 'catalogos:tercero_list' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right-circle"></i>
+                        Gestionar
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Productos -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-box-seam display-3 text-success"></i>
+                    </div>
+                    <h5 class="card-title">Productos</h5>
+                    <p class="card-text text-muted">
+                        Catálogo de productos y servicios
+                    </p>
+                    <a href="{% url 'catalogos:producto_list' %}" class="btn btn-success">
+                        <i class="bi bi-arrow-right-circle"></i>
+                        Gestionar
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Impuestos -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-percent display-3 text-warning"></i>
+                    </div>
+                    <h5 class="card-title">Impuestos</h5>
+                    <p class="card-text text-muted">
+                        IVA, retenciones y otros impuestos
+                    </p>
+                    <a href="{% url 'catalogos:impuestos_lista' %}" class="btn btn-warning">
+                        <i class="bi bi-arrow-right-circle"></i>
+                        Gestionar
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Métodos de Pago -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-credit-card display-3 text-info"></i>
+                    </div>
+                    <h5 class="card-title">Métodos de Pago</h5>
+                    <p class="card-text text-muted">
+                        Formas de pago disponibles
+                    </p>
+                    <a href="{% url 'catalogos:metodos_pago_lista' %}" class="btn btn-info">
+                        <i class="bi bi-arrow-right-circle"></i>
+                        Gestionar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-lightbulb"></i>
+                        Consejos de Uso
+                    </h5>
+                    <ul class="mb-0">
+                        <li><strong>Terceros:</strong> Registra todos tus clientes y proveedores antes de crear facturas o pagos.</li>
+                        <li><strong>Productos:</strong> Define claramente tu catálogo de productos y servicios con sus respectivos precios.</li>
+                        <li><strong>Impuestos:</strong> Configura los impuestos aplicables a tu empresa (IVA, retenciones, etc.).</li>
+                        <li><strong>Métodos de Pago:</strong> Define las formas de pago que aceptas (efectivo, transferencia, tarjeta, etc.).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-shadow {
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.hover-shadow:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px);
+    transition: all 0.3s ease-in-out;
+}
+</style>
+{% endblock %}

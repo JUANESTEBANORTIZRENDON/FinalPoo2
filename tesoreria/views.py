@@ -43,10 +43,18 @@ class PagoDetailView(LoginRequiredMixin, DetailView):
     model = Pago
     template_name = 'tesoreria/pagos_detalle.html'
 
-class PagoCreateView(LoginRequiredMixin, CreateView):
+class PagoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = Pago
     template_name = 'tesoreria/pagos_crear.html'
     fields = '__all__'
+    success_url = reverse_lazy('tesoreria:pagos_lista')
+    
+    def form_valid(self, form):
+        form.instance.creado_por = self.request.user
+        if not form.instance.empresa:
+            form.instance.empresa = getattr(self.request, 'empresa_activa', None)
+        messages.success(self.request, f'Pago {form.instance.numero_pago} registrado exitosamente.')
+        return super().form_valid(form)
 
 class PagoUpdateView(LoginRequiredMixin, UpdateView):
     model = Pago
@@ -272,36 +280,94 @@ class CobroUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
         )
         return super().form_valid(form)
 
-class EgresoListView(LoginRequiredMixin, ListView):
+class EgresoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = Pago
     template_name = 'tesoreria/egresos_lista.html'
+    context_object_name = 'object_list'
+    paginate_by = 50
+    
+    def get_queryset(self):
+        return super().get_queryset().filter(tipo_pago='egreso').order_by('-fecha_pago')
 
-class EgresoCreateView(LoginRequiredMixin, CreateView):
+class EgresoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = Pago
     template_name = 'tesoreria/egresos_crear.html'
-    fields = '__all__'
+    fields = ['numero_pago', 'fecha_pago', 'tercero', 'metodo_pago', 'valor', 'referencia', 'observaciones', 'estado', 'factura']
+    success_url = reverse_lazy('tesoreria:egresos_lista')
+    
+    def form_valid(self, form):
+        form.instance.empresa = getattr(self.request, 'empresa_activa', None)
+        form.instance.tipo_pago = 'egreso'
+        form.instance.creado_por = self.request.user
+        messages.success(self.request, f'Egreso {form.instance.numero_pago} registrado exitosamente.')
+        return super().form_valid(form)
 
-class CuentaBancariaListView(LoginRequiredMixin, ListView):
+class EgresoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
+    model = Pago
+    template_name = 'tesoreria/egresos_editar.html'
+    fields = ['numero_pago', 'fecha_pago', 'tercero', 'metodo_pago', 'valor', 'referencia', 'observaciones', 'estado', 'factura']
+    success_url = reverse_lazy('tesoreria:egresos_lista')
+    
+    def get_queryset(self):
+        return super().get_queryset().filter(tipo_pago='egreso')
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Egreso {form.instance.numero_pago} actualizado exitosamente.')
+        return super().form_valid(form)
+
+class EgresoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
+    model = Pago
+    template_name = 'tesoreria/egresos_eliminar.html'
+    success_url = reverse_lazy('tesoreria:egresos_lista')
+    
+    def get_queryset(self):
+        return super().get_queryset().filter(tipo_pago='egreso')
+    
+    def delete(self, request, *args, **kwargs):
+        egreso = self.get_object()
+        messages.success(request, f'Egreso {egreso.numero_pago} eliminado exitosamente.')
+        return super().delete(request, *args, **kwargs)
+
+class CuentaBancariaListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_lista.html'
+    context_object_name = 'object_list'
+    paginate_by = 50
 
-class CuentaBancariaDetailView(LoginRequiredMixin, DetailView):
+class CuentaBancariaDetailView(LoginRequiredMixin, EmpresaFilterMixin, DetailView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_detalle.html'
 
-class CuentaBancariaCreateView(LoginRequiredMixin, CreateView):
+class CuentaBancariaCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_crear.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_cuenta', 'numero_cuenta', 'banco', 'saldo_actual', 'activa', 'cuenta_contable']
+    success_url = reverse_lazy('tesoreria:cuentas_lista')
+    
+    def form_valid(self, form):
+        form.instance.empresa = getattr(self.request, 'empresa_activa', None)
+        messages.success(self.request, f'Cuenta bancaria {form.instance.nombre} creada exitosamente.')
+        return super().form_valid(form)
 
-class CuentaBancariaUpdateView(LoginRequiredMixin, UpdateView):
+class CuentaBancariaUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_editar.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_cuenta', 'numero_cuenta', 'banco', 'saldo_actual', 'activa', 'cuenta_contable']
+    success_url = reverse_lazy('tesoreria:cuentas_lista')
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Cuenta bancaria {form.instance.nombre} actualizada exitosamente.')
+        return super().form_valid(form)
 
-class CuentaBancariaDeleteView(LoginRequiredMixin, DeleteView):
+class CuentaBancariaDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_eliminar.html'
+    success_url = reverse_lazy('tesoreria:cuentas_lista')
+    
+    def delete(self, request, *args, **kwargs):
+        cuenta = self.get_object()
+        messages.success(request, f'Cuenta bancaria {cuenta.nombre} eliminada exitosamente.')
+        return super().delete(request, *args, **kwargs)
 
 class FlujoCajaView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/flujo_caja.html'

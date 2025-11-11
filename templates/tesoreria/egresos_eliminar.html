@@ -1,0 +1,105 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Eliminar Egreso - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tesoreria:index' %}">Tesorería</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tesoreria:egresos_lista' %}">Egresos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Eliminar Egreso</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Confirmar Eliminación
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading"><i class="bi bi-info-circle"></i> Advertencia</h5>
+                        <p class="mb-0">Estás a punto de eliminar este egreso. Esta acción <strong>no se puede deshacer</strong>.</p>
+                    </div>
+                    
+                    <h5 class="mb-3">Datos del Egreso a Eliminar:</h5>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th class="bg-light" style="width: 30%;">Número:</th>
+                                <td><strong>{{ object.numero_pago }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Fecha:</th>
+                                <td>{{ object.fecha_pago|date:"d/m/Y" }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Proveedor:</th>
+                                <td>{{ object.tercero.razon_social }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Valor:</th>
+                                <td><strong class="text-danger">${{ object.valor|floatformat:2 }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Estado:</th>
+                                <td>
+                                    {% if object.estado == 'pendiente' %}
+                                        <span class="badge bg-warning">Pendiente</span>
+                                    {% elif object.estado == 'activo' %}
+                                        <span class="badge bg-info">Activo</span>
+                                    {% elif object.estado == 'pagado' %}
+                                        <span class="badge bg-success">Pagado</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="alert alert-danger">
+                        <h6 class="alert-heading"><i class="bi bi-exclamation-octagon"></i> Consecuencias:</h6>
+                        <ul class="mb-0">
+                            <li>Se eliminará permanentemente el registro del egreso</li>
+                            <li>No afectará asientos contables ya registrados</li>
+                            <li>Los datos del proveedor y factura no se verán afectados</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'tesoreria:egresos_lista' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="btnEliminar">
+                                <i class="bi bi-trash"></i> Sí, Eliminar Egreso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (confirm('¿Estás completamente seguro de eliminar este egreso?')) {
+        document.getElementById('btnEliminar').disabled = true;
+        document.getElementById('btnEliminar').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Eliminando...';
+        this.submit();
+    }
+});
+</script>
+{% endblock %}

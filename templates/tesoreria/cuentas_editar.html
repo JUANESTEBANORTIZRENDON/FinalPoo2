@@ -1,0 +1,149 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Editar Cuenta Bancaria - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tesoreria:index' %}">Tesorería</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tesoreria:cuentas_lista' %}">Cuentas Bancarias</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Editar Cuenta</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-pencil"></i>
+                        Editar Cuenta: {{ object.nombre }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                            <div class="alert alert-danger alert-dismissible fade show">
+                                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Errores</h5>
+                                <ul class="mb-0">
+                                    {% for field in form %}
+                                        {% if field.errors %}
+                                            {% for error in field.errors %}
+                                                <li>{{ field.label }}: {{ error }}</li>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-warning border-bottom pb-2 mb-3">
+                                    <i class="bi bi-info-circle"></i> Información Básica
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Código <span class="text-danger">*</span></label>
+                                {{ form.codigo }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tipo <span class="text-danger">*</span></label>
+                                {{ form.tipo_cuenta }}
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                                {{ form.nombre }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-warning border-bottom pb-2 mb-3">
+                                    <i class="bi bi-bank2"></i> Información Bancaria
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Banco</label>
+                                {{ form.banco }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Número de Cuenta</label>
+                                {{ form.numero_cuenta }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-warning border-bottom pb-2 mb-3">
+                                    <i class="bi bi-cash-coin"></i> Saldo y Estado
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Saldo Actual <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.saldo_actual }}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Estado</label>
+                                <div class="form-check form-switch">
+                                    {{ form.activa }}
+                                    <label class="form-check-label" for="{{ form.activa.id_for_label }}">
+                                        Cuenta activa
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Cuenta Contable</label>
+                                {{ form.cuenta_contable }}
+                            </div>
+                        </div>
+                        
+                        <div style="display: none;">{{ form.empresa }}</div>
+                        
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'tesoreria:cuentas_lista' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-check-circle"></i> Actualizar Cuenta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input:not([type="checkbox"]):not([type="hidden"]), select, textarea').forEach(field => {
+        field.classList.add('form-control');
+    });
+    
+    const checkbox = document.querySelector('input[type="checkbox"][name="activa"]');
+    if (checkbox) {
+        checkbox.classList.remove('form-control');
+        checkbox.classList.add('form-check-input');
+    }
+    
+    const saldoInput = document.querySelector('input[name="saldo_actual"]');
+    if (saldoInput) {
+        saldoInput.type = 'number';
+        saldoInput.step = '0.01';
+    }
+});
+</script>
+{% endblock %}

@@ -33,9 +33,9 @@ DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise ValueError(
-        "❌ SECRET_KEY no está configurada.\n"
-        "   📝 Para desarrollo local: Crea un archivo .env con SECRET_KEY=tu-clave\n"
-        "   🚀 Para producción (Render): Configura SECRET_KEY en Environment Variables"
+        "[ERROR] SECRET_KEY no esta configurada.\n"
+        "   Para desarrollo local: Crea un archivo .env con SECRET_KEY=tu-clave\n"
+        "   Para produccion (Render): Configura SECRET_KEY en Environment Variables"
     )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -219,7 +219,7 @@ LOGOUT_REDIRECT_URL = "accounts:login"
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 
 if SENDGRID_API_KEY:
-    # ✅ PRODUCCIÓN: Usar SendGrid (funciona en Render gratuito)
+    # PRODUCCION: Usar SendGrid (funciona en Render gratuito)
     EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
     SENDGRID_SANDBOX_MODE_IN_DEBUG = False  # Desactivar sandbox para enviar emails reales
     EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "").strip()
@@ -233,9 +233,9 @@ if SENDGRID_API_KEY:
     EMAIL_USE_TLS = False
     EMAIL_HOST_PASSWORD = None
     
-    print("📧 Email: Usando SendGrid API (producción)")
+    print("[EMAIL] Usando SendGrid API (produccion)")
 else:
-    # 🏠 DESARROLLO: Usar Gmail SMTP (solo funciona localmente)
+    # DESARROLLO: Usar Gmail SMTP (solo funciona localmente)
     EMAIL_BACKEND = os.getenv(
         "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
     )
@@ -249,7 +249,7 @@ else:
     DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER", "").strip()
     SERVER_EMAIL = DEFAULT_FROM_EMAIL
     
-    print("📧 Email: Usando Gmail SMTP (desarrollo local)")
+    print("[EMAIL] Usando Gmail SMTP (desarrollo local)")
 
 # Timeout para envío de emails
 EMAIL_TIMEOUT = 30
