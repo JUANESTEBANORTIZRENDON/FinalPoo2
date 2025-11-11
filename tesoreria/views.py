@@ -31,6 +31,142 @@ CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
 # Constante para evitar duplicación del literal de URL
 PAGOS_DETALLE_URL = 'tesoreria:pagos_detalle'
 
+
+# ==========================================
+# FUNCIONES AUXILIARES (Reducir complejidad cognitiva)
+# ==========================================
+
+def _generar_numero_cobro(empresa):
+    """Genera el siguiente número de cobro para una empresa."""
+    ultimo_cobro = Pago.objects.filter(
+        empresa=empresa,
+        tipo_pago='cobro'
+    ).order_by('-numero_pago').first()
+    
+    if ultimo_cobro:
+        try:
+            ultimo_numero = int(ultimo_cobro.numero_pago.replace('COB-', ''))
+            return f'COB-{(ultimo_numero + 1):06d}'
+        except (ValueError, AttributeError):
+            return 'COB-000001'
+    return 'COB-000001'
+
+
+def _validar_y_crear_detalle_cobro(request, cobro, index):
+    """Valida y crea un detalle de cobro con verificación de stock."""
+    producto_id = request.POST.get(f'producto_{index}')
+    cantidad = request.POST.get(f'cantidad_{index}')
+    precio = request.POST.get(f'precio_{index}')
+    
+    if not (producto_id and cantidad and precio):
+        return None
+    
+    try:
+        producto = Producto.objects.get(id=producto_id)
+        cantidad_int = int(cantidad)
+        
+        # Validar stock si el producto es inventariable
+        if producto.inventariable and cantidad_int > producto.stock_actual:
+            return (
+                f'{producto.nombre}: Stock insuficiente '
+                f'(Disponible: {producto.stock_actual}, Solicitado: {cantidad_int})'
+            )
+        
+        PagoDetalle.objects.create(
+            pago=cobro,
+            producto=producto,
+            cantidad=cantidad_int,
+            precio_unitario=Decimal(precio)
+        )
+        return None
+        
+    except (Producto.DoesNotExist, ValueError):
+        return None
+
+
+def _generar_numero_factura(empresa):
+    """Genera el siguiente número de factura para una empresa."""
+    ultima_factura = Factura.objects.filter(
+        empresa=empresa
+    ).order_by('-numero_factura').first()
+    
+    if ultima_factura:
+        try:
+            ultimo_numero = int(ultima_factura.numero_factura.replace('FAC-', ''))
+            return f'FAC-{(ultimo_numero + 1):06d}'
+        except (ValueError, AttributeError):
+            return 'FAC-000001'
+    return 'FAC-000001'
+
+
+def _validar_stock_cobro(cobro):
+    """Valida que haya stock suficiente para todos los productos del cobro."""
+    from django.core.exceptions import ValidationError
+    
+    for detalle in cobro.detalles.all():
+        if detalle.producto.inventariable:
+            if detalle.cantidad > detalle.producto.stock_actual:
+                raise ValidationError(
+                    f'Stock insuficiente para {detalle.producto.nombre}. '
+                    f'Disponible: {detalle.producto.stock_actual}, '
+                    f'Solicitado: {detalle.cantidad}'
+                )
+
+
+def _calcular_totales_cobro(cobro):
+    """Calcula subtotal, impuestos y total de un cobro."""
+    subtotal = Decimal('0.00')
+    total_impuestos = Decimal('0.00')
+    
+    for detalle in cobro.detalles.all():
+        subtotal += detalle.subtotal
+        if detalle.producto.impuesto:
+            impuesto_valor = detalle.producto.impuesto.calcular_impuesto(detalle.subtotal)
+            total_impuestos += impuesto_valor
+    
+    total = subtotal + total_impuestos
+    return subtotal, total_impuestos, total
+
+
+def _generar_observaciones_factura(cobro):
+    """Genera observaciones detalladas para la factura desde un cobro."""
+    return (
+        f'Factura generada desde cobro {cobro.numero_pago}.\n'
+        f'Cliente: {cobro.tercero.razon_social}\n'
+        f'Documento: {cobro.tercero.numero_documento}\n'
+        f'Método de pago: {cobro.metodo_pago.nombre}\n'
+        f'Referencia: {cobro.referencia or "N/A"}\n'
+        f'Observaciones del cobro: {cobro.observaciones or "N/A"}'
+    )
+
+
+def _crear_detalle_factura(factura, detalle_cobro, orden):
+    """Crea un detalle de factura desde un detalle de cobro."""
+    from facturacion.models import FacturaDetalle
+    
+    impuesto = detalle_cobro.producto.impuesto
+    porcentaje = impuesto.porcentaje if impuesto else Decimal('0.00')
+    valor_impuesto = impuesto.calcular_impuesto(detalle_cobro.subtotal) if impuesto else Decimal('0.00')
+    
+    FacturaDetalle.objects.create(
+        factura=factura,
+        producto=detalle_cobro.producto,
+        descripcion=detalle_cobro.producto.nombre,
+        cantidad=detalle_cobro.cantidad,
+        precio_unitario=detalle_cobro.precio_unitario,
+        impuesto=impuesto,
+        porcentaje_impuesto=porcentaje,
+        subtotal=detalle_cobro.subtotal,
+        valor_impuesto=valor_impuesto,
+        total_linea=detalle_cobro.subtotal + valor_impuesto,
+        orden=orden
+    )
+
+
+# ==========================================
+# VISTAS
+# ==========================================
+
 # Vistas temporales básicas
 class TesoreriaIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/index.html'
@@ -174,19 +310,7 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
             return redirect(CAMBIAR_EMPRESA_URL)
         
         # Generar número de cobro automático
-        ultimo_cobro = Pago.objects.filter(
-            empresa=empresa_activa,
-            tipo_pago='cobro'
-        ).order_by('-numero_pago').first()
-        
-        if ultimo_cobro:
-            try:
-                ultimo_numero = int(ultimo_cobro.numero_pago.replace('COB-', ''))
-                nuevo_numero = f'COB-{(ultimo_numero + 1):06d}'
-            except (ValueError, AttributeError):
-                nuevo_numero = 'COB-000001'
-        else:
-            nuevo_numero = 'COB-000001'
+        nuevo_numero = _generar_numero_cobro(empresa_activa)
         
         # Configurar el cobro
         form.instance.empresa = empresa_activa
@@ -199,40 +323,14 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
         response = super().form_valid(form)
         
         # Procesar los detalles de productos con validación de stock
-        from django.core.exceptions import ValidationError
         cobro = form.instance
-        i = 0
         errores_stock = []
+        i = 0
         
         while f'producto_{i}' in self.request.POST:
-            producto_id = self.request.POST.get(f'producto_{i}')
-            cantidad = self.request.POST.get(f'cantidad_{i}')
-            precio = self.request.POST.get(f'precio_{i}')
-            
-            if producto_id and cantidad and precio:
-                try:
-                    producto = Producto.objects.get(id=producto_id)
-                    cantidad_int = int(cantidad)
-                    
-                    # Validar stock si el producto es inventariable
-                    if producto.inventariable:
-                        if cantidad_int > producto.stock_actual:
-                            errores_stock.append(
-                                f'{producto.nombre}: Stock insuficiente (Disponible: {producto.stock_actual}, Solicitado: {cantidad_int})'
-                            )
-                            i += 1
-                            continue
-                    
-                    PagoDetalle.objects.create(
-                        pago=cobro,
-                        producto=producto,
-                        cantidad=cantidad_int,
-                        precio_unitario=Decimal(precio)
-                    )
-                except (Producto.DoesNotExist, ValueError):  # type: ignore[misc]
-                    # InvalidOperation es una excepción interna de Decimal
-                    pass
-            
+            error = _validar_y_crear_detalle_cobro(self.request, cobro, i)
+            if error:
+                errores_stock.append(error)
             i += 1
         
         # Si hay errores de stock, eliminar el cobro y mostrar errores
@@ -358,8 +456,8 @@ def activar_cobro(request, pk):
     Activa un cobro (cambia estado a activo) y genera una factura automáticamente.
     Transfiere los detalles de productos del cobro a la factura.
     """
-    from django.core.exceptions import ValidationError
     from facturacion.models import FacturaDetalle
+    from django.core.exceptions import ValidationError
     
     cobro = get_object_or_404(Pago, pk=pk, tipo_pago='cobro')
     empresa_activa = getattr(request, 'empresa_activa', None)
@@ -374,41 +472,14 @@ def activar_cobro(request, pk):
         return redirect(URL_COBROS_LISTA)
     
     try:
-        # VALIDAR STOCK antes de activar
-        for detalle in cobro.detalles.all():
-            if detalle.producto.inventariable:
-                if detalle.cantidad > detalle.producto.stock_actual:
-                    raise ValidationError(
-                        f'Stock insuficiente para {detalle.producto.nombre}. '
-                        f'Disponible: {detalle.producto.stock_actual}, '
-                        f'Solicitado: {detalle.cantidad}'
-                    )
+        # Validar stock antes de activar
+        _validar_stock_cobro(cobro)
         
         # Generar número de factura automático
-        ultima_factura = Factura.objects.filter(
-            empresa=empresa_activa
-        ).order_by('-numero_factura').first()
-        
-        if ultima_factura:
-            try:
-                ultimo_numero = int(ultima_factura.numero_factura.replace('FAC-', ''))
-                nuevo_numero = f'FAC-{(ultimo_numero + 1):06d}'
-            except (ValueError, AttributeError):
-                nuevo_numero = 'FAC-000001'
-        else:
-            nuevo_numero = 'FAC-000001'
+        nuevo_numero = _generar_numero_factura(empresa_activa)
         
         # Calcular totales del cobro
-        subtotal = Decimal('0.00')
-        total_impuestos = Decimal('0.00')
-        
-        for detalle in cobro.detalles.all():
-            subtotal += detalle.subtotal
-            if detalle.producto.impuesto:
-                impuesto_valor = detalle.producto.impuesto.calcular_impuesto(detalle.subtotal)
-                total_impuestos += impuesto_valor
-        
-        total = subtotal + total_impuestos
+        subtotal, total_impuestos, total = _calcular_totales_cobro(cobro)
         
         # Crear la factura con toda la información del cobro
         factura = Factura.objects.create(
@@ -422,34 +493,15 @@ def activar_cobro(request, pk):
             total_impuestos=total_impuestos,
             total=total,
             estado='confirmada',
-            observaciones=f'Factura generada desde cobro {cobro.numero_pago}.\n'
-                         f'Cliente: {cobro.tercero.razon_social}\n'
-                         f'Documento: {cobro.tercero.numero_documento}\n'
-                         f'Método de pago: {cobro.metodo_pago.nombre}\n'
-                         f'Referencia: {cobro.referencia or "N/A"}\n'
-                         f'Observaciones del cobro: {cobro.observaciones or "N/A"}',
+            observaciones=_generar_observaciones_factura(cobro),
             creado_por=request.user,
             confirmado_por=request.user,
             fecha_confirmacion=timezone.now()
         )
         
-        # TRANSFERIR DETALLES DE PRODUCTOS del cobro a la factura
-        orden = 1
-        for detalle in cobro.detalles.all():
-            FacturaDetalle.objects.create(
-                factura=factura,
-                producto=detalle.producto,
-                descripcion=detalle.producto.nombre,
-                cantidad=detalle.cantidad,
-                precio_unitario=detalle.precio_unitario,
-                impuesto=detalle.producto.impuesto,
-                porcentaje_impuesto=detalle.producto.impuesto.porcentaje if detalle.producto.impuesto else Decimal('0.00'),
-                subtotal=detalle.subtotal,
-                valor_impuesto=detalle.producto.impuesto.calcular_impuesto(detalle.subtotal) if detalle.producto.impuesto else Decimal('0.00'),
-                total_linea=detalle.subtotal + (detalle.producto.impuesto.calcular_impuesto(detalle.subtotal) if detalle.producto.impuesto else Decimal('0.00')),
-                orden=orden
-            )
-            orden += 1
+        # Transferir detalles de productos del cobro a la factura
+        for orden, detalle in enumerate(cobro.detalles.all(), start=1):
+            _crear_detalle_factura(factura, detalle, orden)
         
         # Actualizar el cobro a estado activo
         cobro.estado = 'activo'
@@ -460,7 +512,7 @@ def activar_cobro(request, pk):
         
         messages.success(
             request,
-            f'✓ Cobro {cobro.numero_pago} activado exitosamente.\n✓ Factura {nuevo_numero} generada con {orden-1} producto(s).'
+            f'✓ Cobro {cobro.numero_pago} activado exitosamente.\n✓ Factura {nuevo_numero} generada con {orden} producto(s).'
         )
         
         return redirect(URL_COBROS_LISTA)

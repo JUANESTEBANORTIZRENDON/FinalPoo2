@@ -19,6 +19,7 @@ LOGIN_URL_NAME = 'accounts:login'
 ADMIN_URL_PATH = '/admin/'  # Panel de desarrollador Django
 ADMIN_HOLDING_URL_NAME = 'empresas:admin_dashboard'  # Dashboard del holding para administradores
 DASHBOARD_URL_NAME = 'accounts:dashboard'
+TEMPLATE_ACTIVAR_CUENTA = 'accounts/activar_cuenta.html'
 
 class RegisterView(CreateView):
     """Vista para el registro completo de usuarios colombianos"""
@@ -297,7 +298,7 @@ def activar_cuenta(request):
     token = request.GET.get('token')
     
     if not token:
-        return render(request, 'accounts/activar_cuenta.html', {
+        return render(request, TEMPLATE_ACTIVAR_CUENTA, {
             'activation_status': 'error',
             'error_message': 'Token de activación no válido o faltante.'
         })
@@ -310,25 +311,25 @@ def activar_cuenta(request):
         user = User.objects.get(id=user_id, email=email)
         
         if user.is_active:
-            return render(request, 'accounts/activar_cuenta.html', {
+            return render(request, TEMPLATE_ACTIVAR_CUENTA, {
                 'activation_status': 'already_active',
                 'user': user
             })
         else:
             user.is_active = True
             user.save()
-            return render(request, 'accounts/activar_cuenta.html', {
+            return render(request, TEMPLATE_ACTIVAR_CUENTA, {
                 'activation_status': 'success',
                 'user': user
             })
         
     except User.DoesNotExist:
-        return render(request, 'accounts/activar_cuenta.html', {
+        return render(request, TEMPLATE_ACTIVAR_CUENTA, {
             'activation_status': 'error',
             'error_message': 'Usuario no encontrado. El enlace puede ser inválido.'
         })
     except Exception as e:
-        return render(request, 'accounts/activar_cuenta.html', {
+        return render(request, TEMPLATE_ACTIVAR_CUENTA, {
             'activation_status': 'error',
             'error_message': f'Error al activar cuenta: {str(e)}'
         })
