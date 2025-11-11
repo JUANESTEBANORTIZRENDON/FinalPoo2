@@ -433,9 +433,6 @@ class PerfilUsuarioCompletoForm(forms.ModelForm):
             try:
                 perfil = PerfilUsuario.objects.get(usuario=user)
                 
-                # Actualizar solo los campos relevantes (excluir campos auto y metadatos)
-                campos_excluidos = ['id', 'usuario', 'fecha_creacion', 'fecha_actualizacion']
-                
                 # Actualizar con cleaned_data directamente
                 perfil.tipo_documento = self.cleaned_data.get('tipo_documento', perfil.tipo_documento)
                 perfil.numero_documento = self.cleaned_data.get('numero_documento', perfil.numero_documento)
@@ -452,6 +449,10 @@ class PerfilUsuarioCompletoForm(forms.ModelForm):
                 perfil.cargo = self.cleaned_data.get('cargo', '')
                 perfil.activo = self.cleaned_data.get('activo', True)
                 
+                # IMPORTANTE: Asignar el perfil actualizado a self.instance
+                # para que Django Admin lo reconozca como el objeto guardado
+                self.instance = perfil
+                
                 if commit:
                     perfil.save()
                 
@@ -465,6 +466,15 @@ class PerfilUsuarioCompletoForm(forms.ModelForm):
         perfil = super().save(commit=commit)
         
         return perfil
+    
+    def save_m2m(self):
+        """
+        Método requerido por Django Admin para guardar relaciones many-to-many.
+        PerfilUsuario no tiene campos M2M, pero Django Admin espera este método.
+        """
+        # Como no hay campos many-to-many en PerfilUsuario, este método no hace nada
+        # pero debe existir para evitar AttributeError en Django Admin
+        pass
 
 
 class UsuarioEditForm(forms.ModelForm):
