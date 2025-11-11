@@ -124,7 +124,15 @@ WSGI_APPLICATION = "core.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Configuración de PostgreSQL con Neon
-tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError(
+        "❌ DATABASE_URL no está configurada.\n"
+        "   📝 Para desarrollo local: Agrega DATABASE_URL en .env\n"
+        "   🚀 Para producción (Render): Configura DATABASE_URL en Environment Variables"
+    )
+
+tmpPostgres = urlparse(DATABASE_URL)
 
 DATABASES = {
     "default": {
