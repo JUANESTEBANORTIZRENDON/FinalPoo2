@@ -319,9 +319,10 @@ class PerfilUsuarioCompletoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Hacer el campo usuario no requerido inicialmente
-        self.fields['usuario'].required = False
-        self.fields['usuario'].help_text = "Seleccionar usuario existente o dejar vacío para crear uno nuevo"
+        # Hacer el campo usuario no requerido inicialmente (solo si existe en el formulario)
+        if 'usuario' in self.fields:
+            self.fields['usuario'].required = False
+            self.fields['usuario'].help_text = "Seleccionar usuario existente o dejar vacío para crear uno nuevo"
         
         # Hacer campos opcionales más claros
         for field_name, field in self.fields.items():
