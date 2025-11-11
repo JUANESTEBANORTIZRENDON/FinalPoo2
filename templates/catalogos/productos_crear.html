@@ -1,4 +1,5 @@
 {% extends 'base_contable.html' %}
+{% load form_helpers %}
 
 {% block title %}Crear Producto - S_CONTABLE{% endblock %}
 
@@ -49,45 +50,20 @@
                                 </h6>
                             </div>
                             
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.codigo.id_for_label }}" class="form-label">
-                                    Código <span class="text-danger">*</span>
-                                </label>
-                                {{ form.codigo }}
-                                {% if form.codigo.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.codigo.errors }}</div>
-                                {% endif %}
-                                <small class="form-text text-muted">Código único del producto</small>
+                            <div class="col-md-3">
+                                {% render_field form.codigo help_text="Código único del producto" %}
                             </div>
                             
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.nombre.id_for_label }}" class="form-label">
-                                    Nombre <span class="text-danger">*</span>
-                                </label>
-                                {{ form.nombre }}
-                                {% if form.nombre.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.nombre.errors }}</div>
-                                {% endif %}
+                            <div class="col-md-6">
+                                {% render_field form.nombre %}
                             </div>
                             
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.tipo_producto.id_for_label }}" class="form-label">
-                                    Tipo <span class="text-danger">*</span>
-                                </label>
-                                {{ form.tipo_producto }}
-                                {% if form.tipo_producto.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.tipo_producto.errors }}</div>
-                                {% endif %}
+                            <div class="col-md-3">
+                                {% render_field form.tipo_producto %}
                             </div>
                             
-                            <div class="col-12 mb-3">
-                                <label for="{{ form.descripcion.id_for_label }}" class="form-label">
-                                    Descripción
-                                </label>
-                                {{ form.descripcion }}
-                                {% if form.descripcion.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.descripcion.errors }}</div>
-                                {% endif %}
+                            <div class="col-12">
+                                {% render_field form.descripcion %}
                             </div>
                         </div>
 
@@ -100,41 +76,38 @@
                                 </h6>
                             </div>
                             
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.precio_venta.id_for_label }}" class="form-label">
-                                    Precio de Venta <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    {{ form.precio_venta }}
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.precio_venta.id_for_label }}" class="form-label">
+                                        Precio de Venta <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.precio_venta|add_class:"form-control" }}
+                                    </div>
+                                    {% if form.precio_venta.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.precio_venta.errors }}</div>
+                                    {% endif %}
                                 </div>
-                                {% if form.precio_venta.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.precio_venta.errors }}</div>
-                                {% endif %}
                             </div>
                             
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.precio_costo.id_for_label }}" class="form-label">
-                                    Precio de Costo
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    {{ form.precio_costo }}
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.precio_costo.id_for_label }}" class="form-label">
+                                        Precio de Costo
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.precio_costo|add_class:"form-control" }}
+                                    </div>
+                                    {% if form.precio_costo.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.precio_costo.errors }}</div>
+                                    {% endif %}
                                 </div>
-                                {% if form.precio_costo.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.precio_costo.errors }}</div>
-                                {% endif %}
                             </div>
                             
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.impuesto.id_for_label }}" class="form-label">
-                                    Impuesto
-                                </label>
-                                {{ form.impuesto }}
-                                {% if form.impuesto.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.impuesto.errors }}</div>
-                                {% endif %}
-                                <small class="form-text text-muted">IVA, ICA, etc.</small>
+                            <div class="col-md-4">
+                                {% render_field form.impuesto help_text="IVA, ICA, etc." %}
                             </div>
                         </div>
 
@@ -147,35 +120,16 @@
                                 </h6>
                             </div>
                             
-                            <div class="col-md-4 mb-3">
-                                <div class="form-check">
-                                    {{ form.inventariable }}
-                                    <label class="form-check-label" for="{{ form.inventariable.id_for_label }}">
-                                        Maneja Inventario
-                                    </label>
-                                </div>
-                                <small class="form-text text-muted">Marcar si el producto maneja stock</small>
+                            <div class="col-md-4">
+                                {% render_field form.inventariable help_text="Marcar si el producto maneja stock" %}
                             </div>
                             
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.stock_actual.id_for_label }}" class="form-label">
-                                    Stock Actual
-                                </label>
-                                {{ form.stock_actual }}
-                                {% if form.stock_actual.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.stock_actual.errors }}</div>
-                                {% endif %}
+                            <div class="col-md-4">
+                                {% render_field form.stock_actual %}
                             </div>
                             
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.stock_minimo.id_for_label }}" class="form-label">
-                                    Stock Mínimo
-                                </label>
-                                {{ form.stock_minimo }}
-                                {% if form.stock_minimo.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.stock_minimo.errors }}</div>
-                                {% endif %}
-                                <small class="form-text text-muted">Alerta de reposición</small>
+                            <div class="col-md-4">
+                                {% render_field form.stock_minimo help_text="Alerta de reposición" %}
                             </div>
                         </div>
 
@@ -188,14 +142,8 @@
                                 </h6>
                             </div>
                             
-                            <div class="col-12 mb-3">
-                                <div class="form-check">
-                                    {{ form.activo }}
-                                    <label class="form-check-label" for="{{ form.activo.id_for_label }}">
-                                        Producto Activo
-                                    </label>
-                                </div>
-                                <small class="form-text text-muted">Los productos inactivos no aparecerán en las ventas</small>
+                            <div class="col-12">
+                                {% render_field form.activo help_text="Los productos inactivos no aparecerán en las ventas" %}
                             </div>
                         </div>
 
@@ -230,6 +178,8 @@
         </div>
     </div>
 </div>
+
+{% include 'components/form_bootstrap_classes.html' %}
 
 <script>
 // Toggle de campos de inventario

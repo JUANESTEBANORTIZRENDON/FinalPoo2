@@ -1,5 +1,6 @@
 {% extends 'base_contable.html' %}
 {% load static %}
+{% load form_helpers %}
 
 {% block title %}Editar Método de Pago - S_CONTABLE{% endblock %}
 
@@ -29,79 +30,27 @@
                     <form method="post" novalidate>
                         {% csrf_token %}
                         
-                        {% if form.errors %}
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <h5 class="alert-heading">
-                                    <i class="bi bi-exclamation-triangle"></i>
-                                    Errores en el formulario
-                                </h5>
-                                <ul class="mb-0">
-                                    {% for field in form %}
-                                        {% if field.errors %}
-                                            {% for error in field.errors %}
-                                                <li>{{ field.label }}: {{ error }}</li>
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% if form.non_field_errors %}
-                                        {% for error in form.non_field_errors %}
-                                            <li>{{ error }}</li>
-                                        {% endfor %}
-                                    {% endif %}
-                                </ul>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endif %}
+                        {% render_form_errors form %}
                         
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.codigo.id_for_label }}" class="form-label">
-                                    {{ form.codigo.label }} <span class="text-danger">*</span>
-                                </label>
-                                {{ form.codigo }}
-                                {% if form.codigo.help_text %}
-                                    <small class="form-text text-muted">{{ form.codigo.help_text }}</small>
-                                {% endif %}
+                            <div class="col-md-6">
+                                {% render_field form.codigo %}
                             </div>
                             
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.tipo_metodo.id_for_label }}" class="form-label">
-                                    {{ form.tipo_metodo.label }} <span class="text-danger">*</span>
-                                </label>
-                                {{ form.tipo_metodo }}
+                            <div class="col-md-6">
+                                {% render_field form.tipo_metodo %}
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="{{ form.nombre.id_for_label }}" class="form-label">
-                                {{ form.nombre.label }} <span class="text-danger">*</span>
-                            </label>
-                            {{ form.nombre }}
-                        </div>
+                        {% render_field form.nombre %}
                         
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.requiere_referencia.id_for_label }}" class="form-label">
-                                    {{ form.requiere_referencia.label }}
-                                </label>
-                                <div class="form-check form-switch">
-                                    {{ form.requiere_referencia }}
-                                    <label class="form-check-label" for="{{ form.requiere_referencia.id_for_label }}">
-                                        Requiere número de referencia (cheque, transferencia, etc.)
-                                    </label>
-                                </div>
+                            <div class="col-md-6">
+                                {% render_field form.requiere_referencia %}
                             </div>
                             
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.activo.id_for_label }}" class="form-label">
-                                    {{ form.activo.label }}
-                                </label>
-                                <div class="form-check form-switch">
-                                    {{ form.activo }}
-                                    <label class="form-check-label" for="{{ form.activo.id_for_label }}">
-                                        Método de pago activo en el sistema
-                                    </label>
-                                </div>
+                            <div class="col-md-6">
+                                {% render_field form.activo %}
                             </div>
                         </div>
                         
@@ -129,20 +78,5 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Añadir clases de Bootstrap a los campos del formulario
-    const formFields = document.querySelectorAll('input:not([type="checkbox"]), select, textarea');
-    for (const field of formFields) {
-        field.classList.add('form-control');
-    }
-    
-    // Manejar los campos checkbox
-    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    for (const checkbox of checkboxes) {
-        checkbox.classList.remove('form-control');
-        checkbox.classList.add('form-check-input');
-    }
-});
-</script>
+{% include 'components/form_bootstrap_classes.html' %}
 {% endblock %}
