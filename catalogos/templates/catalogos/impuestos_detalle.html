@@ -35,12 +35,12 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">Código</label>
+                            <div class="text-muted small">Código</div>
                             <p class="h5">{{ object.codigo }}</p>
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">Tipo de Impuesto</label>
+                            <div class="text-muted small">Tipo de Impuesto</div>
                             <p class="h5">
                                 <span class="badge 
                                     {% if object.tipo_impuesto == 'IVA' %}bg-primary
@@ -57,14 +57,14 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">Porcentaje</label>
+                            <div class="text-muted small">Porcentaje</div>
                             <p class="h5">
                                 <strong class="text-primary">{{ object.porcentaje }}%</strong>
                             </p>
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">Fecha de Creación</label>
+                            <div class="text-muted small">Fecha de Creación</div>
                             <p class="h5">{{ object.fecha_creacion|date:"d/m/Y H:i" }}</p>
                         </div>
                     </div>

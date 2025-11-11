@@ -35,12 +35,12 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">Código</label>
+                            <div class="text-muted small">Código</div>
                             <p class="h5">{{ object.codigo }}</p>
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">Tipo de Método</label>
+                            <div class="text-muted small">Tipo de Método</div>
                             <p class="h5">
                                 <span class="badge 
                                     {% if object.tipo_metodo == 'EFECTIVO' %}bg-success
@@ -58,7 +58,7 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">Requiere Referencia</label>
+                            <div class="text-muted small">Requiere Referencia</div>
                             <p class="h5">
                                 {% if object.requiere_referencia %}
                                     <i class="bi bi-check-circle text-success"></i> Sí
@@ -73,7 +73,7 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">Fecha de Creación</label>
+                            <div class="text-muted small">Fecha de Creación</div>
                             <p class="h5">{{ object.fecha_creacion|date:"d/m/Y H:i" }}</p>
                         </div>
                     </div>

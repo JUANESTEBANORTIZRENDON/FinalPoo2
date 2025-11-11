@@ -141,21 +141,24 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <div class="btn-group btn-group-sm" role="group">
+                                                <div class="btn-group btn-group-sm" aria-label="Acciones de la cuenta">
                                                     <a href="{% url 'contabilidad:cuentas_detalle' cuenta.pk %}" 
                                                        class="btn btn-outline-info" 
-                                                       title="Ver detalles">
-                                                        <i class="bi bi-eye"></i>
+                                                       title="Ver detalles"
+                                                       aria-label="Ver detalles de la cuenta">
+                                                        <i class="bi bi-eye" aria-hidden="true"></i>
                                                     </a>
                                                     <a href="{% url 'contabilidad:cuentas_editar' cuenta.pk %}" 
                                                        class="btn btn-outline-warning" 
-                                                       title="Editar">
-                                                        <i class="bi bi-pencil"></i>
+                                                       title="Editar"
+                                                       aria-label="Editar cuenta">
+                                                        <i class="bi bi-pencil" aria-hidden="true"></i>
                                                     </a>
                                                     <a href="{% url 'contabilidad:cuentas_eliminar' cuenta.pk %}" 
                                                        class="btn btn-outline-danger" 
-                                                       title="Eliminar">
-                                                        <i class="bi bi-trash"></i>
+                                                       title="Eliminar"
+                                                       aria-label="Eliminar cuenta">
+                                                        <i class="bi bi-trash" aria-hidden="true"></i>
                                                     </a>
                                                 </div>
                                             </td>
@@ -264,8 +267,8 @@ document.addEventListener('DOMContentLoaded', function() {
             filas.forEach(fila => {
                 if (fila.style.display !== 'none') {
                     cuentasVisibles++;
-                    const debito = parseFloat(fila.cells[5].textContent.replace(/,/g, ''));
-                    const credito = parseFloat(fila.cells[6].textContent.replace(/,/g, ''));
+                    const debito = Number.parseFloat(fila.cells[5].textContent.replace(/,/g, ''));
+                    const credito = Number.parseFloat(fila.cells[6].textContent.replace(/,/g, ''));
                     totalDebitos += debito;
                     totalCreditos += credito;
                 }
@@ -279,7 +282,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const elemDiferencia = document.getElementById('diferencia');
             elemDiferencia.textContent = formatearMoneda(Math.abs(diferencia));
-            elemDiferencia.className = diferencia === 0 ? 'text-success' : (diferencia > 0 ? 'text-primary' : 'text-info');
+            
+            // Determinar clase CSS según el valor de la diferencia
+            let claseCSS;
+            if (diferencia === 0) {
+                claseCSS = 'text-success';
+            } else if (diferencia > 0) {
+                claseCSS = 'text-primary';
+            } else {
+                claseCSS = 'text-info';
+            }
+            elemDiferencia.className = claseCSS;
         }
         
         function formatearMoneda(valor) {

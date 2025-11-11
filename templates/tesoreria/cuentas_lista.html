@@ -86,13 +86,14 @@ S_CONTABLE{% endblock %} {% block content %}
                     {% endif %}
                   </td>
                   <td>
-                    <div class="btn-group btn-group-sm" role="group">
+                    <div class="btn-group btn-group-sm" aria-label="Acciones de la cuenta bancaria">
                       <a
                         href="{% url 'tesoreria:cuentas_detalle' cuenta.pk %}"
                         class="btn btn-outline-primary"
                         title="Ver detalles"
+                        aria-label="Ver detalles de la cuenta"
                       >
-                        <i class="fas fa-eye"></i>
+                        <i class="fas fa-eye" aria-hidden="true"></i>
                       </a>
                       <a
                         href="{% url 'tesoreria:cuentas_editar' cuenta.pk %}"

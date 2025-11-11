@@ -186,7 +186,7 @@
                                 {{ usuario.perfilempresa_set.count }} asignación{{ usuario.perfilempresa_set.count|pluralize:"es" }}
                             </span>
                         </div>
-                        <div class="btn-group" role="group" aria-label="Acciones para {{ usuario.get_full_name|default:usuario.username }}">
+                        <div class="btn-group" aria-label="Acciones para {{ usuario.get_full_name|default:usuario.username }}">
                             <a href="{% url 'empresas:admin_asignar_usuario' usuario.id %}" 
                                class="btn btn-sm btn-outline-success"
                                title="Asignar empresa a {{ usuario.get_full_name|default:usuario.username }}">

@@ -119,7 +119,7 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div class="btn-group btn-group-sm" role="group" aria-label="Acciones para cobro">
+                                            <div class="btn-group btn-group-sm" aria-label="Acciones para cobro">
                                                 <a href="{% url 'tesoreria:pagos_detalle' cobro.pk %}" 
                                                    class="btn btn-outline-primary" 
                                                    title="Ver detalles del cobro">
@@ -280,7 +280,7 @@
                     <!-- Selección de Método de Pago -->
                     <div class="mb-4">
                         <h6 class="border-bottom pb-2 mb-3">Seleccionar Método de Pago</h6>
-                        <div class="btn-group w-100" role="group">
+                        <div class="btn-group w-100" aria-label="Método de pago">
                             <input type="radio" class="btn-check" name="metodo_pago" id="metodo_efectivo" value="efectivo" checked>
                             <label class="btn btn-outline-success" for="metodo_efectivo">
                                 <i class="fas fa-money-bill-wave fa-2x d-block mb-2"></i>

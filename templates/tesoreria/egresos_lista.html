@@ -119,11 +119,12 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div class="btn-group btn-group-sm" role="group">
+                                            <div class="btn-group btn-group-sm" aria-label="Acciones del egreso">
                                                 <a href="{% url 'tesoreria:pagos_detalle' egreso.pk %}" 
                                                    class="btn btn-outline-primary" 
-                                                   title="Ver detalles">
-                                                    <i class="fas fa-eye"></i>
+                                                   title="Ver detalles"
+                                                   aria-label="Ver detalles del egreso">
+                                                    <i class="fas fa-eye" aria-hidden="true"></i>
                                                 </a>
                                             </div>
                                         </td>
