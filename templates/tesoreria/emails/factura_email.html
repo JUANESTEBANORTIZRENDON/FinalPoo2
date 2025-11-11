@@ -1,6 +1,11 @@
 
 <!doctype html>
 <html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factura {{ factura.numero_factura }} - S_CONTABLE</title>
+</head>
 <body>
   <p>Hola {{ factura.cliente.razon_social }},</p>
   <p>Adjuntamos la factura <strong>{{ factura.numero_factura }}</strong> correspondiente a su compra.</p>

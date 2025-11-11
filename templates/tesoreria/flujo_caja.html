@@ -41,18 +41,18 @@
                     <form method="get" id="filtroForm">
                         <div class="row">
                             <div class="col-md-3">
-                                <label class="form-label">Fecha Inicio</label>
-                                <input type="date" name="fecha_inicio" class="form-control" 
+                                <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                                <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" 
                                        value="{{ fecha_inicio|default:'' }}">
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Fecha Fin</label>
-                                <input type="date" name="fecha_fin" class="form-control" 
+                                <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                                <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" 
                                        value="{{ fecha_fin|default:'' }}">
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Cuenta Bancaria</label>
-                                <select name="cuenta" class="form-select">
+                                <label for="cuenta" class="form-label">Cuenta Bancaria</label>
+                                <select name="cuenta" id="cuenta" class="form-select">
                                     <option value="">Todas las cuentas</option>
                                     {% for cuenta in cuentas %}
                                         <option value="{{ cuenta.id }}" {% if cuenta_id == cuenta.id|stringformat:'s' %}selected{% endif %}>
