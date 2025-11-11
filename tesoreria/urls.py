@@ -17,12 +17,13 @@ urlpatterns = [
     # Acciones sobre pagos
     path('pagos/<int:pk>/confirmar/', views.confirmar_pago, name='pagos_confirmar'),
     path('pagos/<int:pk>/anular/', views.anular_pago, name='pagos_anular'),
+    path('pagos/<int:pk>/marcar-pagado/', views.marcar_pago_pagado, name='pagos_marcar_pagado'),
     
     # Cobros específicos
     path('cobros/', views.CobroListView.as_view(), name='cobros_lista'),
     path('cobros/crear/', views.CobroCreateView.as_view(), name='cobros_crear'),
     path('cobros/<int:pk>/editar/', views.CobroUpdateView.as_view(), name='cobros_editar'),
-    path('cobros/<int:pk>/eliminar/', views.eliminar_cobro, name='cobros_eliminar'),
+    # path('cobros/<int:pk>/eliminar/', views.eliminar_cobro, name='cobros_eliminar'),
     path('cobros/<int:pk>/activar/', views.activar_cobro, name='cobros_activar'),
     path('cobros/<int:pk>/marcar-pagado/', views.marcar_cobro_pagado, name='cobros_marcar_pagado'),
     path('cobros/factura/<int:factura_pk>/', views.cobrar_factura, name='cobrar_factura'),
@@ -33,8 +34,8 @@ urlpatterns = [
     # Egresos específicos
     path('egresos/', views.EgresoListView.as_view(), name='egresos_lista'),
     path('egresos/crear/', views.EgresoCreateView.as_view(), name='egresos_crear'),
-    path('egresos/<int:pk>/editar/', views.EgresoUpdateView.as_view(), name='egresos_editar'),
-    path('egresos/<int:pk>/eliminar/', views.EgresoDeleteView.as_view(), name='egresos_eliminar'),
+    # path('egresos/<int:pk>/editar/', views.EgresoUpdateView.as_view(), name='egresos_editar'),
+    # path('egresos/<int:pk>/eliminar/', views.EgresoDeleteView.as_view(), name='egresos_eliminar'),
     
     # Gestión de cuentas bancarias
     path('cuentas-bancarias/', views.CuentaBancariaListView.as_view(), name='cuentas_lista'),
@@ -52,4 +53,13 @@ urlpatterns = [
     path('api/siguiente-numero-pago/', views.obtener_siguiente_numero_pago, name='api_siguiente_numero_pago'),
     path('api/facturas-pendientes/<int:tercero_pk>/', views.facturas_pendientes_tercero, name='api_facturas_pendientes'),
     path('api/crear-cliente/', views.crear_cliente_ajax, name='crear_cliente_ajax'),
+]
+
+from django.urls import path
+from .views import PagosReporteView, pagos_reporte_csv, enviar_factura_email
+
+urlpatterns += [
+    path('pagos/reporte/', PagosReporteView.as_view(), name='pagos_reporte'),
+    path('pagos/reporte/csv/', pagos_reporte_csv, name='pagos_reporte_csv'),
+    path('facturas/<int:factura_pk>/enviar/', enviar_factura_email, name='enviar_factura'),
 ]

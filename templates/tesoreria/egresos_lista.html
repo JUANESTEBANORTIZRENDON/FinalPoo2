@@ -1,66 +1,87 @@
 {% extends 'base_contable.html' %}
-{% load static %}
 
-{% block title %}Egresos - S_CONTABLE{% endblock %}
-
-{% block breadcrumb %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'tesoreria:index' %}">Tesorería</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Egresos</li>
-    </ol>
-</nav>
-{% endblock %}
+{% block title %}Lista de Egresos - S_CONTABLE{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mb-0">
-                        <i class="bi bi-cash-stack text-danger"></i>
-                        Egresos a Proveedores
-                    </h4>
-                    <a href="{% url 'tesoreria:egresos_crear' %}" class="btn btn-danger">
-                        <i class="bi bi-plus-circle"></i>
-                        Nuevo Egreso
-                    </a>
-                </div>
-                
+            <div class="card shadow-sm">
                 <div class="card-body">
-                    <!-- Filtros de búsqueda -->
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" id="buscar" placeholder="Buscar por proveedor o número...">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-money-bill-wave text-danger"></i>
+                                Egresos Registrados
+                            </h2>
+                            <p class="text-muted mb-0">Gestión de egresos a proveedores de {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="{% url 'tesoreria:egresos_crear' %}" class="btn btn-danger">
+                            <i class="fas fa-plus"></i> Nuevo Egreso
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="proveedor" class="form-label">Proveedor</label>
+                            <input type="text" id="proveedor" name="proveedor" class="form-control" placeholder="Buscar por proveedor...">
                         </div>
                         <div class="col-md-2">
-                            <input type="date" class="form-control" id="fecha_desde" placeholder="Fecha desde">
+                            <label for="fecha_desde" class="form-label">Fecha Desde</label>
+                            <input type="date" id="fecha_desde" name="fecha_desde" class="form-control">
                         </div>
                         <div class="col-md-2">
-                            <input type="date" class="form-control" id="fecha_hasta" placeholder="Fecha hasta">
+                            <label for="fecha_hasta" class="form-label">Fecha Hasta</label>
+                            <input type="date" id="fecha_hasta" name="fecha_hasta" class="form-control">
                         </div>
                         <div class="col-md-2">
-                            <select class="form-select" id="filtro_estado">
-                                <option value="">Todos los estados</option>
+                            <label for="estado" class="form-label">Estado</label>
+                            <select id="estado" name="estado" class="form-select">
+                                <option value="">Todos</option>
                                 <option value="pendiente">Pendiente</option>
                                 <option value="activo">Activo</option>
                                 <option value="pagado">Pagado</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-outline-secondary w-100" onclick="limpiarFiltros()">
-                                <i class="bi bi-x-circle"></i>
-                                Limpiar
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search"></i> Buscar
                             </button>
+                            <a href="{% url 'tesoreria:egresos_lista' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo"></i> Limpiar
+                            </a>
                         </div>
-                    </div>
-                    
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Egresos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i>
+                        Egresos
+                    </h5>
+                </div>
+                <div class="card-body p-0">
                     {% if object_list %}
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover" id="tabla-egresos">
-                                <thead class="table-dark">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
                                     <tr>
                                         <th>Número</th>
                                         <th>Fecha</th>
@@ -72,90 +93,51 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for pago in object_list %}
-                                        {% if pago.tipo_pago == 'egreso' %}
-                                        <tr data-estado="{{ pago.estado }}">
-                                            <td>
-                                                <strong>{{ pago.numero_pago }}</strong>
-                                            </td>
-                                            <td>{{ pago.fecha_pago|date:"d/m/Y" }}</td>
-                                            <td>{{ pago.tercero.razon_social }}</td>
-                                            <td>{{ pago.metodo_pago.nombre }}</td>
-                                            <td>
-                                                <strong class="text-danger">${{ pago.valor|floatformat:2 }}</strong>
-                                            </td>
-                                            <td>
-                                                {% if pago.estado == 'pendiente' %}
-                                                    <span class="badge bg-warning">Pendiente</span>
-                                                {% elif pago.estado == 'activo' %}
-                                                    <span class="badge bg-info">Activo</span>
-                                                {% elif pago.estado == 'pagado' %}
-                                                    <span class="badge bg-success">Pagado</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <div class="btn-group" aria-label="Acciones">
-                                                    <a href="{% url 'tesoreria:pagos_detalle' pago.pk %}" 
-                                                       class="btn btn-sm btn-outline-info" 
-                                                       title="Ver detalles">
-                                                        <i class="bi bi-eye"></i>
-                                                    </a>
-                                                    {% if pago.estado != 'pagado' %}
-                                                    <a href="{% url 'tesoreria:egresos_editar' pago.pk %}" 
-                                                       class="btn btn-sm btn-outline-warning" 
-                                                       title="Editar">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </a>
-                                                    <a href="{% url 'tesoreria:egresos_eliminar' pago.pk %}" 
-                                                       class="btn btn-sm btn-outline-danger" 
-                                                       title="Eliminar">
-                                                        <i class="bi bi-trash"></i>
-                                                    </a>
-                                                    {% endif %}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endif %}
+                                    {% for egreso in object_list %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ egreso.numero_pago }}</strong>
+                                        </td>
+                                        <td>{{ egreso.fecha_pago|date:"d/m/Y" }}</td>
+                                        <td>
+                                            <i class="fas fa-building text-primary"></i>
+                                            {{ egreso.tercero.razon_social }}
+                                            <br>
+                                            <small class="text-muted">{{ egreso.tercero.numero_documento }}</small>
+                                        </td>
+                                        <td>{{ egreso.metodo_pago.nombre }}</td>
+                                        <td>
+                                            <strong class="text-danger">${{ egreso.valor|floatformat:2 }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if egreso.estado == 'pendiente' %}
+                                                <span class="badge bg-warning">Pendiente</span>
+                                            {% elif egreso.estado == 'activo' %}
+                                                <span class="badge bg-info">Activo</span>
+                                            {% elif egreso.estado == 'pagado' %}
+                                                <span class="badge bg-success">Pagado</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{% url 'tesoreria:pagos_detalle' egreso.pk %}" 
+                                                   class="btn btn-outline-primary" 
+                                                   title="Ver detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                        
-                        <!-- Resumen de totales -->
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <div class="row text-center">
-                                            <div class="col-md-3">
-                                                <h6 class="text-muted">Total Egresos</h6>
-                                                <h4 id="total-egresos">$0.00</h4>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <h6 class="text-muted">Pendientes</h6>
-                                                <h4 class="text-warning" id="total-pendientes">$0.00</h4>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <h6 class="text-muted">Activos</h6>
-                                                <h4 class="text-info" id="total-activos">$0.00</h4>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <h6 class="text-muted">Pagados</h6>
-                                                <h4 class="text-success" id="total-pagados">$0.00</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     {% else %}
-                        <div class="alert alert-info text-center">
-                            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
-                            <h5>No hay egresos registrados</h5>
-                            <p class="mb-3">Comienza registrando pagos a tus proveedores.</p>
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay egresos registrados.</p>
                             <a href="{% url 'tesoreria:egresos_crear' %}" class="btn btn-danger">
-                                <i class="bi bi-plus-circle"></i>
-                                Registrar Primer Egreso
+                                <i class="fas fa-plus"></i> Registrar Primer Egreso
                             </a>
                         </div>
                     {% endif %}
@@ -164,107 +146,4 @@
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const buscar = document.getElementById('buscar');
-    const fechaDesde = document.getElementById('fecha_desde');
-    const fechaHasta = document.getElementById('fecha_hasta');
-    const filtroEstado = document.getElementById('filtro_estado');
-    const tabla = document.getElementById('tabla-egresos');
-    
-    if (tabla) {
-        // Calcular totales
-        calcularTotales();
-        
-        function filtrarTabla() {
-            const textoBusqueda = buscar.value.toLowerCase();
-            const estadoSeleccionado = filtroEstado.value;
-            const desde = fechaDesde.value;
-            const hasta = fechaHasta.value;
-            
-            const filas = tabla.querySelectorAll('tbody tr');
-            
-            for (const fila of filas) {
-                const texto = fila.textContent.toLowerCase();
-                const estado = fila.dataset.estado;
-                const fechaTexto = fila.cells[1].textContent;
-                
-                let mostrar = true;
-                
-                // Filtro de texto
-                if (textoBusqueda && !texto.includes(textoBusqueda)) {
-                    mostrar = false;
-                }
-                
-                // Filtro de estado
-                if (estadoSeleccionado && estado !== estadoSeleccionado) {
-                    mostrar = false;
-                }
-                
-                fila.style.display = mostrar ? '' : 'none';
-            }
-            
-            calcularTotales();
-        }
-        
-        function calcularTotales() {
-            let totalGeneral = 0;
-            let totalPendientes = 0;
-            let totalActivos = 0;
-            let totalPagados = 0;
-            
-            const filas = tabla.querySelectorAll('tbody tr');
-            filas.forEach(fila => {
-                if (fila.style.display !== 'none') {
-                    const valorTexto = fila.cells[4].textContent.replace('$', '').replace(',', '');
-                    const valor = parseFloat(valorTexto);
-                    const estado = fila.dataset.estado;
-                    
-                    totalGeneral += valor;
-                    
-                    if (estado === 'pendiente') {
-                        totalPendientes += valor;
-                    } else if (estado === 'activo') {
-                        totalActivos += valor;
-                    } else if (estado === 'pagado') {
-                        totalPagados += valor;
-                    }
-                }
-            });
-            
-            document.getElementById('total-egresos').textContent = formatearMoneda(totalGeneral);
-            document.getElementById('total-pendientes').textContent = formatearMoneda(totalPendientes);
-            document.getElementById('total-activos').textContent = formatearMoneda(totalActivos);
-            document.getElementById('total-pagados').textContent = formatearMoneda(totalPagados);
-        }
-        
-        function formatearMoneda(valor) {
-            return new Intl.NumberFormat('es-CO', {
-                style: 'currency',
-                currency: 'COP',
-                minimumFractionDigits: 2
-            }).format(valor);
-        }
-        
-        buscar.addEventListener('input', filtrarTabla);
-        fechaDesde.addEventListener('change', filtrarTabla);
-        fechaHasta.addEventListener('change', filtrarTabla);
-        filtroEstado.addEventListener('change', filtrarTabla);
-    }
-});
-
-function limpiarFiltros() {
-    document.getElementById('buscar').value = '';
-    document.getElementById('fecha_desde').value = '';
-    document.getElementById('fecha_hasta').value = '';
-    document.getElementById('filtro_estado').value = '';
-    
-    // Mostrar todas las filas
-    const filas = document.querySelectorAll('#tabla-egresos tbody tr');
-    for (const fila of filas) {
-        fila.style.display = '';
-    }
-}
-</script>
 {% endblock %}

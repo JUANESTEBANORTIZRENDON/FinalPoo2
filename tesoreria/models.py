@@ -413,3 +413,21 @@ class PagoDetalle(models.Model):
         """Calcular subtotal antes de guardar"""
         self.subtotal = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
+
+
+class ExtractoBancario(models.Model):
+    cuenta = models.ForeignKey(CuentaBancaria, on_delete=models.PROTECT, related_name='extractos')
+    fecha = models.DateField()
+    descripcion = models.CharField(max_length=255)
+    referencia = models.CharField(max_length=128, blank=True)
+    valor = models.DecimalField(max_digits=15, decimal_places=2)
+    conciliado = models.BooleanField(default=False)
+    pago = models.ForeignKey('tesoreria.Pago', null=True, blank=True, on_delete=models.SET_NULL, related_name='conciliaciones')
+
+    class Meta:
+        verbose_name = 'Extracto Bancario'
+        verbose_name_plural = 'Extractos Bancarios'
+        ordering = ['-fecha', '-id']
+
+    def __str__(self):
+        return f"{self.fecha} {self.descripcion} {self.valor}"

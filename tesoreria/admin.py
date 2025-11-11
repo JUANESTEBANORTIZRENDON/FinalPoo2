@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Pago, PagoDetalle, CuentaBancaria
+from .models import Pago, PagoDetalle, CuentaBancaria, ExtractoBancario
 
 class PagoDetalleInline(admin.TabularInline):
     model = PagoDetalle
@@ -19,3 +19,10 @@ class CuentaBancariaAdmin(admin.ModelAdmin):
     list_display = ['codigo', 'nombre', 'tipo_cuenta', 'saldo_actual']
     list_filter = ['tipo_cuenta']
     search_fields = ['codigo', 'nombre']
+
+
+@admin.register(ExtractoBancario)
+class ExtractoBancarioAdmin(admin.ModelAdmin):
+    list_display = ['fecha', 'cuenta', 'descripcion', 'valor', 'conciliado', 'pago']
+    list_filter = ['cuenta', 'conciliado']
+    search_fields = ['descripcion', 'referencia']

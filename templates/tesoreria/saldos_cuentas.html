@@ -1,0 +1,123 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Saldos de Cuentas - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-university text-primary"></i>
+                                Saldos de Cuentas Bancarias
+                            </h2>
+                            <p class="text-muted mb-0">Estado actual de las cuentas de {{ request.empresa_activa.razon_social }}</p>
+                        </div>
+                        <a href="{% url 'tesoreria:index' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen Total -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Saldo Total en Bancos</h6>
+                            <h2 class="mb-0 text-primary">${{ saldo_total|floatformat:2|default:'0.00' }}</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-wallet fa-3x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Cuentas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i>
+                        Detalle por Cuenta Bancaria
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if cuentas_con_saldo %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Banco</th>
+                                        <th>Número de Cuenta</th>
+                                        <th>Tipo</th>
+                                        <th class="text-end">Saldo Inicial</th>
+                                        <th class="text-end">Ingresos</th>
+                                        <th class="text-end">Egresos</th>
+                                        <th class="text-end">Saldo Actual</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in cuentas_con_saldo %}
+                                    <tr>
+                                        <td><strong>{{ item.cuenta.nombre_banco }}</strong></td>
+                                        <td>{{ item.cuenta.numero_cuenta }}</td>
+                                        <td>{{ item.cuenta.get_tipo_cuenta_display }}</td>
+                                        <td class="text-end">${{ item.cuenta.saldo_inicial|floatformat:2 }}</td>
+                                        <td class="text-end text-success">${{ item.ingresos|floatformat:2 }}</td>
+                                        <td class="text-end text-danger">${{ item.egresos|floatformat:2 }}</td>
+                                        <td class="text-end">
+                                            <strong class="{% if item.saldo >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                                                ${{ item.saldo|floatformat:2 }}
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            {% if item.cuenta.activo %}
+                                                <span class="badge bg-success">Activa</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Inactiva</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th colspan="6" class="text-end">TOTAL:</th>
+                                        <th class="text-end">
+                                            <strong class="text-primary">${{ saldo_total|floatformat:2 }}</strong>
+                                        </th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay cuentas bancarias registradas.</p>
+                            <a href="{% url 'tesoreria:cuentas_crear' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Crear Primera Cuenta
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

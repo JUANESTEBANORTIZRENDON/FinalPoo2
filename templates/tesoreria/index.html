@@ -1,0 +1,44 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Tesorería - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-cash-register"></i> Tesorería</h2>
+            <p class="text-muted">Gestión de pagos, cobros y cuentas bancarias</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-hand-holding-usd fa-3x text-success mb-3"></i>
+                    <h5>Cobros</h5>
+                    <a href="{% url 'tesoreria:cobros_lista' %}" class="btn btn-success">Ver Cobros</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-3x text-danger mb-3"></i>
+                    <h5>Egresos</h5>
+                    <a href="{% url 'tesoreria:egresos_lista' %}" class="btn btn-danger">Ver Egresos</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-university fa-3x text-primary mb-3"></i>
+                    <h5>Cuentas Bancarias</h5>
+                    <a href="{% url 'tesoreria:cuentas_lista' %}" class="btn btn-primary">Ver Cuentas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

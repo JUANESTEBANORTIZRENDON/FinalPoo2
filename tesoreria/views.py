@@ -11,6 +11,7 @@ from decimal import Decimal
 import json
 from .models import Pago, CuentaBancaria, PagoDetalle
 from .forms import CobroForm
+from .services import ServicioTesoreria
 from facturacion.models import Factura
 from catalogos.models import Producto, Tercero
 from empresas.middleware import EmpresaFilterMixin
@@ -31,144 +32,6 @@ CAMBIAR_EMPRESA_URL = 'empresas:cambiar_empresa'
 # Constante para evitar duplicación del literal de URL
 PAGOS_DETALLE_URL = 'tesoreria:pagos_detalle'
 
-
-# ==========================================
-# FUNCIONES AUXILIARES (Reducir complejidad cognitiva)
-# ==========================================
-
-def _generar_numero_cobro(empresa):
-    """Genera el siguiente número de cobro para una empresa."""
-    ultimo_cobro = Pago.objects.filter(
-        empresa=empresa,
-        tipo_pago='cobro'
-    ).order_by('-numero_pago').first()
-    
-    if ultimo_cobro:
-        try:
-            ultimo_numero = int(ultimo_cobro.numero_pago.replace('COB-', ''))
-            return f'COB-{(ultimo_numero + 1):06d}'
-        except (ValueError, AttributeError):
-            return 'COB-000001'
-    return 'COB-000001'
-
-
-def _validar_y_crear_detalle_cobro(request, cobro, index):
-    """Valida y crea un detalle de cobro con verificación de stock."""
-    producto_id = request.POST.get(f'producto_{index}')
-    cantidad = request.POST.get(f'cantidad_{index}')
-    precio = request.POST.get(f'precio_{index}')
-    
-    if not (producto_id and cantidad and precio):
-        return None
-    
-    try:
-        producto = Producto.objects.get(id=producto_id)
-        cantidad_int = int(cantidad)
-        
-        # Validar stock si el producto es inventariable
-        if producto.inventariable and cantidad_int > producto.stock_actual:
-            return (
-                f'{producto.nombre}: Stock insuficiente '
-                f'(Disponible: {producto.stock_actual}, Solicitado: {cantidad_int})'
-            )
-        
-        PagoDetalle.objects.create(
-            pago=cobro,
-            producto=producto,
-            cantidad=cantidad_int,
-            precio_unitario=Decimal(precio)
-        )
-        return None
-        
-    except (Producto.DoesNotExist, ValueError):
-        return None
-
-
-def _generar_numero_factura(empresa):
-    """Genera el siguiente número de factura para una empresa."""
-    ultima_factura = Factura.objects.filter(
-        empresa=empresa
-    ).order_by('-numero_factura').first()
-    
-    if ultima_factura:
-        try:
-            ultimo_numero = int(ultima_factura.numero_factura.replace('FAC-', ''))
-            return f'FAC-{(ultimo_numero + 1):06d}'
-        except (ValueError, AttributeError):
-            return 'FAC-000001'
-    return 'FAC-000001'
-
-
-def _validar_stock_cobro(cobro):
-    """Valida que haya stock suficiente para todos los productos del cobro."""
-    from django.core.exceptions import ValidationError
-    
-    # type: ignore - Pylance no detecta related_name='detalles' de Django
-    for detalle in cobro.detalles.all():  # type: ignore[attr-defined]
-        if detalle.producto.inventariable:
-            if detalle.cantidad > detalle.producto.stock_actual:
-                raise ValidationError(
-                    f'Stock insuficiente para {detalle.producto.nombre}. '
-                    f'Disponible: {detalle.producto.stock_actual}, '
-                    f'Solicitado: {detalle.cantidad}'
-                )
-
-
-def _calcular_totales_cobro(cobro):
-    """Calcula subtotal, impuestos y total de un cobro."""
-    subtotal = Decimal('0.00')
-    total_impuestos = Decimal('0.00')
-    
-    # type: ignore - Pylance no detecta related_name='detalles' de Django
-    for detalle in cobro.detalles.all():  # type: ignore[attr-defined]
-        subtotal += detalle.subtotal
-        if detalle.producto.impuesto:
-            impuesto_valor = detalle.producto.impuesto.calcular_impuesto(detalle.subtotal)
-            total_impuestos += impuesto_valor
-    
-    total = subtotal + total_impuestos
-    return subtotal, total_impuestos, total
-
-
-def _generar_observaciones_factura(cobro):
-    """Genera observaciones detalladas para la factura desde un cobro."""
-    return (
-        f'Factura generada desde cobro {cobro.numero_pago}.\n'
-        f'Cliente: {cobro.tercero.razon_social}\n'
-        f'Documento: {cobro.tercero.numero_documento}\n'
-        f'Método de pago: {cobro.metodo_pago.nombre}\n'
-        f'Referencia: {cobro.referencia or "N/A"}\n'
-        f'Observaciones del cobro: {cobro.observaciones or "N/A"}'
-    )
-
-
-def _crear_detalle_factura(factura, detalle_cobro, orden):
-    """Crea un detalle de factura desde un detalle de cobro."""
-    from facturacion.models import FacturaDetalle
-    
-    impuesto = detalle_cobro.producto.impuesto
-    porcentaje = impuesto.porcentaje if impuesto else Decimal('0.00')
-    valor_impuesto = impuesto.calcular_impuesto(detalle_cobro.subtotal) if impuesto else Decimal('0.00')
-    
-    FacturaDetalle.objects.create(
-        factura=factura,
-        producto=detalle_cobro.producto,
-        descripcion=detalle_cobro.producto.nombre,
-        cantidad=detalle_cobro.cantidad,
-        precio_unitario=detalle_cobro.precio_unitario,
-        impuesto=impuesto,
-        porcentaje_impuesto=porcentaje,
-        subtotal=detalle_cobro.subtotal,
-        valor_impuesto=valor_impuesto,
-        total_linea=detalle_cobro.subtotal + valor_impuesto,
-        orden=orden
-    )
-
-
-# ==========================================
-# VISTAS
-# ==========================================
-
 # Vistas temporales básicas
 class TesoreriaIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/index.html'
@@ -181,18 +44,10 @@ class PagoDetailView(LoginRequiredMixin, DetailView):
     model = Pago
     template_name = 'tesoreria/pagos_detalle.html'
 
-class PagoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
+class PagoCreateView(LoginRequiredMixin, CreateView):
     model = Pago
     template_name = 'tesoreria/pagos_crear.html'
     fields = '__all__'
-    success_url = reverse_lazy('tesoreria:pagos_lista')
-    
-    def form_valid(self, form):
-        form.instance.creado_por = self.request.user
-        if not form.instance.empresa:
-            form.instance.empresa = getattr(self.request, 'empresa_activa', None)
-        messages.success(self.request, f'Pago {form.instance.numero_pago} registrado exitosamente.')
-        return super().form_valid(form)
 
 class PagoUpdateView(LoginRequiredMixin, UpdateView):
     model = Pago
@@ -283,21 +138,19 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
         context = super().get_context_data(**kwargs)
         empresa_activa = getattr(self.request, 'empresa_activa', None)
         
-        # Obtener productos activos de la empresa con información de stock
+        # Obtener productos activos de la empresa
         if empresa_activa:
             productos = Producto.objects.filter(
                 empresa=empresa_activa,
                 activo=True
-            ).values('id', 'nombre', 'precio_venta', 'inventariable', 'stock_actual')
+            ).values('id', 'nombre', 'precio_venta')
             
-            # Convertir a JSON para JavaScript incluyendo stock
+            # Convertir a JSON para JavaScript
             productos_list = [
                 {
                     'id': p['id'],
                     'nombre': p['nombre'],
-                    'precio': str(p['precio_venta']),
-                    'inventariable': p['inventariable'],
-                    'stock': p['stock_actual']
+                    'precio': str(p['precio_venta'])
                 }
                 for p in productos
             ]
@@ -320,7 +173,19 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
             return redirect(CAMBIAR_EMPRESA_URL)
         
         # Generar número de cobro automático
-        nuevo_numero = _generar_numero_cobro(empresa_activa)
+        ultimo_cobro = Pago.objects.filter(
+            empresa=empresa_activa,
+            tipo_pago='cobro'
+        ).order_by('-numero_pago').first()
+        
+        if ultimo_cobro:
+            try:
+                ultimo_numero = int(ultimo_cobro.numero_pago.replace('COB-', ''))
+                nuevo_numero = f'COB-{(ultimo_numero + 1):06d}'
+            except (ValueError, AttributeError):
+                nuevo_numero = 'COB-000001'
+        else:
+            nuevo_numero = 'COB-000001'
         
         # Configurar el cobro
         form.instance.empresa = empresa_activa
@@ -332,23 +197,28 @@ class CobroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
         # Guardar el cobro primero
         response = super().form_valid(form)
         
-        # Procesar los detalles de productos con validación de stock
+        # Procesar los detalles de productos
         cobro = form.instance
-        errores_stock = []
         i = 0
-        
         while f'producto_{i}' in self.request.POST:
-            error = _validar_y_crear_detalle_cobro(self.request, cobro, i)
-            if error:
-                errores_stock.append(error)
+            producto_id = self.request.POST.get(f'producto_{i}')
+            cantidad = self.request.POST.get(f'cantidad_{i}')
+            precio = self.request.POST.get(f'precio_{i}')
+            
+            if producto_id and cantidad and precio:
+                try:
+                    producto = Producto.objects.get(id=producto_id)
+                    PagoDetalle.objects.create(
+                        pago=cobro,
+                        producto=producto,
+                        cantidad=Decimal(cantidad),
+                        precio_unitario=Decimal(precio)
+                    )
+                except (Producto.DoesNotExist, ValueError):  # type: ignore[misc]
+                    # InvalidOperation es una excepción interna de Decimal
+                    pass
+            
             i += 1
-        
-        # Si hay errores de stock, eliminar el cobro y mostrar errores
-        if errores_stock:
-            cobro.delete()
-            for error in errores_stock:
-                messages.error(self.request, f'❌ {error}')
-            return redirect(URL_COBROS_LISTA)
         
         messages.success(
             self.request,
@@ -380,153 +250,236 @@ class CobroUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
         )
         return super().form_valid(form)
 
-class EgresoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
+class EgresoListView(LoginRequiredMixin, ListView):
     model = Pago
     template_name = 'tesoreria/egresos_lista.html'
-    context_object_name = 'object_list'
-    paginate_by = 50
-    
-    def get_queryset(self):
-        return super().get_queryset().filter(tipo_pago='egreso').order_by('-fecha_pago')
 
-class EgresoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
+class EgresoCreateView(LoginRequiredMixin, CreateView):
     model = Pago
     template_name = 'tesoreria/egresos_crear.html'
-    fields = ['numero_pago', 'fecha_pago', 'tercero', 'metodo_pago', 'valor', 'referencia', 'observaciones', 'estado', 'factura']
-    success_url = reverse_lazy('tesoreria:egresos_lista')
-    
-    def form_valid(self, form):
-        form.instance.empresa = getattr(self.request, 'empresa_activa', None)
-        form.instance.tipo_pago = 'egreso'
-        form.instance.creado_por = self.request.user
-        messages.success(self.request, f'Egreso {form.instance.numero_pago} registrado exitosamente.')
-        return super().form_valid(form)
-
-class EgresoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
-    model = Pago
-    template_name = 'tesoreria/egresos_editar.html'
-    fields = ['numero_pago', 'fecha_pago', 'tercero', 'metodo_pago', 'valor', 'referencia', 'observaciones', 'estado', 'factura']
-    success_url = reverse_lazy('tesoreria:egresos_lista')
-    
-    def get_queryset(self):
-        return super().get_queryset().filter(tipo_pago='egreso')
-    
-    def form_valid(self, form):
-        messages.success(self.request, f'Egreso {form.instance.numero_pago} actualizado exitosamente.')
-        return super().form_valid(form)
-
-class EgresoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
-    model = Pago
-    template_name = 'tesoreria/egresos_eliminar.html'
-    success_url = reverse_lazy('tesoreria:egresos_lista')
-    
-    def get_queryset(self):
-        return super().get_queryset().filter(tipo_pago='egreso')
-    
-    def delete(self, request, *args, **kwargs):
-        egreso = self.get_object()
-        messages.success(request, f'Egreso {egreso.numero_pago} eliminado exitosamente.')
-        return super().delete(request, *args, **kwargs)
+    fields = '__all__'
 
 class CuentaBancariaListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_lista.html'
     context_object_name = 'object_list'
     paginate_by = 50
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.select_related('empresa', 'cuenta_contable').order_by('nombre')
 
-class CuentaBancariaDetailView(LoginRequiredMixin, EmpresaFilterMixin, DetailView):
+class CuentaBancariaDetailView(LoginRequiredMixin, DetailView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_detalle.html'
 
-class CuentaBancariaCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
+class CuentaBancariaCreateView(LoginRequiredMixin, CreateView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_crear.html'
-    fields = ['codigo', 'nombre', 'tipo_cuenta', 'numero_cuenta', 'banco', 'saldo_actual', 'activa', 'cuenta_contable']
-    success_url = reverse_lazy('tesoreria:cuentas_lista')
-    
-    def form_valid(self, form):
-        form.instance.empresa = getattr(self.request, 'empresa_activa', None)
-        messages.success(self.request, f'Cuenta bancaria {form.instance.nombre} creada exitosamente.')
-        return super().form_valid(form)
+    fields = '__all__'
 
-class CuentaBancariaUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
+class CuentaBancariaUpdateView(LoginRequiredMixin, UpdateView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_editar.html'
-    fields = ['codigo', 'nombre', 'tipo_cuenta', 'numero_cuenta', 'banco', 'saldo_actual', 'activa', 'cuenta_contable']
-    success_url = reverse_lazy('tesoreria:cuentas_lista')
-    
-    def form_valid(self, form):
-        messages.success(self.request, f'Cuenta bancaria {form.instance.nombre} actualizada exitosamente.')
-        return super().form_valid(form)
+    fields = '__all__'
 
-class CuentaBancariaDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
+class CuentaBancariaDeleteView(LoginRequiredMixin, DeleteView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_eliminar.html'
-    success_url = reverse_lazy('tesoreria:cuentas_lista')
-    
-    def delete(self, request, *args, **kwargs):
-        cuenta = self.get_object()
-        messages.success(request, f'Cuenta bancaria {cuenta.nombre} eliminada exitosamente.')
-        return super().delete(request, *args, **kwargs)
 
 class FlujoCajaView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/flujo_caja.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        empresa_activa = getattr(self.request, 'empresa_activa', None)
+        
+        if not empresa_activa:
+            return context
+        
+        # Obtener parámetros de filtro
+        fecha_inicio = self.request.GET.get('fecha_inicio')
+        fecha_fin = self.request.GET.get('fecha_fin')
+        cuenta_id = self.request.GET.get('cuenta')
+        
+        # Base queryset: solo pagos pagados de la empresa activa
+        movimientos = Pago.objects.filter(
+            empresa=empresa_activa,
+            estado='pagado'
+        ).select_related('tercero', 'cuenta_bancaria', 'metodo_pago')
+        
+        # Aplicar filtros
+        if fecha_inicio:
+            movimientos = movimientos.filter(fecha_pago__gte=fecha_inicio)
+            context['fecha_inicio'] = fecha_inicio
+        
+        if fecha_fin:
+            movimientos = movimientos.filter(fecha_pago__lte=fecha_fin)
+            context['fecha_fin'] = fecha_fin
+        
+        if cuenta_id:
+            movimientos = movimientos.filter(cuenta_bancaria_id=cuenta_id)
+            context['cuenta_id'] = cuenta_id
+        
+        # Ordenar por fecha
+        movimientos = movimientos.order_by('fecha_pago', 'id')
+        
+        # Calcular totales
+        total_ingresos = movimientos.filter(tipo_pago='cobro').aggregate(
+            total=models.Sum('valor')
+        )['total'] or 0
+        
+        total_egresos = movimientos.filter(tipo_pago='egreso').aggregate(
+            total=models.Sum('valor')
+        )['total'] or 0
+        
+        count_ingresos = movimientos.filter(tipo_pago='cobro').count()
+        count_egresos = movimientos.filter(tipo_pago='egreso').count()
+        
+        flujo_neto = total_ingresos - total_egresos
+        
+        # Calcular saldo acumulado para cada movimiento
+        saldo_acumulado = 0
+        movimientos_con_saldo = []
+        for mov in movimientos:
+            if mov.tipo_pago == 'cobro':
+                saldo_acumulado += mov.valor
+            else:
+                saldo_acumulado -= mov.valor
+            mov.saldo_acumulado = saldo_acumulado
+            movimientos_con_saldo.append(mov)
+        
+        # Obtener todas las cuentas bancarias para el filtro
+        cuentas = CuentaBancaria.objects.filter(
+            empresa=empresa_activa,
+            activo=True
+        ).order_by('nombre_banco')
+        
+        context.update({
+            'movimientos': movimientos_con_saldo,
+            'total_ingresos': total_ingresos,
+            'total_egresos': total_egresos,
+            'count_ingresos': count_ingresos,
+            'count_egresos': count_egresos,
+            'flujo_neto': flujo_neto,
+            'cuentas': cuentas,
+        })
+        
+        return context
 
 class SaldosCuentasView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/saldos_cuentas.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        empresa_activa = getattr(self.request, 'empresa_activa', None)
+        
+        if not empresa_activa:
+            return context
+        
+        # Obtener todas las cuentas bancarias activas
+        cuentas = CuentaBancaria.objects.filter(
+            empresa=empresa_activa,
+            activo=True
+        ).order_by('nombre_banco')
+        
+        cuentas_con_saldo = []
+        saldo_total = 0
+        
+        for cuenta in cuentas:
+            # Calcular ingresos (cobros)
+            ingresos = Pago.objects.filter(
+                empresa=empresa_activa,
+                cuenta_bancaria=cuenta,
+                tipo_pago='cobro',
+                estado='pagado'
+            ).aggregate(total=models.Sum('valor'))['total'] or 0
+            
+            # Calcular egresos
+            egresos = Pago.objects.filter(
+                empresa=empresa_activa,
+                cuenta_bancaria=cuenta,
+                tipo_pago='egreso',
+                estado='pagado'
+            ).aggregate(total=models.Sum('valor'))['total'] or 0
+            
+            # Saldo de la cuenta
+            saldo_cuenta = cuenta.saldo_inicial + ingresos - egresos
+            saldo_total += saldo_cuenta
+            
+            cuentas_con_saldo.append({
+                'cuenta': cuenta,
+                'ingresos': ingresos,
+                'egresos': egresos,
+                'saldo': saldo_cuenta,
+            })
+        
+        context.update({
+            'cuentas_con_saldo': cuentas_con_saldo,
+            'saldo_total': saldo_total,
+        })
+        
+        return context
 
 class PagosPeriodoView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/pagos_periodo.html'
-
-@login_required
-@require_http_methods(["POST"])
-def eliminar_cobro(request, pk):
-    """
-    Elimina un cobro pendiente.
-    Solo se pueden eliminar cobros en estado pendiente.
-    """
-    cobro = get_object_or_404(Pago, pk=pk, tipo_pago='cobro')
-    empresa_activa = getattr(request, 'empresa_activa', None)
     
-    if not empresa_activa:
-        messages.error(request, MSG_SELECCIONAR_EMPRESA)
-        return redirect(CAMBIAR_EMPRESA_URL)
-    
-    # Verificar que el cobro pertenezca a la empresa activa
-    if cobro.empresa != empresa_activa:
-        messages.error(request, 'No tienes permiso para eliminar este cobro.')
-        return redirect(URL_COBROS_LISTA)
-    
-    # Solo se pueden eliminar cobros pendientes
-    if cobro.estado != 'pendiente':
-        messages.error(request, 'Solo se pueden eliminar cobros en estado pendiente.')
-        return redirect(URL_COBROS_LISTA)
-    
-    # Guardar información para el mensaje
-    numero_cobro = cobro.numero_pago
-    cliente = cobro.tercero.razon_social
-    
-    # Eliminar el cobro (los detalles se eliminan automáticamente por CASCADE)
-    cobro.delete()
-    
-    messages.success(
-        request,
-        f'✓ Cobro {numero_cobro} eliminado exitosamente.\nCliente: {cliente}'
-    )
-    
-    return redirect(URL_COBROS_LISTA)
-
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        empresa_activa = getattr(self.request, 'empresa_activa', None)
+        
+        if not empresa_activa:
+            return context
+        
+        # Obtener parámetros de filtro
+        fecha_inicio = self.request.GET.get('fecha_inicio')
+        fecha_fin = self.request.GET.get('fecha_fin')
+        tipo_pago = self.request.GET.get('tipo_pago', '')
+        estado = self.request.GET.get('estado', '')
+        
+        # Base queryset
+        pagos = Pago.objects.filter(
+            empresa=empresa_activa
+        ).select_related('tercero', 'cuenta_bancaria', 'metodo_pago')
+        
+        # Aplicar filtros
+        if fecha_inicio:
+            pagos = pagos.filter(fecha_pago__gte=fecha_inicio)
+            context['fecha_inicio'] = fecha_inicio
+        
+        if fecha_fin:
+            pagos = pagos.filter(fecha_pago__lte=fecha_fin)
+            context['fecha_fin'] = fecha_fin
+        
+        if tipo_pago:
+            pagos = pagos.filter(tipo_pago=tipo_pago)
+            context['tipo_pago'] = tipo_pago
+        
+        if estado:
+            pagos = pagos.filter(estado=estado)
+            context['estado'] = estado
+        
+        # Ordenar por fecha descendente
+        pagos = pagos.order_by('-fecha_pago', '-id')
+        
+        # Calcular totales
+        total_pagos = pagos.aggregate(total=models.Sum('valor'))['total'] or 0
+        count_pagos = pagos.count()
+        
+        context.update({
+            'pagos': pagos[:100],  # Limitar a 100 registros
+            'total_pagos': total_pagos,
+            'count_pagos': count_pagos,
+        })
+        
+        return context
 
 @login_required
 @require_http_methods(["POST"])
 def activar_cobro(request, pk):
     """
     Activa un cobro (cambia estado a activo) y genera una factura automáticamente.
-    Transfiere los detalles de productos del cobro a la factura.
     """
-    from facturacion.models import FacturaDetalle
-    from django.core.exceptions import ValidationError
-    
     cobro = get_object_or_404(Pago, pk=pk, tipo_pago='cobro')
     empresa_activa = getattr(request, 'empresa_activa', None)
     
@@ -539,56 +492,56 @@ def activar_cobro(request, pk):
         messages.error(request, 'Solo se pueden activar cobros en estado pendiente.')
         return redirect(URL_COBROS_LISTA)
     
-    try:
-        # Validar stock antes de activar
-        _validar_stock_cobro(cobro)
-        
-        # Generar número de factura automático
-        nuevo_numero = _generar_numero_factura(empresa_activa)
-        
-        # Calcular totales del cobro
-        subtotal, total_impuestos, total = _calcular_totales_cobro(cobro)
-        
-        # Crear la factura con toda la información del cobro
-        factura = Factura.objects.create(
-            empresa=empresa_activa,
-            numero_factura=nuevo_numero,
-            fecha_factura=cobro.fecha_pago,
-            cliente=cobro.tercero,
-            tipo_venta='contado',
-            metodo_pago=cobro.metodo_pago,
-            subtotal=subtotal,
-            total_impuestos=total_impuestos,
-            total=total,
-            estado='confirmada',
-            observaciones=_generar_observaciones_factura(cobro),
-            creado_por=request.user,
-            confirmado_por=request.user,
-            fecha_confirmacion=timezone.now()
-        )
-        
-        # Transferir detalles de productos del cobro a la factura
-        # type: ignore - Pylance no detecta related_name='detalles' de Django
-        for orden, detalle in enumerate(cobro.detalles.all(), start=1):  # type: ignore[attr-defined]
-            _crear_detalle_factura(factura, detalle, orden)
-        
-        # Actualizar el cobro a estado activo
-        cobro.estado = 'activo'
-        cobro.confirmado_por = request.user
-        cobro.fecha_confirmacion = timezone.now()
-        cobro.factura = factura  # type: ignore[assignment]
-        cobro.save()
-        
-        messages.success(
-            request,
-            f'✓ Cobro {cobro.numero_pago} activado exitosamente.\n✓ Factura {nuevo_numero} generada con {orden} producto(s).'
-        )
-        
-        return redirect(URL_COBROS_LISTA)
-        
-    except ValidationError as e:
-        messages.error(request, f'Error al activar el cobro: {str(e)}')
-        return redirect(URL_COBROS_LISTA)
+    # Generar número de factura automático
+    ultima_factura = Factura.objects.filter(
+        empresa=empresa_activa
+    ).order_by('-numero_factura').first()
+    
+    if ultima_factura:
+        try:
+            ultimo_numero = int(ultima_factura.numero_factura.replace('FAC-', ''))
+            nuevo_numero = f'FAC-{(ultimo_numero + 1):06d}'
+        except (ValueError, AttributeError):
+            nuevo_numero = 'FAC-000001'
+    else:
+        nuevo_numero = 'FAC-000001'
+    
+    # Crear la factura con toda la información del cobro
+    factura = Factura.objects.create(
+        empresa=empresa_activa,
+        numero_factura=nuevo_numero,
+        fecha_factura=cobro.fecha_pago,
+        cliente=cobro.tercero,
+        tipo_venta='contado',
+        metodo_pago=cobro.metodo_pago,
+        subtotal=cobro.valor,
+        total_impuestos=Decimal('0.00'),
+        total=cobro.valor,
+        estado='confirmada',
+        observaciones=f'Factura generada desde cobro {cobro.numero_pago}.\n'
+                     f'Cliente: {cobro.tercero.razon_social}\n'
+                     f'Documento: {cobro.tercero.numero_documento}\n'
+                     f'Método de pago: {cobro.metodo_pago.nombre}\n'
+                     f'Referencia: {cobro.referencia or "N/A"}\n'
+                     f'Observaciones del cobro: {cobro.observaciones or "N/A"}',
+        creado_por=request.user,
+        confirmado_por=request.user,
+        fecha_confirmacion=timezone.now()
+    )
+    
+    # Actualizar el cobro a estado activo
+    cobro.estado = 'activo'
+    cobro.confirmado_por = request.user
+    cobro.fecha_confirmacion = timezone.now()
+    cobro.factura = factura  # type: ignore[assignment]
+    cobro.save()
+    
+    messages.success(
+        request,
+        f'Cobro {cobro.numero_pago} activado exitosamente. Factura {nuevo_numero} generada.'
+    )
+    
+    return redirect(URL_COBROS_LISTA)
 
 
 def _construir_info_pago_efectivo(request):
@@ -650,47 +603,35 @@ def marcar_cobro_pagado(request, pk):
     """
     Marca un cobro activo como pagado y actualiza el estado de la factura asociada.
     Guarda información del pago (método, monto recibido, cambio).
-    DISMINUYE EL STOCK de los productos del cobro.
     """
-    from django.core.exceptions import ValidationError
-    
     cobro = get_object_or_404(Pago, pk=pk, tipo_pago='cobro')
     
     if cobro.estado != 'activo':
         messages.error(request, 'Solo se pueden marcar como pagados los cobros activos.')
         return redirect(URL_COBROS_LISTA)
     
-    try:
-        # Obtener método de pago
-        metodo_pago = request.POST.get('metodo_pago', 'efectivo')
-        
-        # DISMINUIR STOCK antes de marcar como pagado
-        cobro.disminuir_stock()
-        
-        # Actualizar estado del cobro
-        cobro.estado = 'pagado'
-        
-        # Actualizar información de pago
-        _actualizar_info_pago(cobro, metodo_pago, request)
-        
-        # Guardar cobro
-        cobro.save()
-        
-        # Mensaje de éxito
-        if cobro.factura:
-            messages.success(
-                request, 
-                f'✓ Pago procesado exitosamente\nCobro: {cobro.numero_pago}\nFactura: {cobro.factura.numero_factura}\nMétodo: {metodo_pago.capitalize()}\n✓ Stock actualizado'
-            )
-        else:
-            messages.success(request, f'Cobro {cobro.numero_pago} marcado como pagado. Stock actualizado.')
-        
-        return redirect(URL_COBROS_LISTA)
-        
-    except ValidationError as e:
-        # Si hay error de stock insuficiente, mostrar mensaje y no procesar el pago
-        messages.error(request, f'Error al procesar el pago: {str(e)}')
-        return redirect(URL_COBROS_LISTA)
+    # Obtener método de pago
+    metodo_pago = request.POST.get('metodo_pago', 'efectivo')
+    
+    # Actualizar estado del cobro
+    cobro.estado = 'pagado'
+    
+    # Actualizar información de pago
+    _actualizar_info_pago(cobro, metodo_pago, request)
+    
+    # Guardar cobro
+    cobro.save()
+    
+    # Mensaje de éxito
+    if cobro.factura:
+        messages.success(
+            request, 
+            f'✓ Pago procesado exitosamente\nCobro: {cobro.numero_pago}\nFactura: {cobro.factura.numero_factura}\nMétodo: {metodo_pago.capitalize()}'
+        )
+    else:
+        messages.success(request, f'Cobro {cobro.numero_pago} marcado como pagado.')
+    
+    return redirect(URL_COBROS_LISTA)
 
 
 @login_required
@@ -934,3 +875,157 @@ def crear_cliente_ajax(request):
             'success': False,
             'error': f'Error al crear el cliente: {str(e)}'
         }, status=500)
+
+
+from django.views.generic import TemplateView
+from django.db.models import Sum, Count, Q
+from django.utils.dateparse import parse_date
+from django.http import HttpResponse
+import csv
+
+class PagosReporteView(LoginRequiredMixin, TemplateView):
+    template_name = 'tesoreria/pagos_reporte.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        qs = Pago.objects.all()
+        empresa = getattr(self.request, 'empresa_activa', None)
+        if empresa:
+            qs = qs.filter(empresa=empresa)
+
+        fecha_desde = self.request.GET.get('desde')
+        fecha_hasta = self.request.GET.get('hasta')
+        tipo = self.request.GET.get('tipo')
+        estado = self.request.GET.get('estado')
+
+        if fecha_desde:
+            qs = qs.filter(fecha__date__gte=parse_date(fecha_desde))
+        if fecha_hasta:
+            qs = qs.filter(fecha__date__lte=parse_date(fecha_hasta))
+        if tipo in dict(Pago.TIPO_PAGO_CHOICES):
+            qs = qs.filter(tipo=tipo)
+        if estado in dict(Pago.ESTADO_CHOICES):
+            qs = qs.filter(estado=estado)
+
+        agregados = qs.aggregate(
+            total_valor=Sum('valor'),
+            total_registros=Count('id'),
+            total_pendientes=Count('id', filter=Q(estado='pendiente')),
+            total_aprobados=Count('id', filter=Q(estado='aprobado')),
+            total_anulados=Count('id', filter=Q(estado='anulado')),
+        )
+        ctx['pagos'] = qs.select_related('empresa', 'cliente')
+        ctx['agregados'] = agregados
+        return ctx
+
+@login_required
+def pagos_reporte_csv(request):
+    qs = Pago.objects.all()
+    empresa = getattr(request, 'empresa_activa', None)
+    if empresa:
+        qs = qs.filter(empresa=empresa)
+
+    fecha_desde = request.GET.get('desde')
+    fecha_hasta = request.GET.get('hasta')
+    tipo = request.GET.get('tipo')
+    estado = request.GET.get('estado')
+
+    if fecha_desde:
+        qs = qs.filter(fecha__date__gte=parse_date(fecha_desde))
+    if fecha_hasta:
+        qs = qs.filter(fecha__date__lte=parse_date(fecha_hasta))
+    if tipo in dict(Pago.TIPO_PAGO_CHOICES):
+        qs = qs.filter(tipo=tipo)
+    if estado in dict(Pago.ESTADO_CHOICES):
+        qs = qs.filter(estado=estado)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="reporte_pagos.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'Fecha', 'Tipo', 'Estado', 'Cliente', 'Valor'])
+    for p in qs.select_related('cliente'):
+        writer.writerow([p.id, getattr(p, 'fecha', ''), p.tipo, p.estado, getattr(p.cliente, 'razon_social', ''), p.valor])
+    return response
+
+
+@login_required
+@require_http_methods(["POST"])
+def enviar_factura_email(request, factura_pk):
+    factura = get_object_or_404(Factura, pk=factura_pk)
+    empresa_activa = getattr(request, 'empresa_activa', None)
+    if factura.empresa != empresa_activa:
+        messages.error(request, 'No tienes permiso para enviar esta factura.')
+        return redirect('facturacion:facturas_lista')
+
+    # Reusar PDF generado por la vista existente
+    response = generar_factura_pdf(request, factura_pk)
+    if getattr(response, 'status_code', 500) != 200 or response.get('Content-Type') != 'application/pdf':
+        messages.error(request, 'No fue posible generar el PDF.')
+        return redirect('facturacion:facturas_detalle', pk=factura_pk)
+
+    pdf_bytes = response.content
+    from .services.emailing import send_invoice_email
+    destinatario = getattr(factura.cliente, 'email', None)
+    try:
+        send_invoice_email(factura, pdf_bytes, destinatario)
+        messages.success(request, 'Factura enviada correctamente.')
+    except Exception as e:
+        messages.error(request, f'Error enviando email: {e}')
+    return redirect('facturacion:facturas_detalle', pk=factura_pk)
+
+
+# ========== VISTAS DE ACCIONES DE TESORERÍA ==========
+
+@login_required
+@require_http_methods(["POST"])
+def confirmar_pago(request, pk):
+    """
+    Confirma un pago pendiente.
+    """
+    pago = get_object_or_404(Pago, pk=pk, empresa=request.empresa_activa)
+    
+    success, message = ServicioTesoreria.confirmar_pago(pago, request.user)
+    
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+    
+    return redirect('tesoreria:pagos_detalle', pk=pk)
+
+
+@login_required
+@require_http_methods(["POST"])
+def anular_pago(request, pk):
+    """
+    Anula un pago.
+    """
+    pago = get_object_or_404(Pago, pk=pk, empresa=request.empresa_activa)
+    motivo = request.POST.get('motivo', '')
+    
+    success, message = ServicioTesoreria.anular_pago(pago, motivo)
+    
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+    
+    return redirect('tesoreria:pagos_detalle', pk=pk)
+
+
+@login_required
+@require_http_methods(["POST"])
+def marcar_pago_pagado(request, pk):
+    """
+    Marca un pago como pagado.
+    """
+    pago = get_object_or_404(Pago, pk=pk, empresa=request.empresa_activa)
+    
+    success, message = ServicioTesoreria.marcar_pago_como_pagado(pago, request.user)
+    
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+    
+    return redirect('tesoreria:pagos_detalle', pk=pk)

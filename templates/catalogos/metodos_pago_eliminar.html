@@ -1,0 +1,78 @@
+{% extends 'base_contable.html' %} {% block title %}Eliminar Método de Pago -
+S_CONTABLE{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-1">
+                <i class="fas fa-trash text-danger"></i>
+                Eliminar Método de Pago
+              </h2>
+              <p class="text-muted mb-0">Confirmar eliminación</p>
+            </div>
+            <a
+              href="{% url 'catalogos:metodos_pago_lista' %}"
+              class="btn btn-outline-secondary"
+            >
+              <i class="fas fa-arrow-left"></i> Volver
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmación -->
+  <div class="row">
+    <div class="col-lg-6 mx-auto">
+      <div class="card shadow-sm border-danger">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-exclamation-triangle"></i>
+            Confirmar Eliminación
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle"></i>
+            <strong>¡Advertencia!</strong> Esta acción no se puede deshacer.
+          </div>
+
+          <p class="mb-3">
+            ¿Está seguro que desea eliminar el siguiente método de pago?
+          </p>
+
+          <div class="card bg-light mb-4">
+            <div class="card-body">
+              <p class="mb-1"><strong>Código:</strong> {{ object.codigo }}</p>
+              <p class="mb-1"><strong>Nombre:</strong> {{ object.nombre }}</p>
+              <p class="mb-0">
+                <strong>Tipo:</strong> {{ object.get_tipo_metodo_display }}
+              </p>
+            </div>
+          </div>
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-end gap-2">
+              <a
+                href="{% url 'catalogos:metodos_pago_lista' %}"
+                class="btn btn-secondary"
+              >
+                <i class="fas fa-times"></i> Cancelar
+              </a>
+              <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Sí, Eliminar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
