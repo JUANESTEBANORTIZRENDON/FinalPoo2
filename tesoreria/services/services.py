@@ -43,9 +43,10 @@ class ServicioTesoreria:
         pago.fecha_confirmacion = timezone.now()
         pago.save()
         
-        # TODO: Generar asiento contable automático
-        # from contabilidad.services import ServicioContabilidad
-        # ServicioContabilidad.generar_asiento_pago(pago)
+        # PENDIENTE: Generar asiento contable automático cuando se implemente integración con módulo contabilidad
+        # Requiere: from contabilidad.services import ServicioContabilidad
+        # Acción: ServicioContabilidad.generar_asiento_pago(pago)
+        # Prioridad: Media - Funcionalidad futura planeada
         
         return True, "Pago confirmado exitosamente"
     
@@ -73,9 +74,10 @@ class ServicioTesoreria:
         pago.estado = 'pendiente'
         pago.save()
         
-        # TODO: Reversar asiento contable si existe
-        # if pago.asiento_contable:
-        #     ServicioContabilidad.reversar_asiento(pago.asiento_contable)
+        # PENDIENTE: Reversar asiento contable cuando se implemente integración
+        # Condición: if pago.asiento_contable exists
+        # Acción: ServicioContabilidad.reversar_asiento(pago.asiento_contable)
+        # Prioridad: Media - Funcionalidad futura planeada
         
         return True, f"Pago anulado exitosamente. Estado anterior: {estado_anterior}"
     

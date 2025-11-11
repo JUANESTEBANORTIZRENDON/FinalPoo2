@@ -131,9 +131,9 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('input:not([type="checkbox"]):not([type="hidden"]), select, textarea').forEach(field => {
+    for (const field of document.querySelectorAll('input:not([type="checkbox"]):not([type="hidden"]), select, textarea')) {
         field.classList.add('form-control');
-    });
+    }
     
     const fechaPago = document.querySelector('input[name="fecha_pago"]');
     if (fechaPago) fechaPago.type = 'date';
