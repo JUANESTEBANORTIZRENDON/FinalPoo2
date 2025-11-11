@@ -1,0 +1,149 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Editar Egreso - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tesoreria:index' %}">Tesorería</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tesoreria:egresos_lista' %}">Egresos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Editar Egreso</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-pencil"></i>
+                        Editar Egreso: {{ object.numero_pago }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <h5 class="alert-heading">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    Errores en el formulario
+                                </h5>
+                                <ul class="mb-0">
+                                    {% for field in form %}
+                                        {% if field.errors %}
+                                            {% for error in field.errors %}
+                                                <li>{{ field.label }}: {{ error }}</li>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-warning border-bottom pb-2 mb-3">
+                                    <i class="bi bi-building"></i>
+                                    Información del Proveedor
+                                </h6>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Proveedor <span class="text-danger">*</span></label>
+                                {{ form.tercero }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-warning border-bottom pb-2 mb-3">
+                                    <i class="bi bi-cash"></i>
+                                    Detalles del Egreso
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Número <span class="text-danger">*</span></label>
+                                {{ form.numero_pago }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha <span class="text-danger">*</span></label>
+                                {{ form.fecha_pago }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Valor <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.valor }}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Método de Pago <span class="text-danger">*</span></label>
+                                {{ form.metodo_pago }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-warning border-bottom pb-2 mb-3">
+                                    <i class="bi bi-file-text"></i>
+                                    Información Adicional
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Referencia</label>
+                                {{ form.referencia }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Estado</label>
+                                {{ form.estado }}
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Observaciones</label>
+                                {{ form.observaciones }}
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="tipo_pago" value="egreso">
+                        <div style="display: none;">{{ form.empresa }}</div>
+                        
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'tesoreria:egresos_lista' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-check-circle"></i> Actualizar Egreso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input:not([type="checkbox"]):not([type="hidden"]), select, textarea').forEach(field => {
+        field.classList.add('form-control');
+    });
+    
+    const fechaPago = document.querySelector('input[name="fecha_pago"]');
+    if (fechaPago) fechaPago.type = 'date';
+    
+    const valorInput = document.querySelector('input[name="valor"]');
+    if (valorInput) {
+        valorInput.type = 'number';
+        valorInput.step = '0.01';
+        valorInput.min = '0';
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,285 @@
+{% extends 'base_contable.html' %}
+
+{% block title %}Detalle Producto - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-box text-primary"></i>
+                                {{ producto.nombre }}
+                            </h2>
+                            <p class="text-muted mb-0">
+                                Código: <strong>{{ producto.codigo }}</strong> | 
+                                Tipo: <strong>{{ producto.get_tipo_producto_display }}</strong>
+                            </p>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{% url 'catalogos:producto_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                            <a href="{% url 'catalogos:producto_update' producto.pk %}" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Producto -->
+    <div class="row">
+        <!-- Información Básica -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i>
+                        Información Básica
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <thead class="visually-hidden">
+                            <tr>
+                                <th scope="col">Campo</th>
+                                <th scope="col">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold" style="width: 40%;">Código:</td>
+                                <td>{{ producto.codigo }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Nombre:</td>
+                                <td>{{ producto.nombre }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Tipo:</td>
+                                <td>
+                                    {% if producto.tipo_producto == 'producto' %}
+                                        <span class="badge bg-info">Producto</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Servicio</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Descripción:</td>
+                                <td>{{ producto.descripcion|default:"Sin descripción" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Estado:</td>
+                                <td>
+                                    {% if producto.activo %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle"></i> Activo
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle"></i> Inactivo
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información Comercial -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-dollar-sign"></i>
+                        Información Comercial
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <thead class="visually-hidden">
+                            <tr>
+                                <th scope="col">Campo</th>
+                                <th scope="col">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold" style="width: 40%;">Precio de Venta:</td>
+                                <td class="text-success fw-bold">${{ producto.precio_venta|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Precio de Costo:</td>
+                                <td>${{ producto.precio_costo|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Impuesto:</td>
+                                <td>
+                                    {% if producto.impuesto %}
+                                        {{ producto.impuesto.nombre }} ({{ producto.impuesto.porcentaje }}%)
+                                    {% else %}
+                                        <span class="text-muted">Sin impuesto</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Precio con Impuesto:</td>
+                                <td class="text-primary fw-bold">${{ producto.precio_con_impuesto|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Margen de Utilidad:</td>
+                                <td>
+                                    {% if producto.margen_utilidad > 0 %}
+                                        <span class="badge bg-success">{{ producto.margen_utilidad }}%</span>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventario -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-warehouse"></i>
+                        Control de Inventario
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <thead class="visually-hidden">
+                            <tr>
+                                <th scope="col">Campo</th>
+                                <th scope="col">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold" style="width: 40%;">Maneja Inventario:</td>
+                                <td>
+                                    {% if producto.inventariable %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check"></i> Sí
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-times"></i> No
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if producto.inventariable %}
+                            <tr>
+                                <td class="fw-bold">Stock Actual:</td>
+                                <td>
+                                    <span class="badge {% if producto.requiere_reposicion %}bg-danger{% else %}bg-success{% endif %} fs-6">
+                                        {{ producto.stock_actual }}
+                                    </span>
+                                    {% if producto.requiere_reposicion %}
+                                        <small class="text-danger">
+                                            <i class="fas fa-exclamation-triangle"></i> Requiere reposición
+                                        </small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Stock Mínimo:</td>
+                                <td>{{ producto.stock_minimo }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de Auditoría -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock"></i>
+                        Información de Auditoría
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <thead class="visually-hidden">
+                            <tr>
+                                <th scope="col">Campo</th>
+                                <th scope="col">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold" style="width: 40%;">Empresa:</td>
+                                <td>{{ producto.empresa.razon_social }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Fecha de Creación:</td>
+                                <td>{{ producto.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Última Actualización:</td>
+                                <td>{{ producto.fecha_actualizacion|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-cogs"></i>
+                        Acciones
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'catalogos:producto_update' producto.pk %}" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Editar Producto
+                        </a>
+                        
+                        <form method="post" action="{% url 'catalogos:producto_toggle_activo' producto.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            {% if producto.activo %}
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Está seguro de desactivar este producto? No podrá ser vendido mientras esté inactivo.')">
+                                    <i class="fas fa-ban"></i> Desactivar Producto
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-success" onclick="return confirm('¿Está seguro de activar este producto?')">
+                                    <i class="fas fa-check-circle"></i> Activar Producto
+                                </button>
+                            {% endif %}
+                        </form>
+                        
+                        <a href="{% url 'catalogos:producto_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver al Listado
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

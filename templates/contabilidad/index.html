@@ -1,0 +1,90 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Contabilidad - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">
+                <i class="bi bi-calculator"></i>
+                Módulo de Contabilidad
+            </h2>
+            <p class="text-muted">
+                Gestiona el plan de cuentas, asientos contables y genera reportes financieros.
+            </p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Plan de Cuentas -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-diagram-3 display-3 text-success"></i>
+                    </div>
+                    <h5 class="card-title">Plan de Cuentas</h5>
+                    <p class="card-text text-muted">
+                        Configura y administra el plan de cuentas contables
+                    </p>
+                    <a href="{% url 'contabilidad:cuentas_lista' %}" class="btn btn-success">
+                        <i class="bi bi-arrow-right-circle"></i>
+                        Gestionar
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Asientos Contables -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-journal-text display-3 text-primary"></i>
+                    </div>
+                    <h5 class="card-title">Asientos Contables</h5>
+                    <p class="card-text text-muted">
+                        Registra y consulta asientos contables
+                    </p>
+                    <a href="{% url 'contabilidad:asientos_lista' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right-circle"></i>
+                        Gestionar
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Consultas -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-search display-3 text-info"></i>
+                    </div>
+                    <h5 class="card-title">Consultas</h5>
+                    <p class="card-text text-muted">
+                        Consulta saldos y movimientos contables
+                    </p>
+                    <a href="{% url 'contabilidad:consulta_saldos' %}" class="btn btn-info">
+                        <i class="bi bi-arrow-right-circle"></i>
+                        Consultar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-shadow {
+    transition: all 0.3s ease-in-out;
+}
+
+.hover-shadow:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

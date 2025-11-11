@@ -191,23 +191,24 @@
                             Nueva Factura
                         </a>
                         
-                        <a href="{% url 'tesoreria:cobro_create' %}?tercero={{ object.pk }}" class="btn btn-outline-success btn-sm">
+                        <a href="{% url 'tesoreria:cobros_crear' %}?tercero={{ object.pk }}" class="btn btn-outline-success btn-sm">
                             <i class="bi bi-cash"></i>
                             Registrar Cobro
                         </a>
                         {% endif %}
                         
                         {% if object.tipo_tercero == 'proveedor' or object.tipo_tercero == 'ambos' %}
-                        <a href="{% url 'tesoreria:egreso_create' %}?tercero={{ object.pk }}" class="btn btn-outline-danger btn-sm">
+                        <a href="{% url 'tesoreria:egresos_crear' %}?tercero={{ object.pk }}" class="btn btn-outline-danger btn-sm">
                             <i class="bi bi-cash-stack"></i>
                             Registrar Pago
                         </a>
                         {% endif %}
                         
-                        <a href="{% url 'reportes:tercero_movimientos' object.pk %}" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-file-earmark-text"></i>
-                            Ver Movimientos
-                        </a>
+                        {# Funcionalidad de movimientos de tercero pendiente de implementar #}
+                        {# <a href="{% url 'reportes:tercero_movimientos' object.pk %}" class="btn btn-outline-secondary btn-sm"> #}
+                        {#     <i class="bi bi-file-earmark-text"></i> #}
+                        {#     Ver Movimientos #}
+                        {# </a> #}
                     </div>
                 </div>
             </div>

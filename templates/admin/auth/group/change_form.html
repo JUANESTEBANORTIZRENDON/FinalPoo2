@@ -1,0 +1,40 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    /* Estilos adicionales para el formulario de grupos */
+    .form-row {
+        margin-bottom: 20px;
+    }
+    
+    .field-name {
+        max-width: 600px;
+    }
+    
+    .field-permissions .selector {
+        width: 100%;
+    }
+    
+    .field-permissions .selector-available,
+    .field-permissions .selector-chosen {
+        width: 45%;
+    }
+    
+    .help {
+        font-size: 13px;
+        color: #666;
+        margin-top: 5px;
+        display: block;
+    }
+    
+    .submit-row {
+        padding: 12px 14px;
+        margin: 0 0 20px;
+        background: #f8f8f8;
+        border: 1px solid #eee;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}

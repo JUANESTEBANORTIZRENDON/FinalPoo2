@@ -141,6 +141,13 @@
                                                     <i class="fas fa-check-circle" aria-hidden="true"></i>
                                                     <span class="visually-hidden">Activar</span>
                                                 </button>
+                                                <button type="button" 
+                                                        class="btn btn-outline-danger" 
+                                                        title="Eliminar cobro pendiente"
+                                                        onclick="eliminarCobro({{ cobro.pk }}, '{{ cobro.numero_pago }}', '{{ cobro.tercero.razon_social }}')">
+                                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Eliminar</span>
+                                                </button>
                                                 
                                                 {% elif cobro.estado == 'activo' %}
                                                 <button type="button" 
@@ -506,6 +513,12 @@
 function activarCobro(cobroId, numeroCobro) {
     if (confirm(`¿Estás seguro de que deseas activar el cobro ${numeroCobro}?\n\nEsta acción generará automáticamente una factura y no se puede deshacer.`)) {
         enviarFormulario(`/tesoreria/cobros/${cobroId}/activar/`);
+    }
+}
+
+function eliminarCobro(cobroId, numeroCobro, cliente) {
+    if (confirm(`¿Estás seguro de que deseas ELIMINAR el cobro ${numeroCobro}?\n\nCliente: ${cliente}\n\n⚠️ Esta acción NO se puede deshacer.`)) {
+        enviarFormulario(`/tesoreria/cobros/${cobroId}/eliminar/`);
     }
 }
 

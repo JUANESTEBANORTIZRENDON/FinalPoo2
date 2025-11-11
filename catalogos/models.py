@@ -353,19 +353,15 @@ class Producto(models.Model):
         help_text="Si el producto maneja control de inventario"
     )
     
-    stock_actual = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=Decimal('0.00'),
-        validators=[MinValueValidator(Decimal('0.00'))],
+    stock_actual = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0)],
         verbose_name="Stock Actual"
     )
     
-    stock_minimo = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=Decimal('0.00'),
-        validators=[MinValueValidator(Decimal('0.00'))],
+    stock_minimo = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0)],
         verbose_name="Stock Mínimo"
     )
     
@@ -405,8 +401,9 @@ class Producto(models.Model):
     @property
     def margen_utilidad(self):
         """Calcula el margen de utilidad en porcentaje"""
-        if self.precio_costo > 0:
-            return ((self.precio_venta - self.precio_costo) / self.precio_costo * 100).quantize(Decimal('0.01'))
+        if self.precio_costo > 0 and self.precio_venta > 0:
+            margen = ((self.precio_venta - self.precio_costo) / self.precio_costo * 100)
+            return margen.quantize(Decimal('0.01'))
         return Decimal('0.00')
     
     @property

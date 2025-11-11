@@ -19,6 +19,7 @@ LOGIN_URL_NAME = 'accounts:login'
 ADMIN_URL_PATH = '/admin/'  # Panel de desarrollador Django
 ADMIN_HOLDING_URL_NAME = 'empresas:admin_dashboard'  # Dashboard del holding para administradores
 DASHBOARD_URL_NAME = 'accounts:dashboard'
+TEMPLATE_ACTIVAR_CUENTA = 'accounts/activar_cuenta.html'
 
 class RegisterView(CreateView):
     """Vista para el registro completo de usuarios colombianos"""
@@ -297,8 +298,10 @@ def activar_cuenta(request):
     token = request.GET.get('token')
     
     if not token:
-        messages.error(request, 'Token de activación no válido.')
-        return redirect(LOGIN_URL_NAME)
+        return render(request, TEMPLATE_ACTIVAR_CUENTA, {
+            'activation_status': 'error',
+            'error_message': 'Token de activación no válido o faltante.'
+        })
     
     try:
         signer = Signer()
@@ -308,17 +311,28 @@ def activar_cuenta(request):
         user = User.objects.get(id=user_id, email=email)
         
         if user.is_active:
-            messages.info(request, 'Tu cuenta ya está activada. Puedes iniciar sesión.')
+            return render(request, TEMPLATE_ACTIVAR_CUENTA, {
+                'activation_status': 'already_active',
+                'user': user
+            })
         else:
             user.is_active = True
             user.save()
-            messages.success(request, '¡Cuenta activada exitosamente! Ya puedes iniciar sesión.')
+            return render(request, TEMPLATE_ACTIVAR_CUENTA, {
+                'activation_status': 'success',
+                'user': user
+            })
         
-        return redirect(LOGIN_URL_NAME)
-        
+    except User.DoesNotExist:
+        return render(request, TEMPLATE_ACTIVAR_CUENTA, {
+            'activation_status': 'error',
+            'error_message': 'Usuario no encontrado. El enlace puede ser inválido.'
+        })
     except Exception as e:
-        messages.error(request, f'Error al activar cuenta: {str(e)}')
-        return redirect(LOGIN_URL_NAME)
+        return render(request, TEMPLATE_ACTIVAR_CUENTA, {
+            'activation_status': 'error',
+            'error_message': f'Error al activar cuenta: {str(e)}'
+        })
 
 
 class CustomLogoutView(LogoutView):

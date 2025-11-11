@@ -1,0 +1,138 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Eliminar Impuesto - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'catalogos:impuestos_lista' %}">Impuestos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Eliminar Impuesto</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Confirmar Eliminación
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <h5 class="alert-heading">
+                            <i class="bi bi-info-circle"></i>
+                            Advertencia
+                        </h5>
+                        <p class="mb-0">
+                            Estás a punto de eliminar el siguiente impuesto. Esta acción <strong>no se puede deshacer</strong>.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3">Datos del Impuesto a Eliminar:</h5>
+                        
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th class="bg-light" style="width: 30%;">Código:</th>
+                                    <td><strong>{{ object.codigo }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Nombre:</th>
+                                    <td><strong>{{ object.nombre }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Tipo:</th>
+                                    <td>
+                                        <span class="badge 
+                                            {% if object.tipo_impuesto == 'IVA' %}bg-primary
+                                            {% elif object.tipo_impuesto == 'ICA' %}bg-info
+                                            {% elif object.tipo_impuesto == 'RETEFUENTE' %}bg-warning
+                                            {% elif object.tipo_impuesto == 'RETEIVA' %}bg-success
+                                            {% elif object.tipo_impuesto == 'RETEICA' %}bg-secondary
+                                            {% else %}bg-dark{% endif %}">
+                                            {{ object.get_tipo_impuesto_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Porcentaje:</th>
+                                    <td><strong>{{ object.porcentaje }}%</strong></td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Estado:</th>
+                                    <td>
+                                        {% if object.activo %}
+                                            <span class="badge bg-success">Activo</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactivo</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-danger" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-exclamation-octagon"></i>
+                            Consecuencias de esta acción:
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Se eliminará permanentemente el impuesto del sistema</li>
+                            <li>No podrá usar este impuesto en futuras transacciones</li>
+                            <li>Las transacciones previas que usaron este impuesto no se verán afectadas</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'catalogos:impuestos_lista' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="btnEliminar">
+                                <i class="bi bi-trash"></i>
+                                Sí, Eliminar Impuesto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnEliminar = document.getElementById('btnEliminar');
+    const form = document.querySelector('form');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Confirmación adicional
+        const confirmacion = confirm('¿Estás completamente seguro de que deseas eliminar este impuesto? Esta acción no se puede deshacer.');
+        
+        if (confirmacion) {
+            // Deshabilitar el botón para evitar envíos múltiples
+            btnEliminar.disabled = true;
+            btnEliminar.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Eliminando...';
+            form.submit();
+        }
+    });
+});
+</script>
+{% endblock %}
