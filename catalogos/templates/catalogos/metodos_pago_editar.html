@@ -1,16 +1,13 @@
 {% extends 'components/form_editar_base.html' %}
 {% load form_helpers %}
 
-{# Configuración de la página #}
-{% block title %}Editar Método de Pago{% endblock %}
-
 {# Variables de contexto #}
 {% load static %}
 {% with page_title="Editar Método de Pago" card_title="Editar Método de Pago"|add:": "|add:object.nombre breadcrumb_active="Editar Método de Pago" cancel_url="/catalogos/metodos-pago/" submit_text="Actualizar Método de Pago" %}
 
 {% block breadcrumb_items %}
-    <li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'catalogos:metodos_pago_lista' %}">Métodos de Pago</a></li>
+<li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
+<li class="breadcrumb-item"><a href="{% url 'catalogos:metodos_pago_lista' %}">Métodos de Pago</a></li>
 {% endblock %}
 
 {% block form_fields %}

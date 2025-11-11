@@ -1,16 +1,13 @@
 {% extends 'components/form_editar_base.html' %}
 {% load form_helpers %}
 
-{# Configuración de la página #}
-{% block title %}Editar Impuesto{% endblock %}
-
 {# Variables de contexto #}
 {% load static %}
 {% with page_title="Editar Impuesto" card_title="Editar Impuesto"|add:": "|add:object.nombre breadcrumb_active="Editar Impuesto" cancel_url="/catalogos/impuestos/" submit_text="Actualizar Impuesto" %}
 
 {% block breadcrumb_items %}
-    <li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'catalogos:impuestos_lista' %}">Impuestos</a></li>
+<li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
+<li class="breadcrumb-item"><a href="{% url 'catalogos:impuestos_lista' %}">Impuestos</a></li>
 {% endblock %}
 
 {% block form_fields %}

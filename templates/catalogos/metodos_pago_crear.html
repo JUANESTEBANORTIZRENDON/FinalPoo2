@@ -1,15 +1,12 @@
 {% extends 'components/form_crear_base.html' %}
 
-{# Configuración de la página #}
-{% block title %}Crear Método de Pago{% endblock %}
-
 {# Variables de contexto #}
 {% load static %}
 {% with page_title="Crear Método de Pago" card_title="Crear Nuevo Método de Pago" breadcrumb_active="Crear Método de Pago" cancel_url="/catalogos/metodos-pago/" submit_text="Guardar Método de Pago" %}
 
 {% block breadcrumb_items %}
-    <li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'catalogos:metodos_pago_lista' %}">Métodos de Pago</a></li>
+<li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
+<li class="breadcrumb-item"><a href="{% url 'catalogos:metodos_pago_lista' %}">Métodos de Pago</a></li>
 {% endblock %}
 
 {% block form_fields %}
