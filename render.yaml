@@ -1,3 +1,4 @@
+# Deploy trigger: 2025-11-11 - Sincronización master/wiki con JavaScript funcional
 services:
   - type: web
     name: finalpoo2
