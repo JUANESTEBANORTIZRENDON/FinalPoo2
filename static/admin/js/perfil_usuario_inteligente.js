@@ -9,6 +9,13 @@
     $(document).ready(function() {
         console.log('🚀 Perfil Usuario Inteligente - Script cargado');
         
+        // Esperar a que el DOM esté completamente cargado
+        setTimeout(function() {
+            initializeToggle();
+        }, 100);
+    });
+    
+    function initializeToggle() {
         // Elementos del formulario
         const $checkboxCrearAuto = $('#id_crear_usuario_automaticamente');
         
@@ -19,27 +26,49 @@
         
         console.log('✅ Checkbox encontrado, estado inicial:', $checkboxCrearAuto.is(':checked'));
         
-        // Encontrar fieldsets por el contenido del título
-        const $allFieldsets = $('fieldset.module');
+        // Encontrar fieldsets - buscar por clase collapsed o por título
         let $fieldsetUsuarioExistente = null;
         let $fieldsetDatosNuevoUsuario = null;
         
-        // Buscar fieldsets por su título
-        $allFieldsets.each(function() {
-            const $fieldset = $(this);
-            const $h2 = $fieldset.find('h2');
-            const titulo = $h2.text().trim();
-            
-            if (titulo.includes('Usuario Existente') || titulo.includes('👤')) {
-                $fieldsetUsuarioExistente = $fieldset;
-                console.log('✅ Fieldset Usuario Existente encontrado');
-            }
-            
-            if (titulo.includes('Datos del Nuevo Usuario') || titulo.includes('🔐')) {
-                $fieldsetDatosNuevoUsuario = $fieldset;
-                console.log('✅ Fieldset Datos del Nuevo Usuario encontrado');
-            }
-        });
+        // Buscar el fieldset que contiene el campo 'usuario'
+        const $campoUsuario = $('.field-usuario');
+        if ($campoUsuario.length > 0) {
+            $fieldsetUsuarioExistente = $campoUsuario.closest('fieldset');
+            console.log('✅ Fieldset Usuario Existente encontrado por campo');
+        }
+        
+        // Buscar el fieldset que contiene los campos de nuevo usuario
+        const $campoUsername = $('.field-username');
+        if ($campoUsername.length > 0) {
+            $fieldsetDatosNuevoUsuario = $campoUsername.closest('fieldset');
+            console.log('✅ Fieldset Datos del Nuevo Usuario encontrado por campo');
+        }
+        
+        // Si no se encontró, buscar por título del fieldset
+        if (!$fieldsetUsuarioExistente || !$fieldsetDatosNuevoUsuario) {
+            $('fieldset.module').each(function() {
+                const $fieldset = $(this);
+                const $h2 = $fieldset.find('h2');
+                const titulo = $h2.text().trim();
+                
+                if ((titulo.includes('Usuario Existente') || titulo.includes('👤')) && !$fieldsetUsuarioExistente) {
+                    $fieldsetUsuarioExistente = $fieldset;
+                    console.log('✅ Fieldset Usuario Existente encontrado por título');
+                }
+                
+                if ((titulo.includes('Datos del Nuevo Usuario') || titulo.includes('🔐')) && !$fieldsetDatosNuevoUsuario) {
+                    $fieldsetDatosNuevoUsuario = $fieldset;
+                    console.log('✅ Fieldset Datos del Nuevo Usuario encontrado por título');
+                }
+            });
+        }
+        
+        if (!$fieldsetUsuarioExistente || !$fieldsetDatosNuevoUsuario) {
+            console.error('❌ No se encontraron los fieldsets necesarios');
+            console.log('Usuario Existente:', $fieldsetUsuarioExistente);
+            console.log('Datos Nuevo Usuario:', $fieldsetDatosNuevoUsuario);
+            return;
+        }
         
         // Función para mostrar/ocultar campos según el estado del checkbox
         function toggleFieldsVisibility() {
@@ -48,30 +77,22 @@
             
             if (crearAutomaticamente) {
                 // Mostrar campos de nuevo usuario
-                if ($fieldsetDatosNuevoUsuario) {
-                    $fieldsetDatosNuevoUsuario.show().css('opacity', '1');
-                    console.log('👁️ Mostrando Datos del Nuevo Usuario');
-                }
+                $fieldsetDatosNuevoUsuario.removeClass('collapsed').show();
+                console.log('👁️ Mostrando Datos del Nuevo Usuario');
                 
                 // Ocultar campo de usuario existente
-                if ($fieldsetUsuarioExistente) {
-                    $fieldsetUsuarioExistente.hide().css('opacity', '0');
-                    $('#id_usuario').val('').trigger('change');
-                    console.log('🙈 Ocultando Usuario Existente');
-                }
+                $fieldsetUsuarioExistente.addClass('collapsed').hide();
+                $('#id_usuario').val('');
+                console.log('🙈 Ocultando Usuario Existente');
                 
             } else {
-                // Ocultar campos de nuevo usuario
-                if ($fieldsetDatosNuevoUsuario) {
-                    $fieldsetDatosNuevoUsuario.hide().css('opacity', '0');
-                    console.log('🙈 Ocultando Datos del Nuevo Usuario');
-                }
+                // Ocultar campos de nuevo usuario - IMPORTANTE: usar hide() para ocultarlo completamente
+                $fieldsetDatosNuevoUsuario.addClass('collapsed').hide();
+                console.log('🙈 Ocultando Datos del Nuevo Usuario');
                 
                 // Mostrar campo de usuario existente
-                if ($fieldsetUsuarioExistente) {
-                    $fieldsetUsuarioExistente.show().css('opacity', '1');
-                    console.log('👁️ Mostrando Usuario Existente');
-                }
+                $fieldsetUsuarioExistente.removeClass('collapsed').show();
+                console.log('👁️ Mostrando Usuario Existente');
                 
                 // Limpiar campos de nuevo usuario
                 clearNewUserFields();
@@ -94,19 +115,11 @@
         
         // Escuchar cambios en el checkbox
         $checkboxCrearAuto.on('change', function() {
-            console.log('📝 Checkbox cambiado');
+            console.log('📝 Checkbox cambiado a:', $(this).is(':checked'));
             toggleFieldsVisibility();
         });
         
-        // Agregar estilos de transición
-        if ($fieldsetDatosNuevoUsuario) {
-            $fieldsetDatosNuevoUsuario.css('transition', 'opacity 0.3s ease-in-out');
-        }
-        if ($fieldsetUsuarioExistente) {
-            $fieldsetUsuarioExistente.css('transition', 'opacity 0.3s ease-in-out');
-        }
-        
         console.log('✅ Script configurado correctamente');
-    });
+    }
     
 })(django.jQuery);
