@@ -40,26 +40,26 @@
                     <form method="get">
                         <div class="row">
                             <div class="col-md-3">
-                                <label class="form-label">Fecha Inicio</label>
-                                <input type="date" name="fecha_inicio" class="form-control" 
+                                <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                                <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" 
                                        value="{{ fecha_inicio|default:'' }}">
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Fecha Fin</label>
-                                <input type="date" name="fecha_fin" class="form-control" 
+                                <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                                <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" 
                                        value="{{ fecha_fin|default:'' }}">
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">Tipo</label>
-                                <select name="tipo_pago" class="form-select">
+                                <label for="tipo_pago" class="form-label">Tipo</label>
+                                <select name="tipo_pago" id="tipo_pago" class="form-select">
                                     <option value="">Todos</option>
                                     <option value="cobro" {% if tipo_pago == 'cobro' %}selected{% endif %}>Cobros</option>
                                     <option value="egreso" {% if tipo_pago == 'egreso' %}selected{% endif %}>Egresos</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">Estado</label>
-                                <select name="estado" class="form-select">
+                                <label for="estado" class="form-label">Estado</label>
+                                <select name="estado" id="estado" class="form-select">
                                     <option value="">Todos</option>
                                     <option value="pendiente" {% if estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
                                     <option value="activo" {% if estado == 'activo' %}selected{% endif %}>Activo</option>

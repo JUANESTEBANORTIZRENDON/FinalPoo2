@@ -34,8 +34,6 @@ urlpatterns = [
     # Egresos específicos
     path('egresos/', views.EgresoListView.as_view(), name='egresos_lista'),
     path('egresos/crear/', views.EgresoCreateView.as_view(), name='egresos_crear'),
-    # path('egresos/<int:pk>/editar/', views.EgresoUpdateView.as_view(), name='egresos_editar'),
-    # path('egresos/<int:pk>/eliminar/', views.EgresoDeleteView.as_view(), name='egresos_eliminar'),
     
     # Gestión de cuentas bancarias
     path('cuentas-bancarias/', views.CuentaBancariaListView.as_view(), name='cuentas_lista'),

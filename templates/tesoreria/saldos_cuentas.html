@@ -61,14 +61,14 @@
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Banco</th>
-                                        <th>Número de Cuenta</th>
-                                        <th>Tipo</th>
-                                        <th class="text-end">Saldo Inicial</th>
-                                        <th class="text-end">Ingresos</th>
-                                        <th class="text-end">Egresos</th>
-                                        <th class="text-end">Saldo Actual</th>
-                                        <th>Estado</th>
+                                        <th scope="col">Banco</th>
+                                        <th scope="col">Número de Cuenta</th>
+                                        <th scope="col">Tipo</th>
+                                        <th scope="col" class="text-end">Saldo Inicial</th>
+                                        <th scope="col" class="text-end">Ingresos</th>
+                                        <th scope="col" class="text-end">Egresos</th>
+                                        <th scope="col" class="text-end">Saldo Actual</th>
+                                        <th scope="col">Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -97,7 +97,7 @@
                                 </tbody>
                                 <tfoot class="table-light">
                                     <tr>
-                                        <th colspan="6" class="text-end">TOTAL:</th>
+                                        <th scope="row" colspan="6" class="text-end">TOTAL:</th>
                                         <th class="text-end">
                                             <strong class="text-primary">${{ saldo_total|floatformat:2 }}</strong>
                                         </th>
