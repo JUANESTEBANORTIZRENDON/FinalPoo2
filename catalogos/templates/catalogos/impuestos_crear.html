@@ -6,6 +6,7 @@
 {% with page_title="Crear Impuesto" card_title="Crear Nuevo Impuesto" breadcrumb_active="Crear Impuesto" cancel_url="/catalogos/impuestos/" submit_text="Guardar Impuesto" %}
 
 {% block breadcrumb_items %}
+{# These <li> items are rendered inside <ol class="breadcrumb"> from the parent template #}
 <li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
 <li class="breadcrumb-item"><a href="{% url 'catalogos:impuestos_lista' %}">Impuestos</a></li>
 {% endblock %}

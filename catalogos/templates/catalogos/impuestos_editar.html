@@ -6,6 +6,7 @@
 {% with page_title="Editar Impuesto" card_title="Editar Impuesto"|add:": "|add:object.nombre breadcrumb_active="Editar Impuesto" cancel_url="/catalogos/impuestos/" submit_text="Actualizar Impuesto" %}
 
 {% block breadcrumb_items %}
+{# These <li> items are rendered inside <ol class="breadcrumb"> from the parent template #}
 <li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
 <li class="breadcrumb-item"><a href="{% url 'catalogos:impuestos_lista' %}">Impuestos</a></li>
 {% endblock %}
