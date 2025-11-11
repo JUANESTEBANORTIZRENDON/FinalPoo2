@@ -1,133 +1,168 @@
 /**
  * Script para habilitar/deshabilitar campos dinámicamente en el formulario de PerfilUsuario
  * Controla la habilitación de campos según el checkbox "crear_usuario_automaticamente"
+ * Usa JavaScript vanilla para máxima compatibilidad
  */
 
-(function($) {
+(function() {
     'use strict';
     
-    $(document).ready(function() {
-        console.log('🚀 Perfil Usuario Inteligente - Script cargado');
+    console.log('📦 Perfil Usuario Inteligente - Módulo cargado');
+    
+    // Esperar a que el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+    function init() {
+        console.log('🚀 DOM Ready - Inicializando controles');
         
-        // Esperar a que el DOM esté completamente cargado
+        // Usar setTimeout para asegurar que todos los campos estén renderizados
         setTimeout(function() {
             initializeToggle();
-        }, 100);
-    });
+        }, 300);
+    }
     
     function initializeToggle() {
-        // Elementos del formulario
-        const $checkboxCrearAuto = $('#id_crear_usuario_automaticamente');
+        console.log('🔧 Iniciando initializeToggle...');
         
-        if ($checkboxCrearAuto.length === 0) {
-            console.warn('⚠️ Checkbox crear_usuario_automaticamente no encontrado');
+        // Elementos del formulario
+        var checkboxCrearAuto = document.getElementById('id_crear_usuario_automaticamente');
+        
+        if (!checkboxCrearAuto) {
+            console.error('❌ Checkbox crear_usuario_automaticamente NO encontrado');
             return;
         }
         
-        console.log('✅ Checkbox encontrado, estado inicial:', $checkboxCrearAuto.is(':checked'));
+        console.log('✅ Checkbox encontrado, estado inicial:', checkboxCrearAuto.checked);
         
-        // Campos de nuevo usuario que se van a habilitar/deshabilitar
-        const camposNuevoUsuario = [
-            '#id_username',
-            '#id_first_name', 
-            '#id_last_name',
-            '#id_email',
-            '#id_password',
-            '#id_is_active'
+        // IDs de campos de nuevo usuario que se van a habilitar/deshabilitar
+        var camposNuevoUsuario = [
+            'id_username',
+            'id_first_name', 
+            'id_last_name',
+            'id_email',
+            'id_password',
+            'id_is_active'
         ];
         
         // Campo de usuario existente
-        const $campoUsuario = $('#id_usuario');
+        var campoUsuario = document.getElementById('id_usuario');
         
         // Función para habilitar/deshabilitar campos según el estado del checkbox
         function toggleFieldsState() {
-            const crearAutomaticamente = $checkboxCrearAuto.is(':checked');
-            console.log('🔄 Toggle - Crear automáticamente:', crearAutomaticamente);
+            var crearAutomaticamente = checkboxCrearAuto.checked;
+            console.log('🔄 Toggle ejecutado - Crear automáticamente:', crearAutomaticamente);
             
             if (crearAutomaticamente) {
                 // Habilitar campos de nuevo usuario
-                camposNuevoUsuario.forEach(function(selector) {
-                    const $campo = $(selector);
-                    if ($campo.length > 0) {
-                        $campo.prop('disabled', false)
-                              .css({
-                                  'opacity': '1',
-                                  'background-color': '',
-                                  'cursor': 'text'
-                              });
-                        
-                        // Remover atributo readonly si existe
-                        $campo.removeAttr('readonly');
+                console.log('📝 Habilitando campos de nuevo usuario...');
+                camposNuevoUsuario.forEach(function(fieldId) {
+                    var campo = document.getElementById(fieldId);
+                    if (campo) {
+                        campo.disabled = false;
+                        campo.readOnly = false;
+                        campo.style.opacity = '1';
+                        campo.style.backgroundColor = '';
+                        campo.style.cursor = 'text';
+                        console.log('  ✓ Campo habilitado:', fieldId);
+                    } else {
+                        console.warn('  ⚠️ Campo no encontrado:', fieldId);
                     }
                 });
-                console.log('✅ Campos de nuevo usuario HABILITADOS');
                 
                 // Deshabilitar y limpiar campo de usuario existente
-                if ($campoUsuario.length > 0) {
-                    $campoUsuario.prop('disabled', true)
-                                 .val('')
-                                 .css({
-                                     'opacity': '0.5',
-                                     'background-color': '#f5f5f5',
-                                     'cursor': 'not-allowed'
-                                 });
-                    console.log('� Campo Usuario Existente DESHABILITADO');
+                if (campoUsuario) {
+                    campoUsuario.disabled = true;
+                    campoUsuario.value = '';
+                    campoUsuario.style.opacity = '0.5';
+                    campoUsuario.style.backgroundColor = '#f5f5f5';
+                    campoUsuario.style.cursor = 'not-allowed';
+                    console.log('🔒 Campo Usuario Existente DESHABILITADO');
                 }
                 
             } else {
                 // Deshabilitar y limpiar campos de nuevo usuario
-                camposNuevoUsuario.forEach(function(selector) {
-                    const $campo = $(selector);
-                    if ($campo.length > 0) {
-                        $campo.prop('disabled', true)
-                              .val('')
-                              .css({
-                                  'opacity': '0.5',
-                                  'background-color': '#f5f5f5',
-                                  'cursor': 'not-allowed'
-                              });
+                console.log('🔒 Deshabilitando campos de nuevo usuario...');
+                camposNuevoUsuario.forEach(function(fieldId) {
+                    var campo = document.getElementById(fieldId);
+                    if (campo) {
+                        campo.disabled = true;
+                        campo.readOnly = true;
                         
-                        // Para checkbox is_active, desmarcarlo
-                        if (selector === '#id_is_active') {
-                            $campo.prop('checked', false);
+                        // Limpiar valor
+                        if (fieldId === 'id_is_active') {
+                            campo.checked = false;
+                        } else {
+                            campo.value = '';
                         }
+                        
+                        // Estilos visuales
+                        campo.style.opacity = '0.5';
+                        campo.style.backgroundColor = '#f5f5f5';
+                        campo.style.cursor = 'not-allowed';
+                        
+                        console.log('  ✓ Campo deshabilitado:', fieldId);
+                    } else {
+                        console.warn('  ⚠️ Campo no encontrado:', fieldId);
                     }
                 });
-                console.log('� Campos de nuevo usuario DESHABILITADOS y limpiados');
                 
                 // Habilitar campo de usuario existente
-                if ($campoUsuario.length > 0) {
-                    $campoUsuario.prop('disabled', false)
-                                 .css({
-                                     'opacity': '1',
-                                     'background-color': '',
-                                     'cursor': 'pointer'
-                                 });
+                if (campoUsuario) {
+                    campoUsuario.disabled = false;
+                    campoUsuario.style.opacity = '1';
+                    campoUsuario.style.backgroundColor = '';
+                    campoUsuario.style.cursor = 'pointer';
                     console.log('✅ Campo Usuario Existente HABILITADO');
                 }
             }
         }
         
         // Configurar estado inicial
+        console.log('⚙️ Configurando estado inicial...');
         toggleFieldsState();
         
         // Escuchar cambios en el checkbox
-        $checkboxCrearAuto.on('change', function() {
-            console.log('📝 Checkbox cambiado a:', $(this).is(':checked'));
+        checkboxCrearAuto.addEventListener('change', function() {
+            console.log('📝 Checkbox cambiado a:', this.checked);
             toggleFieldsState();
         });
         
         // Prevenir edición de campos deshabilitados (seguridad adicional)
-        camposNuevoUsuario.forEach(function(selector) {
-            $(selector).on('focus', function() {
-                if ($(this).prop('disabled')) {
-                    $(this).blur();
-                    console.log('⚠️ Intento de editar campo deshabilitado bloqueado');
-                }
-            });
+        camposNuevoUsuario.forEach(function(fieldId) {
+            var campo = document.getElementById(fieldId);
+            if (campo) {
+                campo.addEventListener('focus', function() {
+                    if (this.disabled || this.readOnly) {
+                        this.blur();
+                        console.log('⚠️ Intento de editar campo deshabilitado bloqueado:', fieldId);
+                    }
+                });
+                
+                // Prevenir teclas
+                campo.addEventListener('keydown', function(e) {
+                    if (this.disabled || this.readOnly) {
+                        e.preventDefault();
+                        console.log('⚠️ Tecla bloqueada en campo deshabilitado:', fieldId);
+                        return false;
+                    }
+                });
+                
+                // Prevenir paste
+                campo.addEventListener('paste', function(e) {
+                    if (this.disabled || this.readOnly) {
+                        e.preventDefault();
+                        console.log('⚠️ Paste bloqueado en campo deshabilitado:', fieldId);
+                        return false;
+                    }
+                });
+            }
         });
         
         console.log('✅ Script configurado correctamente - Modo habilitar/deshabilitar');
     }
     
-})(django.jQuery);
+})();
