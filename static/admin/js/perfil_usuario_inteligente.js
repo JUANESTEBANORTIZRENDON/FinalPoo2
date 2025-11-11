@@ -7,32 +7,71 @@
     'use strict';
     
     $(document).ready(function() {
+        console.log('🚀 Perfil Usuario Inteligente - Script cargado');
+        
         // Elementos del formulario
         const $checkboxCrearAuto = $('#id_crear_usuario_automaticamente');
-        const $fieldsetUsuarioExistente = $('.field-usuario').closest('.form-row').parent();
-        const $fieldsetDatosNuevoUsuario = $('[class*="field-username"]').closest('fieldset');
+        
+        if ($checkboxCrearAuto.length === 0) {
+            console.warn('⚠️ Checkbox crear_usuario_automaticamente no encontrado');
+            return;
+        }
+        
+        console.log('✅ Checkbox encontrado, estado inicial:', $checkboxCrearAuto.is(':checked'));
+        
+        // Encontrar fieldsets por el contenido del título
+        const $allFieldsets = $('fieldset.module');
+        let $fieldsetUsuarioExistente = null;
+        let $fieldsetDatosNuevoUsuario = null;
+        
+        // Buscar fieldsets por su título
+        $allFieldsets.each(function() {
+            const $fieldset = $(this);
+            const $h2 = $fieldset.find('h2');
+            const titulo = $h2.text().trim();
+            
+            if (titulo.includes('Usuario Existente') || titulo.includes('👤')) {
+                $fieldsetUsuarioExistente = $fieldset;
+                console.log('✅ Fieldset Usuario Existente encontrado');
+            }
+            
+            if (titulo.includes('Datos del Nuevo Usuario') || titulo.includes('🔐')) {
+                $fieldsetDatosNuevoUsuario = $fieldset;
+                console.log('✅ Fieldset Datos del Nuevo Usuario encontrado');
+            }
+        });
         
         // Función para mostrar/ocultar campos según el estado del checkbox
         function toggleFieldsVisibility() {
             const crearAutomaticamente = $checkboxCrearAuto.is(':checked');
+            console.log('🔄 Toggle - Crear automáticamente:', crearAutomaticamente);
             
             if (crearAutomaticamente) {
                 // Mostrar campos de nuevo usuario
-                $fieldsetDatosNuevoUsuario.show();
+                if ($fieldsetDatosNuevoUsuario) {
+                    $fieldsetDatosNuevoUsuario.show().css('opacity', '1');
+                    console.log('👁️ Mostrando Datos del Nuevo Usuario');
+                }
                 
-                // Ocultar y limpiar campo de usuario existente
-                $fieldsetUsuarioExistente.hide();
-                $('#id_usuario').val('').trigger('change');
-                
-                // Marcar campos de nuevo usuario como opcionales visualmente
-                updateFieldLabels(true);
+                // Ocultar campo de usuario existente
+                if ($fieldsetUsuarioExistente) {
+                    $fieldsetUsuarioExistente.hide().css('opacity', '0');
+                    $('#id_usuario').val('').trigger('change');
+                    console.log('🙈 Ocultando Usuario Existente');
+                }
                 
             } else {
                 // Ocultar campos de nuevo usuario
-                $fieldsetDatosNuevoUsuario.hide();
+                if ($fieldsetDatosNuevoUsuario) {
+                    $fieldsetDatosNuevoUsuario.hide().css('opacity', '0');
+                    console.log('🙈 Ocultando Datos del Nuevo Usuario');
+                }
                 
                 // Mostrar campo de usuario existente
-                $fieldsetUsuarioExistente.show();
+                if ($fieldsetUsuarioExistente) {
+                    $fieldsetUsuarioExistente.show().css('opacity', '1');
+                    console.log('👁️ Mostrando Usuario Existente');
+                }
                 
                 // Limpiar campos de nuevo usuario
                 clearNewUserFields();
@@ -46,46 +85,28 @@
             $('#id_last_name').val('');
             $('#id_email').val('');
             $('#id_password').val('');
+            $('#id_is_active').prop('checked', true);
+            console.log('🧹 Campos de nuevo usuario limpiados');
         }
         
-        // Función para actualizar labels de campos
-        function updateFieldLabels(isAutoCreation) {
-            const fields = ['username', 'first_name', 'last_name', 'email', 'password'];
-            
-            fields.forEach(function(fieldName) {
-                const $label = $('label[for="id_' + fieldName + '"]');
-                const originalText = $label.text().replace(' *', '').replace(' (opcional)', '');
-                
-                if (isAutoCreation) {
-                    $label.text(originalText + ' (opcional)');
-                } else {
-                    $label.text(originalText);
-                }
-            });
-        }
+        // Configurar estado inicial
+        toggleFieldsVisibility();
         
-        // Inicializar estado al cargar la página
-        if ($checkboxCrearAuto.length > 0) {
-            // Configurar estado inicial
+        // Escuchar cambios en el checkbox
+        $checkboxCrearAuto.on('change', function() {
+            console.log('📝 Checkbox cambiado');
             toggleFieldsVisibility();
-            
-            // Escuchar cambios en el checkbox
-            $checkboxCrearAuto.on('change', function() {
-                toggleFieldsVisibility();
-            });
-            
-            // Agregar animación suave
+        });
+        
+        // Agregar estilos de transición
+        if ($fieldsetDatosNuevoUsuario) {
             $fieldsetDatosNuevoUsuario.css('transition', 'opacity 0.3s ease-in-out');
+        }
+        if ($fieldsetUsuarioExistente) {
             $fieldsetUsuarioExistente.css('transition', 'opacity 0.3s ease-in-out');
         }
         
-        // Mejorar UX: Expandir automáticamente el fieldset de Datos del Nuevo Usuario si está marcado
-        if ($checkboxCrearAuto.is(':checked')) {
-            const $collapseFieldset = $fieldsetDatosNuevoUsuario.find('.collapse');
-            if ($collapseFieldset.length > 0) {
-                $collapseFieldset.removeClass('collapse');
-            }
-        }
+        console.log('✅ Script configurado correctamente');
     });
     
 })(django.jQuery);
