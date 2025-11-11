@@ -45,15 +45,15 @@
                             <col style="width: 60%;">
                         </colgroup>
                         <tr>
-                            <th>Código:</th>
+                            <th scope="row">Código:</th>
                             <td>{{ object.codigo }}</td>
                         </tr>
                         <tr>
-                            <th>Nombre:</th>
+                            <th scope="row">Nombre:</th>
                             <td>{{ object.nombre }}</td>
                         </tr>
                         <tr>
-                            <th>Tipo de Cuenta:</th>
+                            <th scope="row">Tipo de Cuenta:</th>
                             <td>
                                 {% if object.tipo_cuenta == 'ahorros' %}
                                     <span class="badge bg-info">Ahorros</span>
@@ -65,15 +65,15 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Banco:</th>
+                            <th scope="row">Banco:</th>
                             <td>{{ object.banco|default:"-" }}</td>
                         </tr>
                         <tr>
-                            <th>Número de Cuenta:</th>
+                            <th scope="row">Número de Cuenta:</th>
                             <td>{{ object.numero_cuenta|default:"-" }}</td>
                         </tr>
                         <tr>
-                            <th>Estado:</th>
+                            <th scope="row">Estado:</th>
                             <td>
                                 {% if object.activa %}
                                     <span class="badge bg-success">Activa</span>
