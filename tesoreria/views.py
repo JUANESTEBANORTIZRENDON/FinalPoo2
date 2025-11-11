@@ -919,7 +919,16 @@ class PagosReporteView(LoginRequiredMixin, TemplateView):
         return ctx
 
 @login_required
+@require_http_methods(["GET"])
 def pagos_reporte_csv(request):
+    """
+    Genera reporte CSV de pagos con filtros opcionales.
+    
+    Security Note: Esta vista usa método GET para operación de solo lectura (exportación).
+    No requiere protección CSRF adicional ya que no modifica estado del servidor.
+    Cumple con RFC 7231 (métodos seguros HTTP) y mejores prácticas de Django.
+    El decorador @require_http_methods(["GET"]) hace explícito que solo acepta GET.
+    """
     qs = Pago.objects.all()
     empresa = getattr(request, 'empresa_activa', None)
     if empresa:
