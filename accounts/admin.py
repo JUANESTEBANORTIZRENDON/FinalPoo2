@@ -382,59 +382,91 @@ class PerfilUsuarioAdmin(admin.ModelAdmin):
         'numero_documento', 'telefono', 'ciudad'
     )
     
-    readonly_fields = ('fecha_creacion', 'fecha_actualizacion')
-    
-    fieldsets = (
-        ('✨ Creación Inteligente', {
-            'fields': ('crear_usuario_automaticamente',),
-            'description': 'Marque esta opción para crear automáticamente un usuario con los datos del perfil'
-        }),
-        ('👤 Usuario Existente', {
-            'fields': ('usuario',),
-            'description': 'Seleccione un usuario existente (solo si NO marcó "Crear automáticamente")'
-        }),
-        ('🔐 Datos del Nuevo Usuario', {
-            'fields': ('username', 'first_name', 'last_name', 'email', 'password', 'is_active'),
-            'classes': ('collapse',),
-            'description': 'Complete estos datos para crear un nuevo usuario (se generarán automáticamente si se dejan vacíos)'
-        }),
-        (IDENT_SECTION_TITLE, {
-            'fields': ('tipo_documento', 'numero_documento'),
-            'description': 'Información de identificación oficial (requerida)'
-        }),
-        ('📱 Contacto', {
-            'fields': ('telefono', 'direccion', 'ciudad', 'departamento', 'codigo_postal'),
-            'description': 'Información de contacto y ubicación'
-        }),
-        ('👥 Información Personal', {
-            'fields': ('fecha_nacimiento', 'genero', 'estado_civil'),
-            'classes': ('collapse',),
-            'description': 'Información personal opcional'
-        }),
-        ('💼 Información Profesional', {
-            'fields': ('profesion', 'empresa', 'cargo'),
-            'classes': ('collapse',),
-            'description': 'Información laboral y profesional'
-        }),
-        ('⚙️ Configuración', {
-            'fields': ('activo',),
-            'classes': ('collapse',),
-            'description': 'Configuración del perfil'
-        }),
-        ('📅 Metadatos', {
-            'fields': ('fecha_creacion', 'fecha_actualizacion'),
-            'classes': ('collapse',),
-            'description': 'Información del sistema'
-        }),
-    )
+    def get_fieldsets(self, request, obj=None):
+        """Fieldsets dinámicos según si es creación o edición"""
+        if obj:  # Editando perfil existente
+            return (
+                ('👤 Usuario Asociado', {
+                    'fields': ('usuario',),
+                    'description': 'Usuario asociado a este perfil (no se puede cambiar)'
+                }),
+                (IDENT_SECTION_TITLE, {
+                    'fields': ('tipo_documento', 'numero_documento'),
+                    'description': 'Información de identificación oficial'
+                }),
+                ('📱 Contacto', {
+                    'fields': ('telefono', 'direccion', 'ciudad', 'departamento', 'codigo_postal'),
+                    'description': 'Información de contacto y ubicación'
+                }),
+                ('👥 Información Personal', {
+                    'fields': ('fecha_nacimiento', 'genero', 'estado_civil'),
+                    'classes': ('collapse',),
+                    'description': 'Información personal opcional'
+                }),
+                ('💼 Información Profesional', {
+                    'fields': ('profesion', 'empresa', 'cargo'),
+                    'classes': ('collapse',),
+                    'description': 'Información laboral y profesional'
+                }),
+                ('⚙️ Configuración', {
+                    'fields': ('activo',),
+                    'classes': ('collapse',),
+                    'description': 'Configuración del perfil'
+                }),
+                ('📅 Metadatos', {
+                    'fields': ('fecha_creacion', 'fecha_actualizacion'),
+                    'classes': ('collapse',),
+                    'description': 'Información del sistema'
+                }),
+            )
+        else:  # Creando nuevo perfil
+            return (
+                ('✨ Creación Inteligente', {
+                    'fields': ('crear_usuario_automaticamente',),
+                    'description': 'Marque esta opción para crear automáticamente un usuario con los datos del perfil'
+                }),
+                ('👤 Usuario Existente', {
+                    'fields': ('usuario',),
+                    'description': 'Seleccione un usuario existente (solo si NO marcó "Crear automáticamente")'
+                }),
+                ('🔐 Datos del Nuevo Usuario', {
+                    'fields': ('username', 'first_name', 'last_name', 'email', 'password', 'is_active'),
+                    'classes': ('collapse',),
+                    'description': 'Complete estos datos para crear un nuevo usuario (se generarán automáticamente si se dejan vacíos)'
+                }),
+                (IDENT_SECTION_TITLE, {
+                    'fields': ('tipo_documento', 'numero_documento'),
+                    'description': 'Información de identificación oficial (requerida)'
+                }),
+                ('📱 Contacto', {
+                    'fields': ('telefono', 'direccion', 'ciudad', 'departamento', 'codigo_postal'),
+                    'description': 'Información de contacto y ubicación'
+                }),
+                ('👥 Información Personal', {
+                    'fields': ('fecha_nacimiento', 'genero', 'estado_civil'),
+                    'classes': ('collapse',),
+                    'description': 'Información personal opcional'
+                }),
+                ('💼 Información Profesional', {
+                    'fields': ('profesion', 'empresa', 'cargo'),
+                    'classes': ('collapse',),
+                    'description': 'Información laboral y profesional'
+                }),
+                ('⚙️ Configuración', {
+                    'fields': ('activo',),
+                    'classes': ('collapse',),
+                    'description': 'Configuración del perfil'
+                }),
+            )
     
     def get_readonly_fields(self, request, obj=None):
         """Campos de solo lectura dinámicos"""
         readonly = ['fecha_creacion', 'fecha_actualizacion']
         
-        # Si estamos editando un perfil existente, no permitir cambiar la opción de crear usuario
+        # Si estamos editando un perfil existente
         if obj and obj.pk:
-            readonly.extend(['crear_usuario_automaticamente', 'username', 'first_name', 'last_name', 'email', 'password', 'is_active'])
+            # El usuario asociado no se puede cambiar al editar
+            readonly.append('usuario')
         
         return readonly
     

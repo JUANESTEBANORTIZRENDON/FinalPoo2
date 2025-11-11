@@ -432,26 +432,25 @@ class PerfilUsuarioCompletoForm(forms.ModelForm):
             # Obtener el perfil existente en lugar de crear uno nuevo
             try:
                 perfil = PerfilUsuario.objects.get(usuario=user)
-                # Actualizar el perfil con los datos del formulario
-                for field in self.Meta.fields:
-                    if field != 'usuario' and hasattr(self.instance, field):
-                        setattr(perfil, field, getattr(self.instance, field))
                 
-                # Actualizar con cleaned_data para campos del formulario
+                # Actualizar solo los campos relevantes (excluir campos auto y metadatos)
+                campos_excluidos = ['id', 'usuario', 'fecha_creacion', 'fecha_actualizacion']
+                
+                # Actualizar con cleaned_data directamente
                 perfil.tipo_documento = self.cleaned_data.get('tipo_documento', perfil.tipo_documento)
                 perfil.numero_documento = self.cleaned_data.get('numero_documento', perfil.numero_documento)
                 perfil.telefono = self.cleaned_data.get('telefono', perfil.telefono)
-                perfil.fecha_nacimiento = self.cleaned_data.get('fecha_nacimiento', perfil.fecha_nacimiento)
-                perfil.genero = self.cleaned_data.get('genero', perfil.genero)
-                perfil.estado_civil = self.cleaned_data.get('estado_civil', perfil.estado_civil)
-                perfil.direccion = self.cleaned_data.get('direccion', perfil.direccion)
-                perfil.ciudad = self.cleaned_data.get('ciudad', perfil.ciudad)
-                perfil.departamento = self.cleaned_data.get('departamento', perfil.departamento)
-                perfil.codigo_postal = self.cleaned_data.get('codigo_postal', perfil.codigo_postal)
-                perfil.profesion = self.cleaned_data.get('profesion', perfil.profesion)
-                perfil.empresa = self.cleaned_data.get('empresa', perfil.empresa)
-                perfil.cargo = self.cleaned_data.get('cargo', perfil.cargo)
-                perfil.activo = self.cleaned_data.get('activo', perfil.activo)
+                perfil.fecha_nacimiento = self.cleaned_data.get('fecha_nacimiento')
+                perfil.genero = self.cleaned_data.get('genero', '')
+                perfil.estado_civil = self.cleaned_data.get('estado_civil', '')
+                perfil.direccion = self.cleaned_data.get('direccion', '')
+                perfil.ciudad = self.cleaned_data.get('ciudad', '')
+                perfil.departamento = self.cleaned_data.get('departamento', 'Cundinamarca')
+                perfil.codigo_postal = self.cleaned_data.get('codigo_postal', '')
+                perfil.profesion = self.cleaned_data.get('profesion', '')
+                perfil.empresa = self.cleaned_data.get('empresa', '')
+                perfil.cargo = self.cleaned_data.get('cargo', '')
+                perfil.activo = self.cleaned_data.get('activo', True)
                 
                 if commit:
                     perfil.save()
