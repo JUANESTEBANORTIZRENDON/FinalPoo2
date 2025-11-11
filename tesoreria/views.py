@@ -103,7 +103,8 @@ def _validar_stock_cobro(cobro):
     """Valida que haya stock suficiente para todos los productos del cobro."""
     from django.core.exceptions import ValidationError
     
-    for detalle in cobro.detalles.all():
+    # type: ignore - Pylance no detecta related_name='detalles' de Django
+    for detalle in cobro.detalles.all():  # type: ignore[attr-defined]
         if detalle.producto.inventariable:
             if detalle.cantidad > detalle.producto.stock_actual:
                 raise ValidationError(
@@ -118,7 +119,8 @@ def _calcular_totales_cobro(cobro):
     subtotal = Decimal('0.00')
     total_impuestos = Decimal('0.00')
     
-    for detalle in cobro.detalles.all():
+    # type: ignore - Pylance no detecta related_name='detalles' de Django
+    for detalle in cobro.detalles.all():  # type: ignore[attr-defined]
         subtotal += detalle.subtotal
         if detalle.producto.impuesto:
             impuesto_valor = detalle.producto.impuesto.calcular_impuesto(detalle.subtotal)
@@ -500,7 +502,8 @@ def activar_cobro(request, pk):
         )
         
         # Transferir detalles de productos del cobro a la factura
-        for orden, detalle in enumerate(cobro.detalles.all(), start=1):
+        # type: ignore - Pylance no detecta related_name='detalles' de Django
+        for orden, detalle in enumerate(cobro.detalles.all(), start=1):  # type: ignore[attr-defined]
             _crear_detalle_factura(factura, detalle, orden)
         
         # Actualizar el cobro a estado activo
