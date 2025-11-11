@@ -1,5 +1,6 @@
 {% extends 'base_contable.html' %}
 {% load static %}
+{% load form_helpers %}
 
 {% block title %}
     {% if object %}Editar Empresa{% else %}Nueva Empresa{% endif %} - S_CONTABLE
@@ -33,102 +34,33 @@
                     <form method="post" novalidate>
                         {% csrf_token %}
                         
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.nit.id_for_label }}" class="form-label">
-                                        NIT <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.nit }}
-                                    {% if form.nit.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.nit.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                    <div class="form-text">Formato: 123456789-0</div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.tipo_empresa.id_for_label }}" class="form-label">
-                                        Tipo de Empresa
-                                    </label>
-                                    {{ form.tipo_empresa }}
-                                    {% if form.tipo_empresa.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.tipo_empresa.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.razon_social.id_for_label }}" class="form-label">
-                                Razón Social <span class="text-danger">*</span>
-                            </label>
-                            {{ form.razon_social }}
-                            {% if form.razon_social.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.razon_social.errors.0 }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.direccion.id_for_label }}" class="form-label">
-                                Dirección <span class="text-danger">*</span>
-                            </label>
-                            {{ form.direccion }}
-                            {% if form.direccion.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.direccion.errors.0 }}
-                                </div>
-                            {% endif %}
-                        </div>
+                        {% render_form_errors form %}
                         
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.ciudad.id_for_label }}" class="form-label">
-                                        Ciudad <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.ciudad }}
-                                    {% if form.ciudad.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.ciudad.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% render_field form.nit help_text="Formato: 123456789-0" %}
                             </div>
                             
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.telefono.id_for_label }}" class="form-label">
-                                        Teléfono <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.telefono }}
-                                    {% if form.telefono.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.telefono.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% render_field form.tipo_empresa %}
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="{{ form.email.id_for_label }}" class="form-label">
-                                Email
-                            </label>
-                            {{ form.email }}
-                            {% if form.email.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.email.errors.0 }}
-                                </div>
-                            {% endif %}
+                        {% render_field form.razon_social %}
+                        
+                        {% render_field form.direccion %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                {% render_field form.ciudad %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                {% render_field form.telefono %}
+                            </div>
                         </div>
+                        
+                        {% render_field form.email %}
                         
                         <div class="d-flex justify-content-between">
                             <a href="{% url 'empresas:empresa_list' %}" class="btn btn-secondary">
@@ -148,13 +80,5 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Agregar clases de Bootstrap a los campos del formulario
-    const formFields = document.querySelectorAll('input, select, textarea');
-    for (const field of formFields) {
-        field.classList.add('form-control');
-    }
-});
-</script>
+{% include 'components/form_bootstrap_classes.html' %}
 {% endblock %}

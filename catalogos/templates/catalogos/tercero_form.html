@@ -1,5 +1,6 @@
 {% extends 'base_contable.html' %}
 {% load static %}
+{% load form_helpers %}
 
 {% block title %}
     {% if object %}Editar Tercero{% else %}Nuevo Tercero{% endif %} - S_CONTABLE
@@ -33,6 +34,8 @@
                     <form method="post" novalidate>
                         {% csrf_token %}
                         
+                        {% render_form_errors form %}
+                        
                         <!-- Información Básica -->
                         <div class="row">
                             <div class="col-12">
@@ -42,77 +45,25 @@
                         
                         <div class="row">
                             <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.tipo_tercero.id_for_label }}" class="form-label">
-                                        Tipo de Tercero <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.tipo_tercero }}
-                                    {% if form.tipo_tercero.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.tipo_tercero.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% render_field form.tipo_tercero %}
                             </div>
                             
                             <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.tipo_documento.id_for_label }}" class="form-label">
-                                        Tipo de Documento <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.tipo_documento }}
-                                    {% if form.tipo_documento.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.tipo_documento.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% render_field form.tipo_documento %}
                             </div>
                             
                             <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.numero_documento.id_for_label }}" class="form-label">
-                                        Número de Documento <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.numero_documento }}
-                                    {% if form.numero_documento.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.numero_documento.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                    <div class="form-text">Sin puntos ni espacios</div>
-                                </div>
+                                {% render_field form.numero_documento help_text="Sin puntos ni espacios" %}
                             </div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.razon_social.id_for_label }}" class="form-label">
-                                        Razón Social <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.razon_social }}
-                                    {% if form.razon_social.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.razon_social.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% render_field form.razon_social %}
                             </div>
                             
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.nombre_comercial.id_for_label }}" class="form-label">
-                                        Nombre Comercial
-                                    </label>
-                                    {{ form.nombre_comercial }}
-                                    {% if form.nombre_comercial.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.nombre_comercial.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                    <div class="form-text">Opcional</div>
-                                </div>
+                                {% render_field form.nombre_comercial help_text="Opcional" %}
                             </div>
                         </div>
                         
@@ -123,59 +74,19 @@
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="{{ form.direccion.id_for_label }}" class="form-label">
-                                Dirección <span class="text-danger">*</span>
-                            </label>
-                            {{ form.direccion }}
-                            {% if form.direccion.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.direccion.errors.0 }}
-                                </div>
-                            {% endif %}
-                        </div>
+                        {% render_field form.direccion %}
                         
                         <div class="row">
                             <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.ciudad.id_for_label }}" class="form-label">
-                                        Ciudad <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.ciudad }}
-                                    {% if form.ciudad.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.ciudad.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% render_field form.ciudad %}
                             </div>
                             
                             <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.telefono.id_for_label }}" class="form-label">
-                                        Teléfono
-                                    </label>
-                                    {{ form.telefono }}
-                                    {% if form.telefono.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.telefono.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% render_field form.telefono %}
                             </div>
                             
                             <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.email.id_for_label }}" class="form-label">
-                                        Email
-                                    </label>
-                                    {{ form.email }}
-                                    {% if form.email.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.email.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% render_field form.email %}
                             </div>
                         </div>
                         
@@ -188,47 +99,15 @@
                         
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.regimen_tributario.id_for_label }}" class="form-label">
-                                        Régimen Tributario
-                                    </label>
-                                    {{ form.regimen_tributario }}
-                                    {% if form.regimen_tributario.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.regimen_tributario.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% render_field form.regimen_tributario %}
                             </div>
                             
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <div class="form-check mt-4">
-                                        {{ form.activo }}
-                                        <label class="form-check-label" for="{{ form.activo.id_for_label }}">
-                                            Tercero Activo
-                                        </label>
-                                    </div>
-                                    {% if form.activo.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ form.activo.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% render_field form.activo %}
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="{{ form.observaciones.id_for_label }}" class="form-label">
-                                Observaciones
-                            </label>
-                            {{ form.observaciones }}
-                            {% if form.observaciones.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {{ form.observaciones.errors.0 }}
-                                </div>
-                            {% endif %}
-                        </div>
+                        {% render_field form.observaciones %}
                         
                         <div class="d-flex justify-content-between">
                             <a href="{% url 'catalogos:tercero_list' %}" class="btn btn-secondary">
@@ -248,19 +127,11 @@
     </div>
 </div>
 
+{% include 'components/form_bootstrap_classes.html' %}
+
 <script>
+// Validación en tiempo real del número de documento
 document.addEventListener('DOMContentLoaded', function() {
-    // Agregar clases de Bootstrap a los campos del formulario
-    const formFields = document.querySelectorAll('input, select, textarea');
-    for (const field of formFields) {
-        if (field.type === 'checkbox') {
-            field.classList.add('form-check-input');
-        } else {
-            field.classList.add('form-control');
-        }
-    }
-    
-    // Validación en tiempo real del número de documento
     const numeroDocumento = document.querySelector('#id_numero_documento');
     if (numeroDocumento) {
         numeroDocumento.addEventListener('input', function() {

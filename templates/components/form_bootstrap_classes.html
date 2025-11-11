@@ -1,0 +1,24 @@
+{% comment %}
+Componente reutilizable para agregar clases Bootstrap a campos de formulario
+Reduce duplicación de JavaScript en templates
+{% endcomment %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar clases Bootstrap a campos de formulario
+    const formFields = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea');
+    for (const field of formFields) {
+        if (!field.classList.contains('form-control')) {
+            field.classList.add('form-control');
+        }
+    }
+    
+    // Agregar clases a checkboxes y radios
+    const checkboxes = document.querySelectorAll('input[type="checkbox"], input[type="radio"]');
+    for (const checkbox of checkboxes) {
+        if (!checkbox.classList.contains('form-check-input')) {
+            checkbox.classList.add('form-check-input');
+        }
+    }
+});
+</script>

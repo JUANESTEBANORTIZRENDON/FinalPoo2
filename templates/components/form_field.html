@@ -1,0 +1,27 @@
+{% comment %}
+Componente reutilizable para renderizar un campo de formulario Django con Bootstrap 5
+Reduce duplicación de código en formularios
+{% endcomment %}
+
+<div class="mb-3">
+    {% if show_label %}
+    <label for="{{ field.id_for_label }}" class="{{ label_class }}">
+        {{ field.label }}
+        {% if is_required %}
+        <span class="text-danger">*</span>
+        {% endif %}
+    </label>
+    {% endif %}
+    
+    {{ field }}
+    
+    {% if field.errors %}
+    <div class="invalid-feedback d-block">
+        {{ field.errors.0 }}
+    </div>
+    {% endif %}
+    
+    {% if help_text %}
+    <small class="form-text text-muted">{{ help_text }}</small>
+    {% endif %}
+</div>
