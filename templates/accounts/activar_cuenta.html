@@ -1,0 +1,190 @@
+{% extends "base_contable.html" %}
+{% load static %}
+
+{% block title %}Activación de Cuenta - S_CONTABLE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .activation-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+    }
+    
+    .activation-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 50px;
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .activation-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 50px;
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    
+    .activation-icon.success {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+    
+    .activation-icon.error {
+        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+    }
+    
+    .activation-icon.info {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+    
+    .activation-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
+    
+    .activation-message {
+        font-size: 1.1rem;
+        color: #7f8c8d;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+    
+    .activation-details {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+        text-align: left;
+    }
+    
+    .activation-details strong {
+        color: #2c3e50;
+    }
+    
+    .activation-button {
+        display: inline-block;
+        padding: 15px 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .activation-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .activation-footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e0e0e0;
+        color: #95a5a6;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="activation-container">
+    <div class="activation-card">
+        {% if activation_status == 'success' %}
+            <div class="activation-icon success">
+                <i class="fas fa-check"></i>
+            </div>
+            <h1 class="activation-title">¡Cuenta Activada Exitosamente!</h1>
+            <p class="activation-message">
+                Tu cuenta ha sido activada correctamente. Ahora puedes acceder a todas las funcionalidades del Sistema Contable Colombiano.
+            </p>
+            
+            <div class="activation-details">
+                <p><strong>📧 Email:</strong> {{ user.email }}</p>
+                <p><strong>👤 Usuario:</strong> {{ user.username }}</p>
+                <p><strong>✅ Estado:</strong> Cuenta Activa</p>
+            </div>
+            
+            <a href="{% url 'accounts:login' %}" class="activation-button">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </a>
+            
+        {% elif activation_status == 'already_active' %}
+            <div class="activation-icon info">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <h1 class="activation-title">Cuenta Ya Activada</h1>
+            <p class="activation-message">
+                Tu cuenta ya está activada. Puedes iniciar sesión directamente.
+            </p>
+            
+            <a href="{% url 'accounts:login' %}" class="activation-button">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </a>
+            
+        {% else %}
+            <div class="activation-icon error">
+                <i class="fas fa-times"></i>
+            </div>
+            <h1 class="activation-title">Error de Activación</h1>
+            <p class="activation-message">
+                {{ error_message|default:"No se pudo activar tu cuenta. El enlace de activación puede haber expirado o ser inválido." }}
+            </p>
+            
+            <div class="activation-details">
+                <p><strong>🔍 Posibles causas:</strong></p>
+                <ul style="text-align: left;">
+                    <li>El enlace de activación ya fue utilizado</li>
+                    <li>El token ha expirado</li>
+                    <li>El enlace está incompleto o dañado</li>
+                </ul>
+            </div>
+            
+            <a href="{% url 'accounts:register' %}" class="activation-button">
+                <i class="fas fa-user-plus"></i> Registrarse Nuevamente
+            </a>
+            
+            <div style="margin-top: 20px;">
+                <a href="{% url 'accounts:login' %}" style="color: #667eea; text-decoration: none;">
+                    ¿Ya tienes una cuenta activa? Inicia sesión aquí
+                </a>
+            </div>
+        {% endif %}
+        
+        <div class="activation-footer">
+            <p>
+                <i class="fas fa-shield-alt"></i> Sistema Contable Colombiano - S_CONTABLE
+            </p>
+            <p>Gestión empresarial confiable y segura 🇨🇴</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
