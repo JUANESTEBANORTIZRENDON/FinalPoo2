@@ -275,6 +275,87 @@ function formatearMoneda(valor) {
     }).format(valor);
 }
 
+function calcularResultados() {
+    let totalIngresos = 0;
+    let totalCostos = 0;
+    let totalGastos = 0;
+    
+    // Calcular ingresos
+    const ingresosDiv = document.querySelector('.text-success').parentElement;
+    if (ingresosDiv) {
+        const filasIngresos = ingresosDiv.querySelectorAll('.row.mb-2');
+        for (const fila of filasIngresos) {
+            const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[$,]/, '')) || 0;
+            totalIngresos += valor;
+        }
+    }
+    
+    // Calcular costos
+    const costosDiv = document.querySelector('.text-danger').parentElement;
+    if (costosDiv) {
+        const filasCostos = costosDiv.querySelectorAll('.row.mb-2');
+        for (const fila of filasCostos) {
+            const texto = fila.querySelector('.col-4').textContent;
+            const valor = Number.parseFloat(texto.replaceAll(/[$,()]/, '')) || 0;
+            totalCostos += valor;
+        }
+    }
+    
+    // Calcular gastos
+    const gastosDiv = document.querySelector('.text-warning').parentElement;
+    if (gastosDiv) {
+        const filasGastos = gastosDiv.querySelectorAll('.row.mb-2');
+        for (const fila of filasGastos) {
+            const texto = fila.querySelector('.col-4').textContent;
+            const valor = Number.parseFloat(texto.replaceAll(/[$,()]/, '')) || 0;
+            totalGastos += valor;
+        }
+    }
+    
+    // Calcular utilidades
+    const utilidadBruta = totalIngresos - totalCostos;
+    const utilidadOperacional = utilidadBruta - totalGastos;
+    const resultadoFinal = utilidadOperacional;
+    
+    // Actualizar UI
+    document.getElementById('total-ingresos').textContent = formatearMoneda(totalIngresos);
+    document.getElementById('total-costos').textContent = '(' + formatearMoneda(totalCostos) + ')';
+    document.getElementById('total-gastos').textContent = '(' + formatearMoneda(totalGastos) + ')';
+    document.getElementById('utilidad-bruta').textContent = formatearMoneda(utilidadBruta);
+    document.getElementById('utilidad-operacional').textContent = formatearMoneda(utilidadOperacional);
+    
+    // Actualizar resultado final
+    const labelResultado = document.getElementById('label-resultado');
+    const elementoResultado = document.getElementById('resultado-final');
+    const cardResultado = document.getElementById('card-resultado-final');
+    
+    if (resultadoFinal >= 0) {
+        labelResultado.textContent = 'UTILIDAD NETA';
+        elementoResultado.textContent = formatearMoneda(resultadoFinal);
+        elementoResultado.className = 'mb-0 text-success';
+        cardResultado.className = 'row bg-success bg-opacity-10 p-3 mb-3 border border-success';
+    } else {
+        labelResultado.textContent = 'PÉRDIDA NETA';
+        elementoResultado.textContent = '(' + formatearMoneda(Math.abs(resultadoFinal)) + ')';
+        elementoResultado.className = 'mb-0 text-danger';
+        cardResultado.className = 'row bg-danger bg-opacity-10 p-3 mb-3 border border-danger';
+    }
+    
+    // Actualizar resumen
+    document.getElementById('resumen-ingresos').textContent = formatearMoneda(totalIngresos);
+    document.getElementById('resumen-costos').textContent = formatearMoneda(totalCostos);
+    document.getElementById('resumen-gastos').textContent = formatearMoneda(totalGastos);
+    
+    const resumenResultado = document.getElementById('resumen-resultado');
+    if (resultadoFinal >= 0) {
+        resumenResultado.textContent = formatearMoneda(resultadoFinal);
+        resumenResultado.className = 'text-success';
+    } else {
+        resumenResultado.textContent = '(' + formatearMoneda(Math.abs(resultadoFinal)) + ')';
+        resumenResultado.className = 'text-danger';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Calcular totales
     calcularResultados();
@@ -319,87 +400,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = `{% url 'reportes:estado_resultados_exportar' %}?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&formato=pdf`;
             globalThis.location.href = url;
         });
-    }
-    
-    function calcularResultados() {
-        let totalIngresos = 0;
-        let totalCostos = 0;
-        let totalGastos = 0;
-        
-        // Calcular ingresos
-        const ingresosDiv = document.querySelector('.text-success').parentElement;
-        if (ingresosDiv) {
-            const filasIngresos = ingresosDiv.querySelectorAll('.row.mb-2');
-            for (const fila of filasIngresos) {
-                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[$,]/, '')) || 0;
-                totalIngresos += valor;
-            }
-        }
-        
-        // Calcular costos
-        const costosDiv = document.querySelector('.text-danger').parentElement;
-        if (costosDiv) {
-            const filasCostos = costosDiv.querySelectorAll('.row.mb-2');
-            for (const fila of filasCostos) {
-                const texto = fila.querySelector('.col-4').textContent;
-                const valor = Number.parseFloat(texto.replaceAll(/[$,()]/, '')) || 0;
-                totalCostos += valor;
-            }
-        }
-        
-        // Calcular gastos
-        const gastosDiv = document.querySelector('.text-warning').parentElement;
-        if (gastosDiv) {
-            const filasGastos = gastosDiv.querySelectorAll('.row.mb-2');
-            for (const fila of filasGastos) {
-                const texto = fila.querySelector('.col-4').textContent;
-                const valor = Number.parseFloat(texto.replaceAll(/[$,()]/, '')) || 0;
-                totalGastos += valor;
-            }
-        }
-        
-        // Calcular utilidades
-        const utilidadBruta = totalIngresos - totalCostos;
-        const utilidadOperacional = utilidadBruta - totalGastos;
-        const resultadoFinal = utilidadOperacional;
-        
-        // Actualizar UI
-        document.getElementById('total-ingresos').textContent = formatearMoneda(totalIngresos);
-        document.getElementById('total-costos').textContent = '(' + formatearMoneda(totalCostos) + ')';
-        document.getElementById('total-gastos').textContent = '(' + formatearMoneda(totalGastos) + ')';
-        document.getElementById('utilidad-bruta').textContent = formatearMoneda(utilidadBruta);
-        document.getElementById('utilidad-operacional').textContent = formatearMoneda(utilidadOperacional);
-        
-        // Actualizar resultado final
-        const labelResultado = document.getElementById('label-resultado');
-        const elementoResultado = document.getElementById('resultado-final');
-        const cardResultado = document.getElementById('card-resultado-final');
-        
-        if (resultadoFinal >= 0) {
-            labelResultado.textContent = 'UTILIDAD NETA';
-            elementoResultado.textContent = formatearMoneda(resultadoFinal);
-            elementoResultado.className = 'mb-0 text-success';
-            cardResultado.className = 'row bg-success bg-opacity-10 p-3 mb-3 border border-success';
-        } else {
-            labelResultado.textContent = 'PÉRDIDA NETA';
-            elementoResultado.textContent = '(' + formatearMoneda(Math.abs(resultadoFinal)) + ')';
-            elementoResultado.className = 'mb-0 text-danger';
-            cardResultado.className = 'row bg-danger bg-opacity-10 p-3 mb-3 border border-danger';
-        }
-        
-        // Actualizar resumen
-        document.getElementById('resumen-ingresos').textContent = formatearMoneda(totalIngresos);
-        document.getElementById('resumen-costos').textContent = formatearMoneda(totalCostos);
-        document.getElementById('resumen-gastos').textContent = formatearMoneda(totalGastos);
-        
-        const resumenResultado = document.getElementById('resumen-resultado');
-        if (resultadoFinal >= 0) {
-            resumenResultado.textContent = formatearMoneda(resultadoFinal);
-            resumenResultado.className = 'text-success';
-        } else {
-            resumenResultado.textContent = '(' + formatearMoneda(Math.abs(resultadoFinal)) + ')';
-            resumenResultado.className = 'text-danger';
-        }
     }
 });
 </script>

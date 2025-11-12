@@ -410,6 +410,58 @@ function actualizarVerificacionEcuacion(totalActivos, totalPasivos, totalPatrimo
     }
 }
 
+function calcularBalance() {
+    // Calcular activos
+    const activosCorrientes = calcularSeccionCorriente(
+        'subtotal-activos-corrientes',
+        'h6.text-primary:first-of-type + .row'
+    );
+    const activosNoCorrientes = calcularSeccionNoCorriente(
+        'subtotal-activos-no-corrientes',
+        'No Corrientes'
+    );
+    const totalActivos = activosCorrientes + activosNoCorrientes;
+    
+    // Calcular pasivos
+    const pasivosCorrientes = calcularSeccionCorriente(
+        'subtotal-pasivos-corrientes',
+        'h6.text-danger:first-of-type + .row'
+    );
+    const pasivosNoCorrientes = calcularSeccionNoCorriente(
+        'subtotal-pasivos-no-corrientes',
+        'No Corrientes'
+    );
+    const totalPasivos = pasivosCorrientes + pasivosNoCorrientes;
+    
+    // Calcular patrimonio
+    const totalPatrimonio = calcularSeccionCorriente(
+        'total-patrimonio',
+        '.row.mb-1'
+    );
+    
+    // Actualizar UI - Activos
+    actualizarElemento('subtotal-activos-corrientes', activosCorrientes);
+    actualizarElemento('subtotal-activos-no-corrientes', activosNoCorrientes);
+    actualizarElemento('total-activos', totalActivos);
+    
+    // Actualizar UI - Pasivos
+    actualizarElemento('subtotal-pasivos-corrientes', pasivosCorrientes);
+    actualizarElemento('subtotal-pasivos-no-corrientes', pasivosNoCorrientes);
+    actualizarElemento('total-pasivos', totalPasivos);
+    
+    // Actualizar UI - Patrimonio
+    actualizarElemento('total-patrimonio', totalPatrimonio);
+    actualizarElemento('total-pasivo-patrimonio', totalPasivos + totalPatrimonio);
+    
+    // Actualizar UI - Verificación
+    actualizarElemento('verif-activos', totalActivos);
+    actualizarElemento('verif-pasivos', totalPasivos);
+    actualizarElemento('verif-patrimonio', totalPatrimonio);
+    
+    // Verificar ecuación contable
+    actualizarVerificacionEcuacion(totalActivos, totalPasivos, totalPatrimonio);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Calcular totales
     calcularBalance();
@@ -444,58 +496,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             globalThis.location.href = `{% url 'reportes:balance_general_exportar' %}?fecha_corte=${fechaCorte}&formato=pdf`;
         });
-    }
-    
-    function calcularBalance() {
-        // Calcular activos
-        const activosCorrientes = calcularSeccionCorriente(
-            'subtotal-activos-corrientes',
-            'h6.text-primary:first-of-type + .row'
-        );
-        const activosNoCorrientes = calcularSeccionNoCorriente(
-            'subtotal-activos-no-corrientes',
-            'No Corrientes'
-        );
-        const totalActivos = activosCorrientes + activosNoCorrientes;
-        
-        // Calcular pasivos
-        const pasivosCorrientes = calcularSeccionCorriente(
-            'subtotal-pasivos-corrientes',
-            'h6.text-danger:first-of-type + .row'
-        );
-        const pasivosNoCorrientes = calcularSeccionNoCorriente(
-            'subtotal-pasivos-no-corrientes',
-            'No Corrientes'
-        );
-        const totalPasivos = pasivosCorrientes + pasivosNoCorrientes;
-        
-        // Calcular patrimonio
-        const totalPatrimonio = calcularSeccionCorriente(
-            'total-patrimonio',
-            '.row.mb-1'
-        );
-        
-        // Actualizar UI - Activos
-        actualizarElemento('subtotal-activos-corrientes', activosCorrientes);
-        actualizarElemento('subtotal-activos-no-corrientes', activosNoCorrientes);
-        actualizarElemento('total-activos', totalActivos);
-        
-        // Actualizar UI - Pasivos
-        actualizarElemento('subtotal-pasivos-corrientes', pasivosCorrientes);
-        actualizarElemento('subtotal-pasivos-no-corrientes', pasivosNoCorrientes);
-        actualizarElemento('total-pasivos', totalPasivos);
-        
-        // Actualizar UI - Patrimonio
-        actualizarElemento('total-patrimonio', totalPatrimonio);
-        actualizarElemento('total-pasivo-patrimonio', totalPasivos + totalPatrimonio);
-        
-        // Actualizar UI - Verificación
-        actualizarElemento('verif-activos', totalActivos);
-        actualizarElemento('verif-pasivos', totalPasivos);
-        actualizarElemento('verif-patrimonio', totalPatrimonio);
-        
-        // Verificar ecuación contable
-        actualizarVerificacionEcuacion(totalActivos, totalPasivos, totalPatrimonio);
     }
 });
 </script>
