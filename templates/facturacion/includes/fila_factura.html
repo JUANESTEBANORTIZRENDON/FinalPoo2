@@ -1,0 +1,69 @@
+{% comment %}
+Componente reutilizable para una fila de factura
+Parámetros:
+  - factura: objeto factura
+  - estado_badge_class: clase CSS para el badge (opcional, se calcula automáticamente si no se proporciona)
+  - estado_text: texto del estado (opcional, se calcula automáticamente si no se proporciona)
+  - total_class: clase CSS para el total (opcional, por defecto text-primary)
+  - btn_class: clase CSS para el botón (opcional, por defecto btn-outline-info)
+  - mostrar_todos_estados: si es True, muestra todos los estados posibles (borrador, anulada, etc.)
+{% endcomment %}
+
+<tr>
+    <td>
+        <strong>{{ factura.numero_factura }}</strong>
+    </td>
+    <td>{{ factura.fecha_factura|date:"d/m/Y" }}</td>
+    <td>
+        <i class="fas fa-user text-primary"></i>
+        {{ factura.cliente.razon_social }}
+        <br>
+        <small class="text-muted">{{ factura.cliente.numero_documento }}</small>
+    </td>
+    <td>
+        {% if factura.tipo_venta == 'contado' %}
+            <span class="badge bg-success">Contado</span>
+        {% else %}
+            <span class="badge bg-info">Crédito</span>
+        {% endif %}
+    </td>
+    <td>
+        <strong class="{{ total_class|default:'text-primary' }}">${{ factura.total|floatformat:2 }}</strong>
+    </td>
+    <td>
+        {% if mostrar_todos_estados %}
+            {% if factura.estado == 'borrador' %}
+                <span class="badge bg-warning">Borrador</span>
+            {% elif factura.estado == 'confirmada' %}
+                <span class="badge bg-info">Activa</span>
+            {% elif factura.estado == 'pagada' %}
+                <span class="badge bg-success">Pagada</span>
+            {% elif factura.estado == 'anulada' %}
+                <span class="badge bg-danger">Anulada</span>
+            {% endif %}
+        {% else %}
+            <span class="badge {{ estado_badge_class }}">{{ estado_text }}</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if mostrar_todos_estados %}
+            {% if factura.estado == 'confirmada' or factura.estado == 'pagada' %}
+            <a href="{% url 'tesoreria:factura_pdf' factura.pk %}" 
+               class="btn btn-sm btn-outline-info" 
+               title="Descargar PDF"
+               target="_blank">
+                <i class="fas fa-file-pdf"></i> Descargar PDF
+            </a>
+            {% else %}
+            <span class="text-muted">-</span>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'tesoreria:factura_pdf' factura.pk %}" 
+               class="btn btn-sm {{ btn_class|default:'btn-outline-info' }}" 
+               title="Descargar PDF"
+               target="_blank">
+                <i class="fas fa-file-pdf"></i> Descargar PDF
+            </a>
+        {% endif %}
+    </td>
+</tr>

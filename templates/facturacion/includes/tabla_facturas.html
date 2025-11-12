@@ -23,39 +23,7 @@ Parámetros:
         </thead>
         <tbody>
             {% for factura in facturas %}
-            <tr>
-                <td>
-                    <strong>{{ factura.numero_factura }}</strong>
-                </td>
-                <td>{{ factura.fecha_factura|date:"d/m/Y" }}</td>
-                <td>
-                    <i class="fas fa-user text-primary"></i>
-                    {{ factura.cliente.razon_social }}
-                    <br>
-                    <small class="text-muted">{{ factura.cliente.numero_documento }}</small>
-                </td>
-                <td>
-                    {% if factura.tipo_venta == 'contado' %}
-                        <span class="badge bg-success">Contado</span>
-                    {% else %}
-                        <span class="badge bg-info">Crédito</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <strong class="{{ total_class }}">${{ factura.total|floatformat:2 }}</strong>
-                </td>
-                <td>
-                    <span class="badge {{ estado_badge_class }}">{{ estado_text }}</span>
-                </td>
-                <td>
-                    <a href="{% url 'tesoreria:factura_pdf' factura.pk %}" 
-                       class="btn btn-sm {{ btn_class }}" 
-                       title="Descargar PDF"
-                       target="_blank">
-                        <i class="fas fa-file-pdf"></i> Descargar PDF
-                    </a>
-                </td>
-            </tr>
+                {% include 'facturacion/includes/fila_factura.html' with factura=factura estado_badge_class=estado_badge_class estado_text=estado_text total_class=total_class btn_class=btn_class %}
             {% endfor %}
         </tbody>
     </table>
