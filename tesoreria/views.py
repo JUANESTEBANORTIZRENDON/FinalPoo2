@@ -20,6 +20,9 @@ from contabilidad.asiento_helpers import (
     crear_asiento_egreso,
     anular_asiento_pago
 )
+
+# Constantes para evitar strings mágicos duplicados
+EGRESOS_LISTA_URL = 'tesoreria:egresos_lista'
 import io
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -352,7 +355,7 @@ class EgresoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = Pago
     template_name = 'tesoreria/egresos_crear.html'
     fields = ['tercero', 'fecha_pago', 'valor', 'metodo_pago', 'cuenta_bancaria', 'referencia', 'observaciones']
-    success_url = reverse_lazy('tesoreria:egresos_lista')
+    success_url = reverse_lazy(EGRESOS_LISTA_URL)
     
     def form_valid(self, form):
         empresa_activa = getattr(self.request, 'empresa_activa', None)
@@ -431,7 +434,7 @@ class EgresoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = Pago
     template_name = 'tesoreria/egresos_editar.html'
     fields = ['tercero', 'fecha_pago', 'valor', 'metodo_pago', 'cuenta_bancaria', 'referencia', 'observaciones']
-    success_url = reverse_lazy('tesoreria:egresos_lista')
+    success_url = reverse_lazy(EGRESOS_LISTA_URL)
     
     def get_queryset(self):
         return super().get_queryset().filter(tipo_pago='egreso')
@@ -481,7 +484,7 @@ class EgresoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
 class EgresoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = Pago
     template_name = 'tesoreria/egresos_eliminar.html'
-    success_url = reverse_lazy('tesoreria:egresos_lista')
+    success_url = reverse_lazy(EGRESOS_LISTA_URL)
     
     def get_queryset(self):
         return super().get_queryset().filter(tipo_pago='egreso')

@@ -8,6 +8,9 @@ from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.db import models
 from empresas.middleware import EmpresaFilterMixin
+
+# Constantes para evitar strings mágicos duplicados
+IMPUESTOS_LISTA_URL = 'catalogos:impuestos_lista'
 from .models import Tercero, Impuesto, MetodoPago, Producto
 from core.base_views import (
     BaseListView, BaseDetailView, BaseCreateView, 
@@ -99,7 +102,7 @@ class ImpuestoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = Impuesto
     template_name = 'catalogos/impuestos_crear.html'
     fields = ['codigo', 'nombre', 'tipo_impuesto', 'porcentaje', 'activo']
-    success_url = reverse_lazy('catalogos:impuestos_lista')
+    success_url = reverse_lazy(IMPUESTOS_LISTA_URL)
     
     def form_valid(self, form):
         form.instance.empresa = getattr(self.request, 'empresa_activa', None)
@@ -110,7 +113,7 @@ class ImpuestoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = Impuesto
     template_name = 'catalogos/impuestos_editar.html'
     fields = ['codigo', 'nombre', 'tipo_impuesto', 'porcentaje', 'activo']
-    success_url = reverse_lazy('catalogos:impuestos_lista')
+    success_url = reverse_lazy(IMPUESTOS_LISTA_URL)
     
     def form_valid(self, form):
         messages.success(self.request, f'Impuesto {form.instance.nombre} actualizado exitosamente.')
@@ -119,7 +122,7 @@ class ImpuestoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
 class ImpuestoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = Impuesto
     template_name = 'catalogos/impuestos_eliminar.html'
-    success_url = reverse_lazy('catalogos:impuestos_lista')
+    success_url = reverse_lazy(IMPUESTOS_LISTA_URL)
     
     def delete(self, request, *args, **kwargs):
         impuesto = self.get_object()

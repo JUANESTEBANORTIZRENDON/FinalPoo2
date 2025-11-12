@@ -51,6 +51,7 @@ URL_GESTIONAR_EMPRESAS = 'empresas:admin_gestionar_empresas'
 TEMPLATE_EMPRESA_FORM = 'empresas/admin/empresa_form.html'
 TEMPLATE_USUARIO_FORM = 'empresas/admin/usuario_form.html'
 TITULO_CREAR_EMPRESA = 'Crear Nueva Empresa'
+TITULO_EDITAR_EMPRESA = 'Editar Empresa'
 TITULO_CREAR_USUARIO = 'Crear Nuevo Usuario'
 TITULO_EDITAR_USUARIO = 'Editar Usuario'
 
@@ -439,7 +440,7 @@ def editar_empresa(request, empresa_id):  # nosonar
         if not razon_social or not nit:
             messages.error(request, 'La razón social y el NIT son campos obligatorios.')
             context = {
-                'titulo': 'Editar Empresa',
+                'titulo': TITULO_EDITAR_EMPRESA,
                 'accion': 'editar',
                 'empresa': empresa
             }
@@ -449,7 +450,7 @@ def editar_empresa(request, empresa_id):  # nosonar
         if Empresa.objects.filter(nit=nit).exclude(id=empresa_id).exists():
             messages.error(request, f'Ya existe otra empresa con el NIT {nit}.')
             context = {
-                'titulo': 'Editar Empresa',
+                'titulo': TITULO_EDITAR_EMPRESA,
                 'accion': 'editar',
                 'empresa': empresa
             }
@@ -511,7 +512,7 @@ def editar_empresa(request, empresa_id):  # nosonar
         return redirect(URL_GESTIONAR_EMPRESAS)
     
     context = {
-        'titulo': 'Editar Empresa',
+        'titulo': TITULO_EDITAR_EMPRESA,
         'accion': 'editar',
         'empresa': empresa
     }
