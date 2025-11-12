@@ -335,13 +335,79 @@
 </style>
 
 <script>
-// Función auxiliar para formatear moneda (scope global para reutilización)
+// Funciones auxiliares para formateo y cálculos (scope global para reutilización)
 function formatearMoneda(valor) {
     return new Intl.NumberFormat('es-CO', {
         style: 'currency',
         currency: 'COP',
         minimumFractionDigits: 2
     }).format(valor);
+}
+
+function parsearValorMoneda(elemento) {
+    const texto = elemento.querySelector('.col-4').textContent;
+    return Number.parseFloat(texto.replaceAll(/[$,]/, '')) || 0;
+}
+
+function sumarFilas(filas) {
+    let total = 0;
+    for (const fila of filas) {
+        total += parsearValorMoneda(fila);
+    }
+    return total;
+}
+
+function calcularSeccionCorriente(elementoId, selectorFilas) {
+    const div = document.getElementById(elementoId);
+    if (!div) return 0;
+    
+    const parent = div.closest('.card-body');
+    const filas = parent.querySelectorAll(selectorFilas);
+    return sumarFilas(filas);
+}
+
+function calcularSeccionNoCorriente(elementoId, textoIdentificador) {
+    const div = document.getElementById(elementoId);
+    if (!div) return 0;
+    
+    const parent = div.closest('.card-body');
+    const todasFilas = parent.querySelectorAll('.row.mb-1');
+    let capturando = false;
+    let total = 0;
+    
+    for (const fila of todasFilas) {
+        const h6Anterior = fila.previousElementSibling;
+        if (h6Anterior && h6Anterior.textContent.includes(textoIdentificador)) {
+            capturando = true;
+        }
+        if (capturando && fila.classList.contains('mb-1')) {
+            total += parsearValorMoneda(fila);
+        }
+    }
+    return total;
+}
+
+function actualizarElemento(elementoId, valor) {
+    const elemento = document.getElementById(elementoId);
+    if (elemento) {
+        elemento.textContent = formatearMoneda(valor);
+    }
+}
+
+function actualizarVerificacionEcuacion(totalActivos, totalPasivos, totalPatrimonio) {
+    const diferencia = Math.abs(totalActivos - (totalPasivos + totalPatrimonio));
+    const estadoEcuacion = document.getElementById('estado-ecuacion');
+    const cardVerificacion = document.getElementById('card-verificacion');
+    
+    if (diferencia < 0.01) {
+        estadoEcuacion.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> La ecuación contable está balanceada';
+        estadoEcuacion.className = 'text-success';
+        cardVerificacion.className = 'card border-success';
+    } else {
+        estadoEcuacion.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i> La ecuación contable NO está balanceada (Diferencia: ' + formatearMoneda(diferencia) + ')';
+        estadoEcuacion.className = 'text-danger';
+        cardVerificacion.className = 'card border-danger';
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -378,73 +444,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             globalThis.location.href = `{% url 'reportes:balance_general_exportar' %}?fecha_corte=${fechaCorte}&formato=pdf`;
         });
-    }
-    
-    // Funciones auxiliares para cálculos
-    function parsearValorMoneda(elemento) {
-        const texto = elemento.querySelector('.col-4').textContent;
-        return Number.parseFloat(texto.replaceAll(/[$,]/, '')) || 0;
-    }
-    
-    function sumarFilas(filas) {
-        let total = 0;
-        for (const fila of filas) {
-            total += parsearValorMoneda(fila);
-        }
-        return total;
-    }
-    
-    function calcularSeccionCorriente(elementoId, selectorFilas) {
-        const div = document.getElementById(elementoId);
-        if (!div) return 0;
-        
-        const parent = div.closest('.card-body');
-        const filas = parent.querySelectorAll(selectorFilas);
-        return sumarFilas(filas);
-    }
-    
-    function calcularSeccionNoCorriente(elementoId, textoIdentificador) {
-        const div = document.getElementById(elementoId);
-        if (!div) return 0;
-        
-        const parent = div.closest('.card-body');
-        const todasFilas = parent.querySelectorAll('.row.mb-1');
-        let capturando = false;
-        let total = 0;
-        
-        for (const fila of todasFilas) {
-            const h6Anterior = fila.previousElementSibling;
-            if (h6Anterior && h6Anterior.textContent.includes(textoIdentificador)) {
-                capturando = true;
-            }
-            if (capturando && fila.classList.contains('mb-1')) {
-                total += parsearValorMoneda(fila);
-            }
-        }
-        return total;
-    }
-    
-    function actualizarElemento(elementoId, valor) {
-        const elemento = document.getElementById(elementoId);
-        if (elemento) {
-            elemento.textContent = formatearMoneda(valor);
-        }
-    }
-    
-    function actualizarVerificacionEcuacion(totalActivos, totalPasivos, totalPatrimonio) {
-        const diferencia = Math.abs(totalActivos - (totalPasivos + totalPatrimonio));
-        const estadoEcuacion = document.getElementById('estado-ecuacion');
-        const cardVerificacion = document.getElementById('card-verificacion');
-        
-        if (diferencia < 0.01) {
-            estadoEcuacion.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> La ecuación contable está balanceada';
-            estadoEcuacion.className = 'text-success';
-            cardVerificacion.className = 'card border-success';
-        } else {
-            estadoEcuacion.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i> La ecuación contable NO está balanceada (Diferencia: ' + formatearMoneda(diferencia) + ')';
-            estadoEcuacion.className = 'text-danger';
-            cardVerificacion.className = 'card border-danger';
-        }
     }
     
     function calcularBalance() {
