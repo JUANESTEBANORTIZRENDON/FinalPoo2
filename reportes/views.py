@@ -124,151 +124,193 @@ class LibroMayorCuentaView(LoginRequiredMixin, TemplateView):
 class BalanceComprobacionView(LoginRequiredMixin, TemplateView):
     template_name = 'reportes/balance_comprobacion.html'
     
+    def _calcular_agregados_cuenta(self, cuenta, fecha_corte):
+        """Calcula débitos y créditos totales de una cuenta."""
+        agregado = Partida.objects.filter(
+            cuenta=cuenta,
+            asiento__estado='confirmado',
+            asiento__fecha_asiento__lte=fecha_corte
+        ).aggregate(
+            sum_debito=Sum('valor_debito'),
+            sum_credito=Sum('valor_credito')
+        )
+        
+        return (
+            agregado['sum_debito'] or Decimal('0.00'),
+            agregado['sum_credito'] or Decimal('0.00')
+        )
+    
+    def _incluir_saldo_inicial(self, cuenta, total_debito, total_credito):
+        """Agrega el saldo inicial según la naturaleza de la cuenta."""
+        if cuenta.naturaleza == 'D':
+            return total_debito + cuenta.saldo_inicial, total_credito
+        return total_debito, total_credito + cuenta.saldo_inicial
+    
+    def _calcular_saldos_naturaleza(self, cuenta, total_debito, total_credito):
+        """Calcula saldos deudor y acreedor según naturaleza."""
+        if cuenta.naturaleza == 'D':
+            saldo = total_debito - total_credito
+            return (
+                saldo if saldo > 0 else Decimal('0.00'),
+                abs(saldo) if saldo < 0 else Decimal('0.00')
+            )
+        
+        saldo = total_credito - total_debito
+        return (
+            abs(saldo) if saldo < 0 else Decimal('0.00'),
+            saldo if saldo > 0 else Decimal('0.00')
+        )
+    
+    def _procesar_cuenta_balance(self, cuenta, fecha_corte):
+        """Procesa una cuenta para el balance de comprobación."""
+        total_debito, total_credito = self._calcular_agregados_cuenta(cuenta, fecha_corte)
+        total_debito, total_credito = self._incluir_saldo_inicial(
+            cuenta, total_debito, total_credito
+        )
+        
+        # Solo incluir cuentas con movimiento
+        if total_debito == 0 and total_credito == 0:
+            return None
+        
+        saldo_deudor, saldo_acreedor = self._calcular_saldos_naturaleza(
+            cuenta, total_debito, total_credito
+        )
+        
+        return {
+            'cuenta': cuenta,
+            'total_debito': total_debito,
+            'total_credito': total_credito,
+            'saldo_deudor': saldo_deudor,
+            'saldo_acreedor': saldo_acreedor
+        }
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         empresa_activa = getattr(self.request, 'empresa_activa', None)
         
-        # Obtener parámetros
         fecha_corte = self.request.GET.get('fecha_corte')
         tipo_cuenta = self.request.GET.get('tipo_cuenta', '')
         
         if not fecha_corte:
-            context['fecha_corte'] = None
-            context['tipo_cuenta'] = tipo_cuenta
-            context['cuentas'] = []
+            context.update({
+                'fecha_corte': None,
+                'tipo_cuenta': tipo_cuenta,
+                'cuentas': []
+            })
             return context
         
-        # Obtener todas las cuentas activas
+        # Obtener cuentas activas filtradas
         cuentas_query = CuentaContable.objects.filter(activa=True)
         if empresa_activa:
             cuentas_query = cuentas_query.filter(empresa=empresa_activa)
         if tipo_cuenta:
             cuentas_query = cuentas_query.filter(tipo_cuenta=tipo_cuenta)
         
-        cuentas = cuentas_query.order_by('codigo')
+        # Procesar cuentas
+        cuentas_con_saldo = [
+            cuenta_data
+            for cuenta in cuentas_query.order_by('codigo')
+            if (cuenta_data := self._procesar_cuenta_balance(cuenta, fecha_corte))
+        ]
         
-        # Calcular saldos para cada cuenta (optimizado)
-        cuentas_con_saldo = []
-        for cuenta in cuentas:
-            # Usar agregación para calcular totales eficientemente
-            agregado = Partida.objects.filter(
-                cuenta=cuenta,
-                asiento__estado='confirmado',
-                asiento__fecha_asiento__lte=fecha_corte
-            ).aggregate(
-                sum_debito=Sum('valor_debito'),
-                sum_credito=Sum('valor_credito')
-            )
-            
-            # Calcular totales (convertir None a Decimal(0))
-            total_debito = agregado['sum_debito'] or Decimal('0.00')
-            total_credito = agregado['sum_credito'] or Decimal('0.00')
-            
-            # Incluir saldo inicial
-            if cuenta.naturaleza == 'D':
-                total_debito += cuenta.saldo_inicial
-            else:
-                total_credito += cuenta.saldo_inicial
-            
-            # Calcular saldo según naturaleza
-            if cuenta.naturaleza == 'D':
-                # Cuenta deudora
-                saldo = total_debito - total_credito
-                saldo_deudor = saldo if saldo > 0 else Decimal('0.00')
-                saldo_acreedor = abs(saldo) if saldo < 0 else Decimal('0.00')
-            else:
-                # Cuenta acreedora
-                saldo = total_credito - total_debito
-                saldo_acreedor = saldo if saldo > 0 else Decimal('0.00')
-                saldo_deudor = abs(saldo) if saldo < 0 else Decimal('0.00')
-            
-            # Solo incluir cuentas con movimiento o saldo inicial
-            if total_debito > 0 or total_credito > 0:
-                # Crear diccionario con datos de la cuenta
-                cuenta_data = {
-                    'cuenta': cuenta,
-                    'total_debito': total_debito,
-                    'total_credito': total_credito,
-                    'saldo_deudor': saldo_deudor,
-                    'saldo_acreedor': saldo_acreedor
-                }
-                cuentas_con_saldo.append(cuenta_data)
-        
-        context['cuentas'] = cuentas_con_saldo
-        context['fecha_corte'] = fecha_corte
-        context['tipo_cuenta'] = tipo_cuenta
+        context.update({
+            'cuentas': cuentas_con_saldo,
+            'fecha_corte': fecha_corte,
+            'tipo_cuenta': tipo_cuenta
+        })
         
         return context
 
 class EstadoResultadosView(LoginRequiredMixin, TemplateView):
     template_name = 'reportes/estado_resultados.html'
     
+    def _calcular_totales_cuenta(self, cuenta, fecha_inicio, fecha_fin):
+        """Calcula débitos y créditos de una cuenta en un período."""
+        agregado = Partida.objects.filter(
+            cuenta=cuenta,
+            asiento__estado='confirmado',
+            asiento__fecha_asiento__gte=fecha_inicio,
+            asiento__fecha_asiento__lte=fecha_fin
+        ).aggregate(
+            sum_debito=Sum('valor_debito'),
+            sum_credito=Sum('valor_credito')
+        )
+        
+        return (
+            agregado['sum_debito'] or Decimal('0.00'),
+            agregado['sum_credito'] or Decimal('0.00')
+        )
+    
+    def _calcular_saldo_por_tipo(self, cuenta, total_debito, total_credito):
+        """Calcula el saldo según el tipo de cuenta."""
+        if cuenta.tipo_cuenta == 'INGRESO':
+            return total_credito - total_debito
+        # COSTO y GASTO usan la misma fórmula
+        return total_debito - total_credito
+    
+    def _procesar_cuenta(self, cuenta, fecha_inicio, fecha_fin):
+        """Procesa una cuenta y retorna su saldo si es positivo."""
+        total_debito, total_credito = self._calcular_totales_cuenta(
+            cuenta, fecha_inicio, fecha_fin
+        )
+        
+        saldo = self._calcular_saldo_por_tipo(cuenta, total_debito, total_credito)
+        
+        if saldo > 0:
+            cuenta.saldo = saldo
+            return cuenta
+        return None
+    
+    def _clasificar_cuentas(self, cuentas_query, fecha_inicio, fecha_fin):
+        """Clasifica cuentas en ingresos, costos y gastos."""
+        ingresos, costos, gastos = [], [], []
+        
+        for cuenta in cuentas_query:
+            cuenta_procesada = self._procesar_cuenta(cuenta, fecha_inicio, fecha_fin)
+            if cuenta_procesada:
+                if cuenta.tipo_cuenta == 'INGRESO':
+                    ingresos.append(cuenta_procesada)
+                elif cuenta.tipo_cuenta == 'COSTO':
+                    costos.append(cuenta_procesada)
+                elif cuenta.tipo_cuenta == 'GASTO':
+                    gastos.append(cuenta_procesada)
+        
+        return ingresos, costos, gastos
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         empresa_activa = getattr(self.request, 'empresa_activa', None)
         
-        # Obtener parámetros
         fecha_inicio = self.request.GET.get('fecha_inicio')
         fecha_fin = self.request.GET.get('fecha_fin')
         
         if not fecha_inicio or not fecha_fin:
-            context['fecha_inicio'] = None
-            context['fecha_fin'] = None
-            context['ingresos'] = []
-            context['costos'] = []
-            context['gastos'] = []
+            context.update({
+                'fecha_inicio': None,
+                'fecha_fin': None,
+                'ingresos': [],
+                'costos': [],
+                'gastos': []
+            })
             return context
         
-        # Obtener cuentas de ingresos, costos y gastos
+        # Obtener cuentas activas
         cuentas_query = CuentaContable.objects.filter(activa=True)
         if empresa_activa:
             cuentas_query = cuentas_query.filter(empresa=empresa_activa)
         
-        # Separar por tipo
-        ingresos = []
-        costos = []
-        gastos = []
+        # Clasificar cuentas
+        ingresos, costos, gastos = self._clasificar_cuentas(
+            cuentas_query, fecha_inicio, fecha_fin
+        )
         
-        for cuenta in cuentas_query:
-            # Calcular saldo del período usando agregación
-            agregado = Partida.objects.filter(
-                cuenta=cuenta,
-                asiento__estado='confirmado',
-                asiento__fecha_asiento__gte=fecha_inicio,
-                asiento__fecha_asiento__lte=fecha_fin
-            ).aggregate(
-                sum_debito=Sum('valor_debito'),
-                sum_credito=Sum('valor_credito')
-            )
-            
-            total_debito = agregado['sum_debito'] or Decimal('0.00')
-            total_credito = agregado['sum_credito'] or Decimal('0.00')
-            
-            # Calcular saldo según tipo de cuenta
-            if cuenta.tipo_cuenta == 'INGRESO':
-                # Ingresos: Créditos - Débitos
-                saldo = total_credito - total_debito
-                if saldo > 0:
-                    cuenta.saldo = saldo
-                    ingresos.append(cuenta)
-            elif cuenta.tipo_cuenta == 'COSTO':
-                # Costos: Débitos - Créditos
-                saldo = total_debito - total_credito
-                if saldo > 0:
-                    cuenta.saldo = saldo
-                    costos.append(cuenta)
-            elif cuenta.tipo_cuenta == 'GASTO':
-                # Gastos: Débitos - Créditos
-                saldo = total_debito - total_credito
-                if saldo > 0:
-                    cuenta.saldo = saldo
-                    gastos.append(cuenta)
-        
-        context['fecha_inicio'] = fecha_inicio
-        context['fecha_fin'] = fecha_fin
-        context['ingresos'] = sorted(ingresos, key=lambda x: x.codigo)
-        context['costos'] = sorted(costos, key=lambda x: x.codigo)
-        context['gastos'] = sorted(gastos, key=lambda x: x.codigo)
+        context.update({
+            'fecha_inicio': fecha_inicio,
+            'fecha_fin': fecha_fin,
+            'ingresos': sorted(ingresos, key=lambda x: x.codigo),
+            'costos': sorted(costos, key=lambda x: x.codigo),
+            'gastos': sorted(gastos, key=lambda x: x.codigo)
+        })
         
         return context
 
