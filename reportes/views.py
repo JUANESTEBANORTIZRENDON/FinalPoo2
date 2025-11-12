@@ -719,15 +719,42 @@ def generar_balance_comprobacion(request):
 @require_http_methods(["GET"])
 def exportar_balance_comprobacion(request):
     """Exportar balance de comprobación a Excel o PDF"""
-    empresa_activa = getattr(request, 'empresa_activa', None)
-    formato = request.GET.get('formato', 'excel')
+    # Validar parámetros de entrada
     fecha_corte = request.GET.get('fecha_corte')
-    tipo_cuenta = request.GET.get('tipo_cuenta', '')
-    
     if not fecha_corte:
         return HttpResponse("Fecha de corte requerida", status=400)
     
-    # Obtener cuentas y calcular saldos (misma lógica que la vista)
+    # Obtener datos del balance
+    empresa_activa = getattr(request, 'empresa_activa', None)
+    tipo_cuenta = request.GET.get('tipo_cuenta', '')
+    formato = request.GET.get('formato', 'excel')
+    
+    balance_data = _obtener_datos_balance_comprobacion(empresa_activa, fecha_corte, tipo_cuenta)
+    
+    # Exportar según formato solicitado
+    return _exportar_segun_formato(formato, balance_data, fecha_corte, empresa_activa)
+
+def _obtener_datos_balance_comprobacion(empresa_activa, fecha_corte, tipo_cuenta):
+    """Obtener y procesar datos del balance de comprobación"""
+    cuentas = _obtener_cuentas_filtradas(empresa_activa, tipo_cuenta)
+    
+    cuentas_con_saldo = []
+    totales_globales = _inicializar_totales_globales()
+    
+    for cuenta in cuentas.order_by('codigo'):
+        datos_cuenta = _procesar_cuenta_individual(cuenta, fecha_corte)
+        
+        if _cuenta_tiene_movimientos(datos_cuenta):
+            cuentas_con_saldo.append(datos_cuenta)
+            _actualizar_totales_globales(totales_globales, datos_cuenta)
+    
+    return {
+        'cuentas': cuentas_con_saldo,
+        'totales': totales_globales
+    }
+
+def _obtener_cuentas_filtradas(empresa_activa, tipo_cuenta):
+    """Obtener cuentas filtradas según criterios"""
     cuentas = CuentaContable.objects.filter(
         empresa=empresa_activa,
         activa=True,
@@ -737,64 +764,98 @@ def exportar_balance_comprobacion(request):
     if tipo_cuenta:
         cuentas = cuentas.filter(tipo_cuenta=tipo_cuenta)
     
-    cuentas_con_saldo = []
-    total_debitos_global = Decimal('0.00')
-    total_creditos_global = Decimal('0.00')
-    total_saldo_deudor_global = Decimal('0.00')
-    total_saldo_acreedor_global = Decimal('0.00')
+    return cuentas
+
+def _inicializar_totales_globales():
+    """Inicializar estructura de totales globales"""
+    return {
+        'debitos': Decimal('0.00'),
+        'creditos': Decimal('0.00'),
+        'saldo_deudor': Decimal('0.00'),
+        'saldo_acreedor': Decimal('0.00')
+    }
+
+def _procesar_cuenta_individual(cuenta, fecha_corte):
+    """Procesar una cuenta individual y calcular sus saldos"""
+    # Obtener movimientos de la cuenta
+    agregado = Partida.objects.filter(
+        cuenta=cuenta,
+        asiento__estado='confirmado',
+        asiento__fecha_asiento__lte=fecha_corte
+    ).aggregate(
+        sum_debito=Sum('valor_debito'),
+        sum_credito=Sum('valor_credito')
+    )
     
-    for cuenta in cuentas.order_by('codigo'):
-        agregado = Partida.objects.filter(
-            cuenta=cuenta,
-            asiento__estado='confirmado',
-            asiento__fecha_asiento__lte=fecha_corte
-        ).aggregate(
-            sum_debito=Sum('valor_debito'),
-            sum_credito=Sum('valor_credito')
-        )
-        
-        total_debito = agregado['sum_debito'] or Decimal('0.00')
-        total_credito = agregado['sum_credito'] or Decimal('0.00')
-        
-        # Incluir saldo inicial
-        if cuenta.naturaleza == 'debito':
-            total_debito += cuenta.saldo_inicial
-        else:
-            total_credito += cuenta.saldo_inicial
-        
-        # Calcular saldo según naturaleza
-        if cuenta.naturaleza == 'debito':
-            saldo = total_debito - total_credito
-            saldo_deudor = saldo if saldo > 0 else Decimal('0.00')
-            saldo_acreedor = abs(saldo) if saldo < 0 else Decimal('0.00')
-        else:
-            saldo = total_credito - total_debito
-            saldo_acreedor = saldo if saldo > 0 else Decimal('0.00')
-            saldo_deudor = abs(saldo) if saldo < 0 else Decimal('0.00')
-        
-        if total_debito > 0 or total_credito > 0:
-            cuentas_con_saldo.append({
-                'codigo': cuenta.codigo,
-                'nombre': cuenta.nombre,
-                'tipo': cuenta.get_tipo_cuenta_display(),
-                'debito': total_debito,
-                'credito': total_credito,
-                'saldo_deudor': saldo_deudor,
-                'saldo_acreedor': saldo_acreedor
-            })
-            total_debitos_global += total_debito
-            total_creditos_global += total_credito
-            total_saldo_deudor_global += saldo_deudor
-            total_saldo_acreedor_global += saldo_acreedor
+    total_debito = agregado['sum_debito'] or Decimal('0.00')
+    total_credito = agregado['sum_credito'] or Decimal('0.00')
+    
+    # Incluir saldo inicial
+    total_debito, total_credito = _incluir_saldo_inicial(cuenta, total_debito, total_credito)
+    
+    # Calcular saldos finales
+    saldo_deudor, saldo_acreedor = _calcular_saldos_finales(cuenta, total_debito, total_credito)
+    
+    return {
+        'codigo': cuenta.codigo,
+        'nombre': cuenta.nombre,
+        'tipo': cuenta.get_tipo_cuenta_display(),
+        'debito': total_debito,
+        'credito': total_credito,
+        'saldo_deudor': saldo_deudor,
+        'saldo_acreedor': saldo_acreedor
+    }
+
+def _incluir_saldo_inicial(cuenta, total_debito, total_credito):
+    """Incluir saldo inicial según naturaleza de la cuenta"""
+    if cuenta.naturaleza == 'debito':
+        total_debito += cuenta.saldo_inicial
+    else:
+        total_credito += cuenta.saldo_inicial
+    
+    return total_debito, total_credito
+
+def _calcular_saldos_finales(cuenta, total_debito, total_credito):
+    """Calcular saldos deudor y acreedor según naturaleza de la cuenta"""
+    if cuenta.naturaleza == 'debito':
+        saldo = total_debito - total_credito
+        saldo_deudor = saldo if saldo > 0 else Decimal('0.00')
+        saldo_acreedor = abs(saldo) if saldo < 0 else Decimal('0.00')
+    else:
+        saldo = total_credito - total_debito
+        saldo_acreedor = saldo if saldo > 0 else Decimal('0.00')
+        saldo_deudor = abs(saldo) if saldo < 0 else Decimal('0.00')
+    
+    return saldo_deudor, saldo_acreedor
+
+def _cuenta_tiene_movimientos(datos_cuenta):
+    """Verificar si la cuenta tiene movimientos"""
+    return datos_cuenta['debito'] > 0 or datos_cuenta['credito'] > 0
+
+def _actualizar_totales_globales(totales_globales, datos_cuenta):
+    """Actualizar totales globales con datos de una cuenta"""
+    totales_globales['debitos'] += datos_cuenta['debito']
+    totales_globales['creditos'] += datos_cuenta['credito']
+    totales_globales['saldo_deudor'] += datos_cuenta['saldo_deudor']
+    totales_globales['saldo_acreedor'] += datos_cuenta['saldo_acreedor']
+
+def _exportar_segun_formato(formato, balance_data, fecha_corte, empresa_activa):
+    """Exportar balance según formato solicitado"""
+    cuentas = balance_data['cuentas']
+    totales = balance_data['totales']
     
     if formato == 'excel':
-        return _exportar_balance_excel(cuentas_con_saldo, fecha_corte, empresa_activa,
-                                       total_debitos_global, total_creditos_global,
-                                       total_saldo_deudor_global, total_saldo_acreedor_global)
+        return _exportar_balance_excel(
+            cuentas, fecha_corte, empresa_activa,
+            totales['debitos'], totales['creditos'],
+            totales['saldo_deudor'], totales['saldo_acreedor']
+        )
     elif formato == 'pdf':
-        return _exportar_balance_pdf(cuentas_con_saldo, fecha_corte, empresa_activa,
-                                     total_debitos_global, total_creditos_global,
-                                     total_saldo_deudor_global, total_saldo_acreedor_global)
+        return _exportar_balance_pdf(
+            cuentas, fecha_corte, empresa_activa,
+            totales['debitos'], totales['creditos'],
+            totales['saldo_deudor'], totales['saldo_acreedor']
+        )
     else:
         return HttpResponse("Formato no soportado", status=400)
 
