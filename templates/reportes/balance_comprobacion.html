@@ -299,10 +299,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const filas = tabla.querySelectorAll('tbody tr');
         filas.forEach(fila => {
-            const debito = Number.parseFloat(fila.cells[3].textContent.replace(/[\$,]/g, '')) || 0;
-            const credito = Number.parseFloat(fila.cells[4].textContent.replace(/[\$,]/g, '')) || 0;
-            const saldoDeudor = Number.parseFloat(fila.cells[5].textContent.replace(/[\$,—\s]/g, '')) || 0;
-            const saldoAcreedor = Number.parseFloat(fila.cells[6].textContent.replace(/[\$,—\s]/g, '')) || 0;
+            const debito = Number.parseFloat(fila.cells[3].textContent.replaceAll(/[\$,]/, '')) || 0;
+            const credito = Number.parseFloat(fila.cells[4].textContent.replaceAll(/[\$,]/, '')) || 0;
+            const saldoDeudor = Number.parseFloat(fila.cells[5].textContent.replaceAll(/[\$,—\s]/, '')) || 0;
+            const saldoAcreedor = Number.parseFloat(fila.cells[6].textContent.replaceAll(/[\$,—\s]/, '')) || 0;
             
             totalDebitos += debito;
             totalCreditos += credito;

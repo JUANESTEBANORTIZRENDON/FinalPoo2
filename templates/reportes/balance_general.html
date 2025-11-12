@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const parent = activosCorrientesDiv.closest('.card-body');
             const filas = parent.querySelectorAll('h6.text-primary:first-of-type + .row');
             filas.forEach(fila => {
-                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[\$,]/, '')) || 0;
                 activosCorrientes += valor;
             });
         }
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         capturando = true;
                     }
                     if (capturando && fila.classList.contains('mb-1')) {
-                        const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                        const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[\$,]/, '')) || 0;
                         activosNoCorrientes += valor;
                     }
                 });
@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const parent = pasivosCorrientesDiv.closest('.card-body');
             const filas = parent.querySelectorAll('h6.text-danger:first-of-type + .row');
             filas.forEach(fila => {
-                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[\$,]/, '')) || 0;
                 pasivosCorrientes += valor;
             });
         }
@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         capturando = true;
                     }
                     if (capturando && fila.classList.contains('mb-1')) {
-                        const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                        const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[\$,]/, '')) || 0;
                         pasivosNoCorrientes += valor;
                     }
                 });
@@ -451,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const parent = patrimonioCard.closest('.card-body');
             const filas = parent.querySelectorAll('.row.mb-1');
             filas.forEach(fila => {
-                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[\$,]/, '')) || 0;
                 totalPatrimonio += valor;
             });
         }

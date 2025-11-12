@@ -268,8 +268,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const filas = tabla.querySelectorAll('tr:not(.table-secondary)');
         
         filas.forEach((fila, index) => {
-            const debitoText = fila.cells[3].textContent.replace(/[\$,—\s]/g, '');
-            const creditoText = fila.cells[4].textContent.replace(/[\$,—\s]/g, '');
+            const debitoText = fila.cells[3].textContent.replaceAll(/[\$,—\s]/, '');
+            const creditoText = fila.cells[4].textContent.replaceAll(/[\$,—\s]/, '');
             
             const debito = Number.parseFloat(debitoText) || 0;
             const credito = Number.parseFloat(creditoText) || 0;
