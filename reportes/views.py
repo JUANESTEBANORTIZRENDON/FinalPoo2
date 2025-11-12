@@ -317,90 +317,122 @@ class EstadoResultadosView(LoginRequiredMixin, TemplateView):
 class BalanceGeneralView(LoginRequiredMixin, TemplateView):
     template_name = 'reportes/balance_general.html'
     
+    def _calcular_saldo_cuenta(self, cuenta, fecha_corte):
+        """Calcula el saldo de una cuenta hasta la fecha de corte."""
+        agregado = Partida.objects.filter(
+            cuenta=cuenta,
+            asiento__estado='confirmado',
+            asiento__fecha_asiento__lte=fecha_corte
+        ).aggregate(
+            sum_debito=Sum('valor_debito'),
+            sum_credito=Sum('valor_credito')
+        )
+        
+        total_debito = agregado['sum_debito'] or Decimal('0.00')
+        total_credito = agregado['sum_credito'] or Decimal('0.00')
+        
+        # Incluir saldo inicial
+        if cuenta.naturaleza == 'D':
+            total_debito += cuenta.saldo_inicial
+        else:
+            total_credito += cuenta.saldo_inicial
+        
+        # Calcular saldo según naturaleza
+        if cuenta.naturaleza == 'D':
+            return total_debito - total_credito
+        return total_credito - total_debito
+    
+    def _obtener_prefijo_codigo(self, cuenta):
+        """Obtiene los primeros 2 dígitos del código de cuenta."""
+        if len(cuenta.codigo) >= 2 and cuenta.codigo[:2].isdigit():
+            return int(cuenta.codigo[:2])
+        return 0
+    
+    def _clasificar_activo(self, cuenta, activos_corrientes, activos_no_corrientes):
+        """Clasifica una cuenta de activo en corriente o no corriente."""
+        codigo_num = self._obtener_prefijo_codigo(cuenta)
+        if codigo_num <= 13:
+            activos_corrientes.append(cuenta)
+        else:
+            activos_no_corrientes.append(cuenta)
+    
+    def _clasificar_pasivo(self, cuenta, pasivos_corrientes, pasivos_no_corrientes):
+        """Clasifica una cuenta de pasivo en corriente o no corriente."""
+        codigo_num = self._obtener_prefijo_codigo(cuenta)
+        if codigo_num <= 23:
+            pasivos_corrientes.append(cuenta)
+        else:
+            pasivos_no_corrientes.append(cuenta)
+    
+    def _clasificar_cuenta_balance(self, cuenta, clasificaciones):
+        """Clasifica una cuenta en la categoría correspondiente."""
+        if cuenta.tipo_cuenta == 'ACTIVO':
+            self._clasificar_activo(
+                cuenta,
+                clasificaciones['activos_corrientes'],
+                clasificaciones['activos_no_corrientes']
+            )
+        elif cuenta.tipo_cuenta == 'PASIVO':
+            self._clasificar_pasivo(
+                cuenta,
+                clasificaciones['pasivos_corrientes'],
+                clasificaciones['pasivos_no_corrientes']
+            )
+        elif cuenta.tipo_cuenta == 'PATRIMONIO':
+            clasificaciones['patrimonio'].append(cuenta)
+    
+    def _procesar_cuentas_balance(self, cuentas_query, fecha_corte):
+        """Procesa y clasifica todas las cuentas para el balance."""
+        clasificaciones = {
+            'activos_corrientes': [],
+            'activos_no_corrientes': [],
+            'pasivos_corrientes': [],
+            'pasivos_no_corrientes': [],
+            'patrimonio': []
+        }
+        
+        for cuenta in cuentas_query:
+            saldo = self._calcular_saldo_cuenta(cuenta, fecha_corte)
+            
+            if saldo != 0:
+                cuenta.saldo = abs(saldo)
+                self._clasificar_cuenta_balance(cuenta, clasificaciones)
+        
+        return clasificaciones
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         empresa_activa = getattr(self.request, 'empresa_activa', None)
         
-        # Obtener parámetro
         fecha_corte = self.request.GET.get('fecha_corte')
         
         if not fecha_corte:
-            context['fecha_corte'] = None
-            context['activos_corrientes'] = []
-            context['activos_no_corrientes'] = []
-            context['pasivos_corrientes'] = []
-            context['pasivos_no_corrientes'] = []
-            context['patrimonio'] = []
+            context.update({
+                'fecha_corte': None,
+                'activos_corrientes': [],
+                'activos_no_corrientes': [],
+                'pasivos_corrientes': [],
+                'pasivos_no_corrientes': [],
+                'patrimonio': []
+            })
             return context
         
-        # Obtener todas las cuentas activas
+        # Obtener cuentas activas
         cuentas_query = CuentaContable.objects.filter(activa=True)
         if empresa_activa:
             cuentas_query = cuentas_query.filter(empresa=empresa_activa)
         
-        # Separar por tipo
-        activos_corrientes = []
-        activos_no_corrientes = []
-        pasivos_corrientes = []
-        pasivos_no_corrientes = []
-        patrimonio = []
+        # Procesar y clasificar cuentas
+        clasificaciones = self._procesar_cuentas_balance(cuentas_query, fecha_corte)
         
-        for cuenta in cuentas_query:
-            # Calcular saldo acumulado hasta la fecha de corte
-            agregado = Partida.objects.filter(
-                cuenta=cuenta,
-                asiento__estado='confirmado',
-                asiento__fecha_asiento__lte=fecha_corte
-            ).aggregate(
-                sum_debito=Sum('valor_debito'),
-                sum_credito=Sum('valor_credito')
-            )
-            
-            total_debito = agregado['sum_debito'] or Decimal('0.00')
-            total_credito = agregado['sum_credito'] or Decimal('0.00')
-            
-            # Incluir saldo inicial
-            if cuenta.naturaleza == 'D':
-                total_debito += cuenta.saldo_inicial
-            else:
-                total_credito += cuenta.saldo_inicial
-            
-            # Calcular saldo según naturaleza
-            if cuenta.naturaleza == 'D':
-                saldo = total_debito - total_credito
-            else:
-                saldo = total_credito - total_debito
-            
-            # Clasificar por tipo de cuenta (solo si tiene saldo)
-            if saldo != 0:
-                cuenta.saldo = abs(saldo)
-                
-                if cuenta.tipo_cuenta == 'ACTIVO':
-                    # Clasificar en corriente/no corriente según el código
-                    # Activos corrientes generalmente tienen códigos 11xx, 12xx, 13xx
-                    codigo_num = int(cuenta.codigo[:2]) if len(cuenta.codigo) >= 2 and cuenta.codigo[:2].isdigit() else 0
-                    if codigo_num <= 13:
-                        activos_corrientes.append(cuenta)
-                    else:
-                        activos_no_corrientes.append(cuenta)
-                        
-                elif cuenta.tipo_cuenta == 'PASIVO':
-                    # Pasivos corrientes generalmente tienen códigos 21xx, 22xx, 23xx
-                    codigo_num = int(cuenta.codigo[:2]) if len(cuenta.codigo) >= 2 and cuenta.codigo[:2].isdigit() else 0
-                    if codigo_num <= 23:
-                        pasivos_corrientes.append(cuenta)
-                    else:
-                        pasivos_no_corrientes.append(cuenta)
-                        
-                elif cuenta.tipo_cuenta == 'PATRIMONIO':
-                    patrimonio.append(cuenta)
-        
-        context['fecha_corte'] = fecha_corte
-        context['activos_corrientes'] = sorted(activos_corrientes, key=lambda x: x.codigo)
-        context['activos_no_corrientes'] = sorted(activos_no_corrientes, key=lambda x: x.codigo)
-        context['pasivos_corrientes'] = sorted(pasivos_corrientes, key=lambda x: x.codigo)
-        context['pasivos_no_corrientes'] = sorted(pasivos_no_corrientes, key=lambda x: x.codigo)
-        context['patrimonio'] = sorted(patrimonio, key=lambda x: x.codigo)
+        context.update({
+            'fecha_corte': fecha_corte,
+            'activos_corrientes': sorted(clasificaciones['activos_corrientes'], key=lambda x: x.codigo),
+            'activos_no_corrientes': sorted(clasificaciones['activos_no_corrientes'], key=lambda x: x.codigo),
+            'pasivos_corrientes': sorted(clasificaciones['pasivos_corrientes'], key=lambda x: x.codigo),
+            'pasivos_no_corrientes': sorted(clasificaciones['pasivos_no_corrientes'], key=lambda x: x.codigo),
+            'patrimonio': sorted(clasificaciones['patrimonio'], key=lambda x: x.codigo)
+        })
         
         return context
 
