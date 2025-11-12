@@ -1,0 +1,24 @@
+{% comment %}
+Campos del formulario de métodos de pago (compartido entre crear y editar)
+{% endcomment %}
+{% load form_helpers %}
+
+<div class="row">
+    <div class="col-md-6">
+        {% render_field form.codigo %}
+    </div>
+    <div class="col-md-6">
+        {% render_field form.tipo_metodo %}
+    </div>
+</div>
+
+{% render_field form.nombre %}
+
+<div class="row">
+    <div class="col-md-6">
+        {% render_field form.requiere_referencia %}
+    </div>
+    <div class="col-md-6">
+        {% render_field form.activo %}
+    </div>
+</div>

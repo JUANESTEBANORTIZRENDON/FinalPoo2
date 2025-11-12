@@ -1,6 +1,5 @@
 {% extends 'components/form_crear_base.html' %}
 {% load static %}
-{% load form_helpers %}
 
 {% with page_title="Crear Método de Pago" card_title="Crear Nuevo Método de Pago" breadcrumb_active="Crear Método de Pago" cancel_url="/catalogos/metodos-pago/" submit_text="Guardar Método de Pago" %}
 
@@ -9,25 +8,7 @@
 {% endblock %}
 
 {% block form_fields %}
-<div class="alert alert-info">
-    <i class="fas fa-info-circle"></i>
-    <strong>Nota:</strong> Complete todos los campos requeridos para registrar el método de pago.
-</div>
-
-{% for field in form %}
-<div class="mb-3">
-    <label for="{{ field.id_for_label }}" class="form-label">
-        {{ field.label }} {% if field.field.required %}
-        <span class="text-danger">*</span>
-        {% endif %}
-    </label>
-    {{ field }} {% if field.errors %}
-    <div class="invalid-feedback d-block">{{ field.errors }}</div>
-    {% endif %} {% if field.help_text %}
-    <small class="form-text text-muted">{{ field.help_text }}</small>
-    {% endif %}
-</div>
-{% endfor %}
+{% include 'catalogos/includes/metodos_pago_form_fields.html' %}
 {% endblock %}
 
 {% endwith %}

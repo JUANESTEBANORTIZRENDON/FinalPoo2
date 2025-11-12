@@ -1,0 +1,24 @@
+{% comment %}
+Campos del formulario de impuestos (compartido entre crear y editar)
+{% endcomment %}
+{% load form_helpers %}
+
+<div class="row">
+    <div class="col-md-6">
+        {% render_field form.codigo %}
+    </div>
+    <div class="col-md-6">
+        {% render_field form.tipo_impuesto %}
+    </div>
+</div>
+
+{% render_field form.nombre %}
+
+<div class="row">
+    <div class="col-md-6">
+        {% include 'components/field_with_suffix.html' with field=form.porcentaje suffix='%' %}
+    </div>
+    <div class="col-md-6">
+        {% render_field form.activo %}
+    </div>
+</div>

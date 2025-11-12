@@ -1,5 +1,4 @@
 {% extends 'components/form_crear_base.html' %}
-{% load form_helpers %}
 {% load static %}
 
 {% with page_title="Crear Impuesto" card_title="Crear Nuevo Impuesto" breadcrumb_active="Crear Impuesto" cancel_url="/catalogos/impuestos/" submit_text="Guardar Impuesto" %}
@@ -9,25 +8,7 @@
 {% endblock %}
 
 {% block form_fields %}
-<div class="row">
-    <div class="col-md-6">
-        {% render_field form.codigo %}
-    </div>
-    <div class="col-md-6">
-        {% render_field form.tipo_impuesto %}
-    </div>
-</div>
-
-{% render_field form.nombre %}
-
-<div class="row">
-    <div class="col-md-6">
-        {% include 'components/field_with_suffix.html' with field=form.porcentaje suffix='%' %}
-    </div>
-    <div class="col-md-6">
-        {% render_field form.activo %}
-    </div>
-</div>
+{% include 'catalogos/includes/impuestos_form_fields.html' %}
 {% endblock %}
 
 {% endwith %}
