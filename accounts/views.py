@@ -65,7 +65,7 @@ Gracias por registrarte con nosotros. Hemos recibido tu información:
 Para completar tu registro y activar tu cuenta, haz clic en el siguiente enlace:
 
 🌐 ACTIVAR CUENTA:
-http://127.0.0.1:8000/accounts/activar/?token={token}
+{self.request.build_absolute_uri(f'/accounts/activar/?token={token}')}
 
 ⏰ IMPORTANTE:
 - Este enlace expira en 24 horas por tu seguridad

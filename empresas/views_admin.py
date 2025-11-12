@@ -764,7 +764,7 @@ def crear_usuario(request):  # nosonar  # type: ignore[no-untyped-def]
 
             # Validar datos básicos usando helper
             valido, error = _validate_new_user_data(username, email, password, password_confirm)
-            if not valido:
+            if not valido and error:  # Verificar que error no sea None
                 messages.error(request, error)
                 return render(request, TEMPLATE_USUARIO_FORM, {
                     'titulo': TITULO_CREAR_USUARIO,
@@ -816,7 +816,7 @@ def editar_usuario(request, usuario_id):  # nosonar  # type: ignore[no-untyped-d
 
             # Validaciones básicas usando helper
             valido, error = _validate_edit_user_data(username, email, usuario)
-            if not valido:
+            if not valido and error:  # Verificar que error no sea None
                 messages.error(request, error)
                 return render(request, TEMPLATE_USUARIO_FORM, {
                     'titulo': TITULO_EDITAR_USUARIO,

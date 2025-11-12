@@ -7,6 +7,7 @@ from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.db import models  # Para usar models.Sum
 from decimal import Decimal
 import json
 from .models import Pago, CuentaBancaria, PagoDetalle
@@ -907,14 +908,6 @@ def marcar_cobro_pagado(request, pk):
 
 @login_required
 @require_http_methods(["POST"])
-def confirmar_pago(request, pk):
-    return redirect(PAGOS_DETALLE_URL, pk=pk)
-
-@login_required
-@require_http_methods(["POST"])
-def anular_pago(request, pk):
-    return redirect(PAGOS_DETALLE_URL, pk=pk)
-
 @login_required
 @require_safe
 def cobrar_factura(request, factura_pk):

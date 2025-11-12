@@ -1,0 +1,107 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Activar Cuenta - S_CONTABLE{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-8 col-lg-6">
+            <div class="auth-card p-5">
+                <div class="text-center mb-4">
+                    <div class="brand-logo">
+                        <i class="fas fa-calculator"></i> S_CONTABLE
+                    </div>
+                </div>
+
+                {% if activation_status == 'success' %}
+                    <!-- Activación exitosa -->
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                        </div>
+                        <h3 class="text-success mb-3">¡Cuenta Activada Exitosamente!</h3>
+                        <p class="lead mb-4">
+                            ¡Bienvenido a S_CONTABLE, <strong>{{ user.get_full_name|default:user.username }}</strong>!
+                        </p>
+                        <p class="text-muted mb-4">
+                            Tu cuenta ha sido activada correctamente. Ya puedes iniciar sesión y comenzar a utilizar 
+                            todas las funcionalidades del sistema contable.
+                        </p>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                            </a>
+                        </div>
+                    </div>
+
+                {% elif activation_status == 'already_active' %}
+                    <!-- Cuenta ya activada -->
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-info-circle text-info" style="font-size: 4rem;"></i>
+                        </div>
+                        <h3 class="text-info mb-3">Cuenta Ya Activada</h3>
+                        <p class="lead mb-4">
+                            Hola <strong>{{ user.get_full_name|default:user.username }}</strong>, 
+                            tu cuenta ya está activa.
+                        </p>
+                        <p class="text-muted mb-4">
+                            No necesitas hacer nada más. Puedes iniciar sesión directamente.
+                        </p>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Ir al Login
+                            </a>
+                        </div>
+                    </div>
+
+                {% else %}
+                    <!-- Error en activación -->
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-exclamation-triangle text-danger" style="font-size: 4rem;"></i>
+                        </div>
+                        <h3 class="text-danger mb-3">Error al Activar Cuenta</h3>
+                        <div class="alert alert-danger text-start">
+                            <i class="fas fa-times-circle me-2"></i>
+                            <strong>Error:</strong> {{ error_message|default:"El enlace de activación no es válido o ha expirado." }}
+                        </div>
+                        <p class="text-muted mb-4">
+                            Posibles causas:
+                        </p>
+                        <ul class="text-start text-muted mb-4">
+                            <li>El enlace de activación ya fue usado</li>
+                            <li>El enlace ha expirado (válido por 24 horas)</li>
+                            <li>El enlace está incompleto o fue modificado</li>
+                            <li>La cuenta asociada ya no existe</li>
+                        </ul>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'accounts:register' %}" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Registrarse Nuevamente
+                            </a>
+                            <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Ir al Login
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-question-circle me-1"></i>
+                        ¿Necesitas ayuda? 
+                        <a href="mailto:soporte@scontable.com" class="text-decoration-none">
+                            Contacta con soporte
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Acerca de Nosotros -->
+    {% include 'components/acerca_de_nosotros.html' %}
+</div>
+{% endblock %}
