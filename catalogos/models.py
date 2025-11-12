@@ -91,15 +91,10 @@ class Tercero(models.Model):
     )
     
     telefono = models.CharField(
-        max_length=15,
+        max_length=20,
         blank=True,
-        validators=[
-            RegexValidator(
-                regex=r'^\+?57?[0-9]{7,12}$',
-                message='Formato: +5713001234567 o 13001234567'
-            )
-        ],
-        verbose_name="Teléfono"
+        verbose_name="Teléfono",
+        help_text="Número de teléfono o celular"
     )
     
     email = models.EmailField(

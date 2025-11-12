@@ -197,16 +197,16 @@
                             
                             <div class="empresa-buttons">
                                 <a href="{% url 'empresas:admin_ver_empresa' empresa.id %}" 
-                                   class="btn btn-sm btn-outline-info" title="Ver detalles">
-                                    👁️ Ver
+                                   class="btn btn-sm btn-info" title="Ver detalles">
+                                    <i class="bi bi-eye-fill"></i>
                                 </a>
                                 <a href="{% url 'empresas:admin_editar_empresa' empresa.id %}" 
-                                   class="btn btn-sm btn-outline-primary" title="Editar empresa">
-                                    ✏️ Editar
+                                   class="btn btn-sm btn-warning" title="Editar empresa">
+                                    <i class="bi bi-pencil-fill"></i>
                                 </a>
-                                <button type="button" class="btn btn-sm btn-outline-success" 
+                                <button type="button" class="btn btn-sm btn-success" 
                                         onclick="gestionarUsuarios({{ empresa.id }})" title="Gestionar usuarios">
-                                    👥 Usuarios
+                                    <i class="bi bi-people-fill"></i>
                                 </button>
                             </div>
                         </div>

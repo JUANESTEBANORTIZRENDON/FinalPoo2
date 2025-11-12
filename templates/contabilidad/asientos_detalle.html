@@ -1,0 +1,271 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Asiento {{ object.numero_asiento }} - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:asientos_lista' %}">Asientos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Asiento {{ object.numero_asiento }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-journal-text"></i>
+                        Asiento Contable #{{ object.numero_asiento }}
+                    </h4>
+                    <div>
+                        {% if object.estado == 'borrador' %}
+                            <span class="badge bg-warning">Borrador</span>
+                        {% elif object.estado == 'confirmado' %}
+                            <span class="badge bg-success">Confirmado</span>
+                        {% else %}
+                            <span class="badge bg-danger">Anulado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Información del asiento -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th style="width: 40%;">Número:</th>
+                                    <td><strong>{{ object.numero_asiento }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Fecha:</th>
+                                    <td>{{ object.fecha_asiento|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Tipo:</th>
+                                    <td>{{ object.get_tipo_asiento_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Estado:</th>
+                                    <td>
+                                        {% if object.estado == 'borrador' %}
+                                            <span class="badge bg-warning">Borrador</span>
+                                        {% elif object.estado == 'confirmado' %}
+                                            <span class="badge bg-success">Confirmado</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Anulado</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th style="width: 40%;">Creado por:</th>
+                                    <td>{{ object.creado_por.get_full_name|default:object.creado_por.username }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Fecha creación:</th>
+                                    <td>{{ object.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                {% if object.confirmado_por %}
+                                <tr>
+                                    <th>Confirmado por:</th>
+                                    <td>{{ object.confirmado_por.get_full_name|default:object.confirmado_por.username }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Fecha confirmación:</th>
+                                    <td>{{ object.fecha_confirmacion|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Concepto -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6><strong>Concepto:</strong></h6>
+                            <p>{{ object.concepto }}</p>
+                        </div>
+                    </div>
+
+                    {% if object.observaciones %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6><strong>Observaciones:</strong></h6>
+                            <p>{{ object.observaciones }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Partidas -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-list-ul"></i>
+                                Partidas Contables
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th style="width: 5%;">#</th>
+                                            <th style="width: 15%;">Código</th>
+                                            <th style="width: 35%;">Cuenta</th>
+                                            <th style="width: 20%;">Concepto</th>
+                                            <th style="width: 12%;" class="text-end">Débito</th>
+                                            <th style="width: 12%;" class="text-end">Crédito</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for partida in object.partidas.all %}
+                                            <tr>
+                                                <td class="text-center">{{ forloop.counter }}</td>
+                                                <td>{{ partida.cuenta.codigo }}</td>
+                                                <td>{{ partida.cuenta.nombre }}</td>
+                                                <td>{{ partida.concepto|default:"—" }}</td>
+                                                <td class="text-end">
+                                                    {% if partida.valor_debito > 0 %}
+                                                        ${{ partida.valor_debito|floatformat:2 }}
+                                                    {% else %}
+                                                        —
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">
+                                                    {% if partida.valor_credito > 0 %}
+                                                        ${{ partida.valor_credito|floatformat:2 }}
+                                                    {% else %}
+                                                        —
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-secondary">
+                                        <tr>
+                                            <td colspan="4" class="text-end"><strong>TOTALES:</strong></td>
+                                            <td class="text-end">
+                                                <strong>${{ object.total_debito|floatformat:2 }}</strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong>${{ object.total_credito|floatformat:2 }}</strong>
+                                            </td>
+                                        </tr>
+                                        {% if not object.esta_cuadrado %}
+                                        <tr class="table-danger">
+                                            <td colspan="4" class="text-end"><strong>DIFERENCIA:</strong></td>
+                                            <td colspan="2" class="text-center">
+                                                <strong class="text-danger">
+                                                    ${{ object.total_debito|floatformat:2 }} - ${{ object.total_credito|floatformat:2 }} = 
+                                                    ${% widthratio object.total_debito 1 1|floatformat:2|add:"-"|add:object.total_credito|floatformat:2 %}
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'contabilidad:asientos_lista' %}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i>
+                                    Volver a la lista
+                                </a>
+                                
+                                <div class="btn-group">
+                                    {% if object.estado == 'borrador' %}
+                                        <a href="{% url 'contabilidad:asientos_editar' object.pk %}" class="btn btn-warning">
+                                            <i class="bi bi-pencil-fill"></i>
+                                            Editar
+                                        </a>
+                                        <form method="post" action="{% url 'contabilidad:asientos_confirmar' object.pk %}" class="d-inline" id="form-confirmar">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                                Confirmar
+                                            </button>
+                                        </form>
+                                        <a href="{% url 'contabilidad:asientos_eliminar' object.pk %}" class="btn btn-danger">
+                                            <i class="bi bi-trash-fill"></i>
+                                            Eliminar
+                                        </a>
+                                    {% elif object.estado == 'confirmado' %}
+                                        <form method="post" action="{% url 'contabilidad:asientos_duplicar' object.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-files"></i>
+                                                Duplicar
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{% url 'contabilidad:asientos_reversar' object.pk %}" class="d-inline" id="form-reversar">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-warning">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                                Reversar
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{% url 'contabilidad:asientos_anular' object.pk %}" class="d-inline" id="form-anular">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="bi bi-x-circle-fill"></i>
+                                                Anular
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmación para confirmar asiento
+    const formConfirmar = document.getElementById('form-confirmar');
+    if (formConfirmar) {
+        formConfirmar.addEventListener('submit', function(e) {
+            if (!confirm('¿Está seguro de confirmar este asiento? Una vez confirmado no podrá editarse.')) {
+                e.preventDefault();
+            }
+        });
+    }
+    
+    // Confirmación para anular asiento
+    const formAnular = document.getElementById('form-anular');
+    if (formAnular) {
+        formAnular.addEventListener('submit', function(e) {
+            if (!confirm('¿Está seguro de anular este asiento? Esta acción no se puede deshacer.')) {
+                e.preventDefault();
+            }
+        });
+    }
+    
+    // Confirmación para reversar asiento
+    const formReversar = document.getElementById('form-reversar');
+    if (formReversar) {
+        formReversar.addEventListener('submit', function(e) {
+            if (!confirm('¿Está seguro de reversar este asiento? Se creará un asiento inverso.')) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

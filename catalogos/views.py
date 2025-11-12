@@ -1,8 +1,8 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse_lazy
@@ -47,9 +47,20 @@ class TerceroCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     success_url = reverse_lazy(TERCERO_LIST_URL)
     
     def form_valid(self, form):
+        from django.db import IntegrityError
+        
         form.instance.empresa = getattr(self.request, 'empresa_activa', None)
-        messages.success(self.request, f'Tercero {form.instance.razon_social} creado exitosamente.')
-        return super().form_valid(form)
+        
+        try:
+            response = super().form_valid(form)
+            messages.success(self.request, f'Tercero {form.instance.razon_social} creado exitosamente.')
+            return response
+        except IntegrityError:
+            messages.error(
+                self.request, 
+                f'Ya existe un tercero con el número de documento {form.instance.numero_documento} en tu empresa.'
+            )
+            return self.form_invalid(form)
 
 class TerceroUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = Tercero
@@ -70,27 +81,50 @@ class TerceroDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     template_name = 'catalogos/tercero_confirm_delete.html'
     success_url = reverse_lazy(TERCERO_LIST_URL)
 
-class ImpuestoListView(LoginRequiredMixin, ListView):
+class ImpuestoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = Impuesto
     template_name = 'catalogos/impuestos_lista.html'
+    context_object_name = 'object_list'
+    paginate_by = 50
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.order_by('tipo_impuesto', 'nombre')
 
-class ImpuestoDetailView(LoginRequiredMixin, DetailView):
+class ImpuestoDetailView(LoginRequiredMixin, EmpresaFilterMixin, DetailView):
     model = Impuesto
     template_name = 'catalogos/impuestos_detalle.html'
 
-class ImpuestoCreateView(LoginRequiredMixin, CreateView):
+class ImpuestoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = Impuesto
     template_name = 'catalogos/impuestos_crear.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_impuesto', 'porcentaje', 'activo']
+    success_url = reverse_lazy('catalogos:impuestos_lista')
+    
+    def form_valid(self, form):
+        form.instance.empresa = getattr(self.request, 'empresa_activa', None)
+        messages.success(self.request, f'Impuesto {form.instance.nombre} creado exitosamente.')
+        return super().form_valid(form)
 
-class ImpuestoUpdateView(LoginRequiredMixin, UpdateView):
+class ImpuestoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = Impuesto
     template_name = 'catalogos/impuestos_editar.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_impuesto', 'porcentaje', 'activo']
+    success_url = reverse_lazy('catalogos:impuestos_lista')
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Impuesto {form.instance.nombre} actualizado exitosamente.')
+        return super().form_valid(form)
 
-class ImpuestoDeleteView(LoginRequiredMixin, DeleteView):
+class ImpuestoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = Impuesto
     template_name = 'catalogos/impuestos_eliminar.html'
+    success_url = reverse_lazy('catalogos:impuestos_lista')
+    
+    def delete(self, request, *args, **kwargs):
+        impuesto = self.get_object()
+        messages.success(request, f'Impuesto {impuesto.nombre} eliminado exitosamente.')
+        return super().delete(request, *args, **kwargs)
 
 class MetodoPagoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = MetodoPago
@@ -230,3 +264,28 @@ def buscar_productos(request):
 @require_http_methods(["GET"])
 def info_producto(request, pk):
     return JsonResponse({'producto': {}})
+
+@login_required
+@require_POST
+def producto_toggle_activo(request, pk):
+    """
+    Activa o desactiva un producto.
+    """
+    empresa_activa = getattr(request, 'empresa_activa', None)
+    
+    # Obtener el producto y verificar pertenencia a la empresa
+    producto = get_object_or_404(Producto, pk=pk)
+    
+    if empresa_activa and producto.empresa != empresa_activa:
+        messages.error(request, 'No tienes permiso para modificar este producto.')
+        return redirect(PRODUCTO_LIST_URL)
+    
+    # Cambiar el estado
+    producto.activo = not producto.activo
+    producto.save()
+    
+    # Mensaje de confirmación
+    estado = "activado" if producto.activo else "desactivado"
+    messages.success(request, f'Producto "{producto.nombre}" {estado} exitosamente.')
+    
+    return redirect(PRODUCTO_LIST_URL)

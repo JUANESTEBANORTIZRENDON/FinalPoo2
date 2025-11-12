@@ -1,0 +1,211 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Editar Asiento {{ object.numero_asiento }} - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:asientos_lista' %}">Asientos</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:asientos_detalle' object.pk %}">{{ object.numero_asiento }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Editar</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            {% if not object.puede_editarse %}
+                <div class="alert alert-danger">
+                    <h5><i class="bi bi-exclamation-triangle-fill"></i> ¡No se puede editar!</h5>
+                    <p class="mb-0">Este asiento está {{ object.get_estado_display|lower }} y no puede ser modificado.</p>
+                    <a href="{% url 'contabilidad:asientos_detalle' object.pk %}" class="btn btn-secondary mt-2">Volver al detalle</a>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Nota:</strong> Solo puedes editar asientos en estado borrador. Las partidas deben editarse directamente en este formulario.
+                </div>
+            {% endif %}
+            
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-pencil-square"></i>
+                        Editar Asiento #{{ object.numero_asiento }}
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Información del Asiento -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-info-circle"></i>
+                                    Información del Asiento
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="id_numero_asiento" class="form-label">
+                                                <strong>Número:</strong>
+                                            </label>
+                                            <input type="text" name="numero_asiento" class="form-control" 
+                                                   value="{{ object.numero_asiento }}" id="id_numero_asiento" readonly>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="id_fecha_asiento" class="form-label">
+                                                <strong>Fecha:</strong>
+                                            </label>
+                                            <input type="date" name="fecha_asiento" class="form-control" 
+                                                   value="{{ object.fecha_asiento|date:'Y-m-d' }}" id="id_fecha_asiento" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="id_tipo_asiento" class="form-label">
+                                                <strong>Tipo:</strong>
+                                            </label>
+                                            <select name="tipo_asiento" class="form-select" id="id_tipo_asiento" required>
+                                                <option value="ordinario" {% if object.tipo_asiento == 'ordinario' %}selected{% endif %}>Ordinario</option>
+                                                <option value="apertura" {% if object.tipo_asiento == 'apertura' %}selected{% endif %}>Apertura</option>
+                                                <option value="ajuste" {% if object.tipo_asiento == 'ajuste' %}selected{% endif %}>Ajuste</option>
+                                                <option value="cierre" {% if object.tipo_asiento == 'cierre' %}selected{% endif %}>Cierre</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">
+                                                <strong>Estado:</strong>
+                                            </label>
+                                            <input type="text" class="form-control" value="{{ object.get_estado_display }}" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="id_concepto" class="form-label">
+                                                <strong>Concepto:</strong>
+                                            </label>
+                                            <textarea name="concepto" class="form-control" rows="2" 
+                                                      id="id_concepto" required>{{ object.concepto }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="id_observaciones" class="form-label">
+                                                <strong>Observaciones:</strong>
+                                            </label>
+                                            <textarea name="observaciones" class="form-control" rows="2" 
+                                                      id="id_observaciones">{{ object.observaciones|default:'' }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de partidas (solo lectura) -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-list-ul"></i>
+                                    Partidas del Asiento
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Código</th>
+                                                <th>Cuenta</th>
+                                                <th>Concepto</th>
+                                                <th class="text-end">Débito</th>
+                                                <th class="text-end">Crédito</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for partida in object.partidas.all %}
+                                                <tr>
+                                                    <td>{{ forloop.counter }}</td>
+                                                    <td>{{ partida.cuenta.codigo }}</td>
+                                                    <td>{{ partida.cuenta.nombre }}</td>
+                                                    <td>{{ partida.concepto|default:"—" }}</td>
+                                                    <td class="text-end">
+                                                        {% if partida.valor_debito > 0 %}
+                                                            ${{ partida.valor_debito|floatformat:2 }}
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-end">
+                                                        {% if partida.valor_credito > 0 %}
+                                                            ${{ partida.valor_credito|floatformat:2 }}
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot class="table-secondary">
+                                            <tr>
+                                                <td colspan="4" class="text-end"><strong>TOTALES:</strong></td>
+                                                <td class="text-end"><strong>${{ object.total_debito|floatformat:2 }}</strong></td>
+                                                <td class="text-end"><strong>${{ object.total_credito|floatformat:2 }}</strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <strong>Nota:</strong> Para editar las partidas, elimina este asiento y créalo nuevamente con los cambios necesarios.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'contabilidad:asientos_detalle' object.pk %}" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left"></i>
+                                        Cancelar
+                                    </a>
+                                    {% if object.puede_editarse %}
+                                        <button type="submit" class="btn btn-warning">
+                                            <i class="bi bi-save"></i>
+                                            Guardar Cambios
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

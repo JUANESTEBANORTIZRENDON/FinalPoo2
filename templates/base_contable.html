@@ -326,13 +326,17 @@
             <!-- Tesorería -->
             <div class="nav-section">
                 <div class="nav-section-title">Tesorería</div>
-                <a href="{% url 'tesoreria:cobros_lista' %}" class="nav-link">
-                    <i class="bi bi-arrow-down-circle"></i>
-                    Cobros
+                <a href="{% url 'tesoreria:ingresos_lista' %}" class="nav-link">
+                    <i class="bi bi-cash-coin text-success"></i>
+                    Ingresos
                 </a>
                 <a href="{% url 'tesoreria:egresos_lista' %}" class="nav-link">
-                    <i class="bi bi-arrow-up-circle"></i>
+                    <i class="bi bi-cash-stack text-danger"></i>
                     Egresos
+                </a>
+                <a href="{% url 'tesoreria:cobros_lista' %}" class="nav-link">
+                    <i class="bi bi-receipt"></i>
+                    Cobros (Facturas)
                 </a>
                 <a href="{% url 'tesoreria:cuentas_lista' %}" class="nav-link">
                     <i class="bi bi-bank"></i>

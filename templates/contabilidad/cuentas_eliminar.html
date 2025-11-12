@@ -1,0 +1,88 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Eliminar Cuenta Contable - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:index' %}">Contabilidad</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:cuentas_lista' %}">Plan de Cuentas</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Eliminar</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Eliminar Cuenta Contable
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                    </div>
+
+                    <h5 class="mb-3">¿Estás seguro de que deseas eliminar esta cuenta?</h5>
+                    
+                    <!-- Información de la cuenta -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Código:</strong> {{ object.codigo }}</p>
+                                    <p><strong>Nombre:</strong> {{ object.nombre }}</p>
+                                    <p><strong>Nivel:</strong> {{ object.nivel }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Naturaleza:</strong> {{ object.get_naturaleza_display }}</p>
+                                    <p><strong>Tipo:</strong> {{ object.get_tipo_cuenta_display }}</p>
+                                    <p><strong>Saldo Actual:</strong> <span class="fw-bold">${{ object.saldo_actual|floatformat:2 }}</span></p>
+                                </div>
+                            </div>
+                            {% if object.descripcion %}
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <p><strong>Descripción:</strong> {{ object.descripcion }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if object.saldo_actual != 0 %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>Advertencia:</strong> Esta cuenta tiene un saldo de ${{ object.saldo_actual|floatformat:2 }}. 
+                        Se recomienda que el saldo sea $0.00 antes de eliminarla.
+                    </div>
+                    {% endif %}
+
+                    <!-- Formulario de confirmación -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'contabilidad:cuentas_lista' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Sí, Eliminar Cuenta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

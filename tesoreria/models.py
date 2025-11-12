@@ -73,6 +73,16 @@ class Pago(models.Model):
         verbose_name="Método de Pago"
     )
     
+    # Cuenta bancaria (opcional)
+    cuenta_bancaria = models.ForeignKey(
+        'tesoreria.CuentaBancaria',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name="Cuenta Bancaria",
+        help_text="Cuenta bancaria desde/hacia la que se realiza el pago"
+    )
+    
     # Información del pago
     valor = models.DecimalField(
         max_digits=15,

@@ -1,0 +1,126 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+{% load form_helpers %}
+
+{% block title %}Crear Cuenta Contable - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:index' %}">Contabilidad</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:cuentas_lista' %}">Plan de Cuentas</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Crear</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-plus-circle"></i>
+                        Crear Nueva Cuenta Contable
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% render_form_errors form %}
+                        
+                        <!-- Información Básica -->
+                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="bi bi-info-circle"></i> Información Básica
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                {% render_field form.codigo %}
+                            </div>
+                            <div class="col-md-4">
+                                {% render_field form.nivel %}
+                            </div>
+                            <div class="col-md-4">
+                                {% render_field form.cuenta_padre %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                {% render_field form.nombre %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                {% render_field form.descripcion %}
+                            </div>
+                        </div>
+                        
+                        <!-- Clasificación -->
+                        <h6 class="text-primary border-bottom pb-2 mb-3 mt-4">
+                            <i class="bi bi-tags"></i> Clasificación
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                {% render_field form.naturaleza %}
+                            </div>
+                            <div class="col-md-6">
+                                {% render_field form.tipo_cuenta %}
+                            </div>
+                        </div>
+                        
+                        <!-- Configuración -->
+                        <h6 class="text-primary border-bottom pb-2 mb-3 mt-4">
+                            <i class="bi bi-gear"></i> Configuración
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                {% render_field form.saldo_inicial %}
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4 pt-2">
+                                    {{ form.acepta_movimiento }}
+                                    <label class="form-check-label" for="{{ form.acepta_movimiento.id_for_label }}">
+                                        {{ form.acepta_movimiento.label }}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4 pt-2">
+                                    {{ form.activa }}
+                                    <label class="form-check-label" for="{{ form.activa.id_for_label }}">
+                                        {{ form.activa.label }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'contabilidad:cuentas_lista' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i>
+                                Guardar Cuenta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'components/form_bootstrap_classes.html' %}
+{% endblock %}

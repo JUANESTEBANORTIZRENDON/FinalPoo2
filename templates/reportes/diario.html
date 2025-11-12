@@ -1,0 +1,303 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Libro Diario - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'reportes:index' %}">Reportes</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Libro Diario</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-journal-bookmark text-primary"></i>
+                        Libro Diario
+                    </h4>
+                    <div>
+                        <button class="btn btn-success" id="btn-exportar-excel">
+                            <i class="bi bi-file-earmark-excel"></i>
+                            Excel
+                        </button>
+                        <button class="btn btn-danger" id="btn-exportar-pdf">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            PDF
+                        </button>
+                        <button class="btn btn-secondary" id="btn-imprimir">
+                            <i class="bi bi-printer"></i>
+                            Imprimir
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Filtros de fecha -->
+                    <form method="GET" id="form-filtros">
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label for="fecha_inicio" class="form-label">Fecha Inicio:</label>
+                                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" 
+                                       value="{{ fecha_inicio }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="fecha_fin" class="form-label">Fecha Fin:</label>
+                                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" 
+                                       value="{{ fecha_fin }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">&nbsp;</label>
+                                <div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-search"></i>
+                                        Generar Reporte
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if asientos %}
+                        <!-- Área de impresión -->
+                        <div id="area-impresion">
+                            <div class="text-center mb-4">
+                                <h3>{{ request.empresa_activa.nombre }}</h3>
+                                <h5>Libro Diario</h5>
+                                {% if fecha_inicio and fecha_fin %}
+                                    <p class="text-muted">
+                                        Período: {{ fecha_inicio }} al {{ fecha_fin }}
+                                    </p>
+                                {% endif %}
+                            </div>
+
+                            {% for asiento in asientos %}
+                                <div class="mb-4 asiento-container">
+                                    <!-- Encabezado del asiento -->
+                                    <div class="card border-primary">
+                                        <div class="card-header bg-primary text-white">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <strong>Asiento #{{ asiento.numero_asiento }}</strong>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <i class="bi bi-calendar"></i>
+                                                    {{ asiento.fecha_asiento|date:"d/m/Y" }}
+                                                </div>
+                                                <div class="col-md-6 text-end">
+                                                    <span class="badge bg-light text-dark">
+                                                        {{ asiento.get_tipo_asiento_display }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-3"><strong>Concepto:</strong> {{ asiento.concepto }}</p>
+                                            
+                                            <!-- Partidas del asiento -->
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-bordered">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th style="width: 100px;">Código</th>
+                                                            <th>Cuenta</th>
+                                                            <th style="width: 150px;" class="text-end">Débito</th>
+                                                            <th style="width: 150px;" class="text-end">Crédito</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for partida in asiento.partidas.all %}
+                                                            <tr>
+                                                                <td>{{ partida.cuenta.codigo }}</td>
+                                                                <td>{{ partida.cuenta.nombre }}</td>
+                                                                <td class="text-end">
+                                                                    {% if partida.valor_debito > 0 %}
+                                                                        ${{ partida.valor_debito|floatformat:2 }}
+                                                                    {% else %}
+                                                                        —
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td class="text-end">
+                                                                    {% if partida.valor_credito > 0 %}
+                                                                        ${{ partida.valor_credito|floatformat:2 }}
+                                                                    {% else %}
+                                                                        —
+                                                                    {% endif %}
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                    <tfoot class="table-secondary">
+                                                        <tr>
+                                                            <td colspan="2" class="text-end"><strong>TOTALES:</strong></td>
+                                                            <td class="text-end">
+                                                                <strong>${{ asiento.total_debito|floatformat:2 }}</strong>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <strong>${{ asiento.total_credito|floatformat:2 }}</strong>
+                                                            </td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                            
+                                            {% if asiento.observaciones %}
+                                                <p class="mb-0 text-muted">
+                                                    <small><strong>Observaciones:</strong> {{ asiento.observaciones }}</small>
+                                                </p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Resumen -->
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <div class="row text-center">
+                                            <div class="col-md-12">
+                                                <h5>Resumen del Período</h5>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <h6 class="text-muted">Total Asientos</h6>
+                                                <h4>{{ asientos|length }}</h4>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <h6 class="text-muted">Total Débitos</h6>
+                                                <h4 class="text-success" id="total-debitos">—</h4>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <h6 class="text-muted">Total Créditos</h6>
+                                                <h4 class="text-info" id="total-creditos">—</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+                            <h5>No hay asientos para mostrar</h5>
+                            <p class="mb-0">Selecciona un rango de fechas para generar el Libro Diario.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn, .breadcrumb, .card-header .btn-group, #form-filtros {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .asiento-container {
+        page-break-inside: avoid;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcular totales
+    calcularTotales();
+    
+    // Event listener para imprimir
+    const btnImprimir = document.getElementById('btn-imprimir');
+    if (btnImprimir) {
+        btnImprimir.addEventListener('click', function() {
+            window.print();
+        });
+    }
+    
+    // Event listener para exportar a Excel
+    const btnExportarExcel = document.getElementById('btn-exportar-excel');
+    if (btnExportarExcel) {
+        btnExportarExcel.addEventListener('click', function() {
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+            
+            if (fechaInicio && fechaFin) {
+                const url = `{% url 'reportes:diario_exportar' %}?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&formato=excel`;
+                window.location.href = url;
+            } else {
+                alert('Por favor selecciona un rango de fechas');
+            }
+        });
+    }
+    
+    // Event listener para exportar a PDF
+    const btnExportarPdf = document.getElementById('btn-exportar-pdf');
+    if (btnExportarPdf) {
+        btnExportarPdf.addEventListener('click', function() {
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+            
+            if (fechaInicio && fechaFin) {
+                const url = `{% url 'reportes:diario_exportar' %}?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&formato=pdf`;
+                window.location.href = url;
+            } else {
+                alert('Por favor selecciona un rango de fechas');
+            }
+        });
+    }
+    
+    function calcularTotales() {
+        let totalDebitos = 0;
+        let totalCreditos = 0;
+        
+        // Iterar sobre todos los asientos
+        const asientos = document.querySelectorAll('.asiento-container');
+        asientos.forEach(asientoDiv => {
+            const tablaPartidas = asientoDiv.querySelector('tbody');
+            if (tablaPartidas) {
+                const filas = tablaPartidas.querySelectorAll('tr');
+                filas.forEach(fila => {
+                    const debito = parseFloat(fila.cells[2].textContent.replace(/[\$,—]/g, '')) || 0;
+                    const credito = parseFloat(fila.cells[3].textContent.replace(/[\$,—]/g, '')) || 0;
+                    totalDebitos += debito;
+                    totalCreditos += credito;
+                });
+            }
+        });
+        
+        // Actualizar totales
+        const elemDebitos = document.getElementById('total-debitos');
+        const elemCreditos = document.getElementById('total-creditos');
+        
+        if (elemDebitos) {
+            elemDebitos.textContent = formatearMoneda(totalDebitos);
+        }
+        if (elemCreditos) {
+            elemCreditos.textContent = formatearMoneda(totalCreditos);
+        }
+    }
+    
+    function formatearMoneda(valor) {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 2
+        }).format(valor);
+    }
+});
+</script>
+{% endblock %}

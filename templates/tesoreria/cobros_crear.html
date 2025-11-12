@@ -529,23 +529,32 @@ function guardarNuevoCliente() {
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Respuesta del servidor:', data);
         if (data.success) {
-            // Agregar el nuevo cliente al select
+            // Agregar el nuevo cliente al select con el formato correcto
             const selectTercero = document.getElementById('{{ form.tercero.id_for_label }}');
             const option = document.createElement('option');
             option.value = data.cliente.id;
-            option.text = data.cliente.razon_social;
+            option.text = data.cliente.display_text || `${data.cliente.razon_social} (${data.cliente.numero_documento})`;
             option.selected = true;
             selectTercero.appendChild(option);
+            
+            // Limpiar el formulario del modal
+            document.getElementById('form-nuevo-cliente').reset();
             
             // Cerrar modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('modalNuevoCliente'));
             modal.hide();
             
             // Mostrar mensaje de éxito
-            alert(`✓ Cliente "${data.cliente.razon_social}" registrado exitosamente`);
+            alert(`✓ Cliente "${data.cliente.razon_social}" registrado exitosamente y seleccionado`);
             
             // Resetear botón
             btnGuardar.disabled = false;

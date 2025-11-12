@@ -1,0 +1,281 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Detalle Cuenta Contable - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:index' %}">Contabilidad</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:cuentas_lista' %}">Plan de Cuentas</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Detalle</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="bi bi-folder2-open"></i>
+                                {{ object.codigo }} - {{ object.nombre }}
+                            </h2>
+                            <p class="text-muted mb-0">Detalle de la cuenta contable</p>
+                        </div>
+                        <div>
+                            <a href="{% url 'contabilidad:cuentas_lista' %}" class="btn btn-outline-secondary me-2">
+                                <i class="bi bi-arrow-left"></i> Volver
+                            </a>
+                            {% if object.puede_editarse %}
+                            <a href="{% url 'contabilidad:cuentas_editar' object.pk %}" class="btn btn-warning">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información Principal -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Información General
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">Código</h6>
+                            <p class="fs-5 fw-bold">{{ object.codigo }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">Nivel</h6>
+                            <p class="fs-5">{{ object.nivel }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-1">Nombre</h6>
+                            <p class="fs-5">{{ object.nombre }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if object.descripcion %}
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-1">Descripción</h6>
+                            <p>{{ object.descripcion }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if object.cuenta_padre %}
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-1">Cuenta Padre</h6>
+                            <p>
+                                <a href="{% url 'contabilidad:cuentas_detalle' object.cuenta_padre.pk %}">
+                                    {{ object.cuenta_padre.codigo }} - {{ object.cuenta_padre.nombre }}
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Clasificación -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-tags"></i>
+                        Clasificación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">Naturaleza</h6>
+                            <p>
+                                {% if object.naturaleza == 'debito' %}
+                                    <span class="badge bg-success fs-6">Débito</span>
+                                {% else %}
+                                    <span class="badge bg-primary fs-6">Crédito</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">Tipo de Cuenta</h6>
+                            <p class="fs-6">{{ object.get_tipo_cuenta_display }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saldos y Estado -->
+        <div class="col-lg-4">
+            <!-- Saldos -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-cash-stack"></i>
+                        Saldos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-1">Saldo Inicial</h6>
+                        <p class="fs-4 fw-bold text-primary">${{ object.saldo_inicial|floatformat:2 }}</p>
+                    </div>
+                    <hr>
+                    <div>
+                        <h6 class="text-muted mb-1">Saldo Actual</h6>
+                        <p class="fs-3 fw-bold {% if object.saldo_actual >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            ${{ object.saldo_actual|floatformat:2 }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear"></i>
+                        Configuración
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-1">Acepta Movimiento</h6>
+                        <p>
+                            {% if object.acepta_movimiento %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Sí
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-x-circle"></i> No
+                                </span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Estado</h6>
+                        <p>
+                            {% if object.activa %}
+                                <span class="badge bg-success fs-6">
+                                    <i class="bi bi-check-circle"></i> Activa
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger fs-6">
+                                    <i class="bi bi-x-circle"></i> Inactiva
+                                </span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metadatos -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i>
+                        Información del Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <small class="text-muted d-block">Empresa</small>
+                        <strong>{{ object.empresa.nombre }}</strong>
+                    </div>
+                    <hr>
+                    <div class="mb-2">
+                        <small class="text-muted d-block">Fecha de Creación</small>
+                        <strong>{{ object.fecha_creacion|date:"d/m/Y H:i" }}</strong>
+                    </div>
+                    {% if object.fecha_actualizacion %}
+                    <div>
+                        <small class="text-muted d-block">Última Actualización</small>
+                        <strong>{{ object.fecha_actualizacion|date:"d/m/Y H:i" }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cuentas Hijas (si las tiene) -->
+    {% if object.cuentas_hijas.exists %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-diagram-3"></i>
+                        Cuentas Subordinadas ({{ object.cuentas_hijas.count }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Nivel</th>
+                                    <th>Saldo</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cuenta_hija in object.cuentas_hijas.all %}
+                                <tr>
+                                    <td><strong>{{ cuenta_hija.codigo }}</strong></td>
+                                    <td>{{ cuenta_hija.nombre }}</td>
+                                    <td>{{ cuenta_hija.nivel }}</td>
+                                    <td class="{% if cuenta_hija.saldo_actual >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        ${{ cuenta_hija.saldo_actual|floatformat:2 }}
+                                    </td>
+                                    <td>
+                                        {% if cuenta_hija.activa %}
+                                            <span class="badge bg-success">Activa</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactiva</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'contabilidad:cuentas_detalle' cuenta_hija.pk %}" 
+                                           class="btn btn-sm btn-outline-info" title="Ver detalle">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

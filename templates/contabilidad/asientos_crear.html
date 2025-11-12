@@ -1,0 +1,471 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Crear Asiento Contable - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:asientos_lista' %}">Asientos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Crear Asiento</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-journal-plus"></i>
+                        Crear Nuevo Asiento Contable
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" id="form-asiento">
+                        {% csrf_token %}
+                        
+                        <!-- Información del Asiento -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-info-circle"></i>
+                                    Información del Asiento
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="{{ form.numero_asiento.id_for_label }}" class="form-label">
+                                                <strong>Número de Asiento:</strong>
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" 
+                                                   name="{{ form.numero_asiento.name }}" 
+                                                   id="{{ form.numero_asiento.id_for_label }}"
+                                                   class="form-control {% if form.numero_asiento.errors %}is-invalid{% endif %}"
+                                                   value="{{ form.numero_asiento.value|default:'' }}"
+                                                   required>
+                                            {% if form.numero_asiento.errors %}
+                                                <div class="invalid-feedback">{{ form.numero_asiento.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="{{ form.fecha_asiento.id_for_label }}" class="form-label">
+                                                <strong>Fecha:</strong>
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="date" 
+                                                   name="{{ form.fecha_asiento.name }}" 
+                                                   id="{{ form.fecha_asiento.id_for_label }}"
+                                                   class="form-control {% if form.fecha_asiento.errors %}is-invalid{% endif %}"
+                                                   value="{{ form.fecha_asiento.value|default:'' }}"
+                                                   required>
+                                            {% if form.fecha_asiento.errors %}
+                                                <div class="invalid-feedback">{{ form.fecha_asiento.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="{{ form.tipo_asiento.id_for_label }}" class="form-label">
+                                                <strong>Tipo de Asiento:</strong>
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            <select name="{{ form.tipo_asiento.name }}" 
+                                                    id="{{ form.tipo_asiento.id_for_label }}"
+                                                    class="form-select {% if form.tipo_asiento.errors %}is-invalid{% endif %}"
+                                                    required>
+                                                <option value="">Seleccione...</option>
+                                                <option value="ordinario">Ordinario</option>
+                                                <option value="apertura">Apertura</option>
+                                                <option value="ajuste">Ajuste</option>
+                                                <option value="cierre">Cierre</option>
+                                            </select>
+                                            {% if form.tipo_asiento.errors %}
+                                                <div class="invalid-feedback">{{ form.tipo_asiento.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">
+                                                <strong>Estado del Asiento:</strong>
+                                            </label>
+                                            <input type="text" class="form-control" value="Borrador" disabled>
+                                            <small class="text-muted">El asiento se creará en estado borrador</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="{{ form.concepto.id_for_label }}" class="form-label">
+                                                <strong>Concepto:</strong>
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            <textarea name="{{ form.concepto.name }}" 
+                                                      id="{{ form.concepto.id_for_label }}"
+                                                      class="form-control {% if form.concepto.errors %}is-invalid{% endif %}"
+                                                      rows="2"
+                                                      placeholder="Describa el concepto del asiento contable"
+                                                      required>{{ form.concepto.value|default:'' }}</textarea>
+                                            {% if form.concepto.errors %}
+                                                <div class="invalid-feedback">{{ form.concepto.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="{{ form.observaciones.id_for_label }}" class="form-label">
+                                                <strong>Observaciones:</strong>
+                                            </label>
+                                            <textarea name="{{ form.observaciones.name }}" 
+                                                      id="{{ form.observaciones.id_for_label }}"
+                                                      class="form-control {% if form.observaciones.errors %}is-invalid{% endif %}"
+                                                      rows="2"
+                                                      placeholder="Observaciones adicionales (opcional)">{{ form.observaciones.value|default:'' }}</textarea>
+                                            {% if form.observaciones.errors %}
+                                                <div class="invalid-feedback">{{ form.observaciones.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Partidas -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-list-ul"></i>
+                                    Partidas (Débitos y Créditos)
+                                </h5>
+                                <button type="button" class="btn btn-success btn-sm" id="btn-agregar-partida">
+                                    <i class="bi bi-plus-circle"></i>
+                                    Agregar Partida
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="tabla-partidas">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th style="width: 5%;">#</th>
+                                                <th style="width: 30%;">Cuenta Contable <span class="text-danger">*</span></th>
+                                                <th style="width: 25%;">Concepto</th>
+                                                <th style="width: 15%;">Débito</th>
+                                                <th style="width: 15%;">Crédito</th>
+                                                <th style="width: 10%;">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-partidas">
+                                            <!-- Las partidas se agregarán dinámicamente aquí -->
+                                        </tbody>
+                                        <tfoot class="table-secondary">
+                                            <tr>
+                                                <td colspan="3" class="text-end"><strong>TOTALES:</strong></td>
+                                                <td class="text-end">
+                                                    <strong id="total-debitos">$0.00</strong>
+                                                </td>
+                                                <td class="text-end">
+                                                    <strong id="total-creditos">$0.00</strong>
+                                                </td>
+                                                <td></td>
+                                            </tr>
+                                            <tr id="fila-diferencia" style="display: none;">
+                                                <td colspan="3" class="text-end text-danger"><strong>DIFERENCIA:</strong></td>
+                                                <td colspan="2" class="text-center text-danger">
+                                                    <strong id="valor-diferencia">$0.00</strong>
+                                                </td>
+                                                <td>
+                                                    <i class="bi bi-exclamation-triangle text-danger"></i>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                
+                                <div class="alert alert-info mt-3">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong>Importante:</strong> El asiento debe estar cuadrado (Total Débitos = Total Créditos) antes de poder guardarlo.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'contabilidad:asientos_lista' %}" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left"></i>
+                                        Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-primary" id="btn-guardar" disabled>
+                                        <i class="bi bi-save"></i>
+                                        Guardar Asiento
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Template para nueva partida -->
+<template id="template-partida">
+    <tr class="partida-row">
+        <td class="text-center numero-partida">1</td>
+        <td>
+            <select class="form-select form-select-sm select-cuenta" required>
+                <option value="">Seleccione una cuenta...</option>
+                {% if cuentas %}
+                    {% for cuenta in cuentas %}
+                        <option value="{{ cuenta.pk }}" data-codigo="{{ cuenta.codigo }}" data-nombre="{{ cuenta.nombre }}">
+                            {{ cuenta.codigo }} - {{ cuenta.nombre }}
+                        </option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm input-concepto" placeholder="Concepto de la partida">
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm text-end input-debito" 
+                   step="0.01" min="0" value="0.00" placeholder="0.00">
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm text-end input-credito" 
+                   step="0.01" min="0" value="0.00" placeholder="0.00">
+        </td>
+        <td class="text-center">
+            <button type="button" class="btn btn-danger btn-sm btn-eliminar-partida" title="Eliminar partida">
+                <i class="bi bi-trash-fill"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<style>
+.select-cuenta {
+    font-size: 0.875rem;
+}
+
+#tabla-partidas tbody tr:hover {
+    background-color: #f8f9fa;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let contadorPartidas = 0;
+    
+    const btnAgregarPartida = document.getElementById('btn-agregar-partida');
+    const tbodyPartidas = document.getElementById('tbody-partidas');
+    const templatePartida = document.getElementById('template-partida');
+    const btnGuardar = document.getElementById('btn-guardar');
+    
+    // Agregar partida
+    if (btnAgregarPartida) {
+        btnAgregarPartida.addEventListener('click', function() {
+            agregarPartida();
+        });
+    }
+    
+    // Agregar primera partida automáticamente
+    agregarPartida();
+    agregarPartida();
+    
+    function agregarPartida() {
+        contadorPartidas++;
+        const clone = templatePartida.content.cloneNode(true);
+        const row = clone.querySelector('.partida-row');
+        row.dataset.numero = contadorPartidas;
+        
+        // Actualizar número de partida
+        const numeroCell = clone.querySelector('.numero-partida');
+        numeroCell.textContent = contadorPartidas;
+        
+        // Event listeners
+        const inputDebito = clone.querySelector('.input-debito');
+        const inputCredito = clone.querySelector('.input-credito');
+        const btnEliminar = clone.querySelector('.btn-eliminar-partida');
+        
+        inputDebito.addEventListener('input', function() {
+            if (parseFloat(this.value) > 0) {
+                inputCredito.value = '0.00';
+            }
+            calcularTotales();
+        });
+        
+        inputCredito.addEventListener('input', function() {
+            if (parseFloat(this.value) > 0) {
+                inputDebito.value = '0.00';
+            }
+            calcularTotales();
+        });
+        
+        btnEliminar.addEventListener('click', function() {
+            eliminarPartida(row);
+        });
+        
+        tbodyPartidas.appendChild(clone);
+        renumerarPartidas();
+        calcularTotales();
+    }
+    
+    function eliminarPartida(row) {
+        if (tbodyPartidas.querySelectorAll('.partida-row').length > 1) {
+            row.remove();
+            renumerarPartidas();
+            calcularTotales();
+        } else {
+            alert('Debe haber al menos una partida en el asiento');
+        }
+    }
+    
+    function renumerarPartidas() {
+        const filas = tbodyPartidas.querySelectorAll('.partida-row');
+        filas.forEach((fila, index) => {
+            fila.dataset.numero = index + 1;
+            fila.querySelector('.numero-partida').textContent = index + 1;
+        });
+        contadorPartidas = filas.length;
+    }
+    
+    function calcularTotales() {
+        let totalDebitos = 0;
+        let totalCreditos = 0;
+        
+        const filas = tbodyPartidas.querySelectorAll('.partida-row');
+        filas.forEach(fila => {
+            const debito = parseFloat(fila.querySelector('.input-debito').value) || 0;
+            const credito = parseFloat(fila.querySelector('.input-credito').value) || 0;
+            
+            totalDebitos += debito;
+            totalCreditos += credito;
+        });
+        
+        // Actualizar totales
+        document.getElementById('total-debitos').textContent = formatearMoneda(totalDebitos);
+        document.getElementById('total-creditos').textContent = formatearMoneda(totalCreditos);
+        
+        // Verificar cuadre
+        const diferencia = Math.abs(totalDebitos - totalCreditos);
+        const filaDiferencia = document.getElementById('fila-diferencia');
+        
+        if (diferencia < 0.01 && totalDebitos > 0 && totalCreditos > 0) {
+            // Cuadra
+            filaDiferencia.style.display = 'none';
+            btnGuardar.disabled = false;
+            btnGuardar.classList.remove('btn-secondary');
+            btnGuardar.classList.add('btn-primary');
+        } else {
+            // No cuadra
+            if (totalDebitos > 0 || totalCreditos > 0) {
+                filaDiferencia.style.display = '';
+                document.getElementById('valor-diferencia').textContent = formatearMoneda(diferencia);
+            }
+            btnGuardar.disabled = true;
+            btnGuardar.classList.remove('btn-primary');
+            btnGuardar.classList.add('btn-secondary');
+        }
+    }
+    
+    function formatearMoneda(valor) {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 2
+        }).format(valor);
+    }
+    
+    // Interceptar submit para validar y preparar datos
+    const formAsiento = document.getElementById('form-asiento');
+    if (formAsiento) {
+        formAsiento.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validar que haya partidas
+            const filas = tbodyPartidas.querySelectorAll('.partida-row');
+            if (filas.length === 0) {
+                alert('Debe agregar al menos una partida al asiento');
+                return;
+            }
+            
+            // Validar que todas las partidas tengan cuenta
+            let valido = true;
+            const partidas = [];
+            
+            filas.forEach(fila => {
+                const selectCuenta = fila.querySelector('.select-cuenta');
+                const inputConcepto = fila.querySelector('.input-concepto');
+                const inputDebito = fila.querySelector('.input-debito');
+                const inputCredito = fila.querySelector('.input-credito');
+                
+                if (!selectCuenta.value) {
+                    valido = false;
+                    selectCuenta.classList.add('is-invalid');
+                } else {
+                    selectCuenta.classList.remove('is-invalid');
+                    
+                    // Agregar partida a la lista
+                    partidas.push({
+                        cuenta_id: selectCuenta.value,
+                        concepto: inputConcepto.value || '',
+                        debito: parseFloat(inputDebito.value) || 0,
+                        credito: parseFloat(inputCredito.value) || 0
+                    });
+                }
+            });
+            
+            if (!valido) {
+                alert('Todas las partidas deben tener una cuenta contable seleccionada');
+                return;
+            }
+            
+            // Verificar cuadre
+            let totalDebitos = 0;
+            let totalCreditos = 0;
+            partidas.forEach(p => {
+                totalDebitos += p.debito;
+                totalCreditos += p.credito;
+            });
+            
+            if (Math.abs(totalDebitos - totalCreditos) > 0.01) {
+                alert('El asiento no está cuadrado. Los débitos deben ser iguales a los créditos.');
+                return;
+            }
+            
+            // Crear campo oculto con las partidas en JSON
+            const inputPartidas = document.createElement('input');
+            inputPartidas.type = 'hidden';
+            inputPartidas.name = 'partidas_data';
+            inputPartidas.value = JSON.stringify(partidas);
+            formAsiento.appendChild(inputPartidas);
+            
+            // Enviar el formulario
+            formAsiento.submit();
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,14 +1,14 @@
 {% extends 'base_contable.html' %}
 {% load static %}
 
-{% block title %}Plan de Cuentas - S_CONTABLE{% endblock %}
+{% block title %}Asientos Contables - S_CONTABLE{% endblock %}
 
 {% block breadcrumb %}
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
         <li class="breadcrumb-item"><a href="{% url 'contabilidad:index' %}">Contabilidad</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Plan de Cuentas</li>
+        <li class="breadcrumb-item active" aria-current="page">Asientos Contables</li>
     </ol>
 </nav>
 {% endblock %}
@@ -20,13 +20,13 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="card-title mb-0">
-                        <i class="bi bi-diagram-3 text-success"></i>
-                        Plan de Cuentas Contables
+                        <i class="bi bi-journal-text text-success"></i>
+                        Asientos Contables
                     </h4>
                     <div>
-                        <a href="{% url 'contabilidad:cuentas_crear' %}" class="btn btn-primary">
+                        <a href="{% url 'contabilidad:asientos_crear' %}" class="btn btn-primary">
                             <i class="bi bi-plus-circle"></i>
-                            Nueva Cuenta
+                            Nuevo Asiento
                         </a>
                     </div>
                 </div>
@@ -35,33 +35,21 @@
                     <!-- Filtros de búsqueda -->
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <input type="text" class="form-control" id="buscar" placeholder="Buscar por código o nombre...">
+                            <input type="text" class="form-control" id="buscar" placeholder="Buscar por número o concepto...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="filtro_estado">
+                                <option value="">Todos los estados</option>
+                                <option value="borrador">Borrador</option>
+                                <option value="confirmado">Confirmado</option>
+                                <option value="anulado">Anulado</option>
+                            </select>
                         </div>
                         <div class="col-md-3">
                             <select class="form-select" id="filtro_tipo">
                                 <option value="">Todos los tipos</option>
-                                <option value="ACTIVO">Activo</option>
-                                <option value="PASIVO">Pasivo</option>
-                                <option value="PATRIMONIO">Patrimonio</option>
-                                <option value="INGRESO">Ingreso</option>
-                                <option value="GASTO">Gasto</option>
-                                <option value="COSTO">Costo</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <select class="form-select" id="filtro_naturaleza">
-                                <option value="">Todas las naturalezas</option>
-                                <option value="D">Débito</option>
-                                <option value="C">Crédito</option>
-                            </select>
-                        </div>
-                        <div class="col-md-1">
-                            <select class="form-select" id="filtro_nivel">
-                                <option value="">Nivel</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
+                                <option value="manual">Manual</option>
+                                <option value="automatico">Automático</option>
                             </select>
                         </div>
                         <div class="col-md-2">
@@ -74,89 +62,73 @@
                     
                     {% if object_list %}
                         <div class="table-responsive">
-                            <table class="table table-sm table-hover" id="tabla-cuentas">
+                            <table class="table table-sm table-hover" id="tabla-asientos">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th style="width: 120px;">Código</th>
-                                        <th>Nombre</th>
+                                        <th style="width: 100px;">Número</th>
+                                        <th style="width: 120px;">Fecha</th>
+                                        <th>Concepto</th>
                                         <th style="width: 100px;">Tipo</th>
-                                        <th style="width: 80px;">Nat.</th>
-                                        <th style="width: 60px;">Nivel</th>
-                                        <th style="width: 120px;" class="text-end">Saldo Débito</th>
-                                        <th style="width: 120px;" class="text-end">Saldo Crédito</th>
-                                        <th style="width: 80px;">Mov.</th>
-                                        <th style="width: 80px;">Estado</th>
+                                        <th style="width: 120px;" class="text-end">Total Débito</th>
+                                        <th style="width: 120px;" class="text-end">Total Crédito</th>
+                                        <th style="width: 100px;">Estado</th>
                                         <th style="width: 120px;">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for cuenta in object_list %}
-                                        <tr data-tipo="{{ cuenta.tipo_cuenta }}" 
-                                            data-naturaleza="{{ cuenta.naturaleza }}"
-                                            data-nivel="{{ cuenta.nivel }}"
-                                            data-activa="{{ cuenta.activa }}">
+                                    {% for asiento in object_list %}
+                                        <tr data-tipo="{{ asiento.tipo_asiento }}" 
+                                            data-estado="{{ asiento.estado }}">
                                             <td>
-                                                <strong>{{ cuenta.codigo }}</strong>
+                                                <strong>{{ asiento.numero_asiento }}</strong>
                                             </td>
-                                            <td style="{% if cuenta.nivel > 1 %}padding-left: {{ cuenta.nivel|add:"-1"|stringformat:"d" }}em;{% endif %}">
-                                                {{ cuenta.nombre }}
+                                            <td>
+                                                {{ asiento.fecha_asiento|date:"d/m/Y" }}
+                                            </td>
+                                            <td>
+                                                {{ asiento.concepto }}
                                             </td>
                                             <td>
                                                 <span class="badge 
-                                                    {% if cuenta.tipo_cuenta == 'ACTIVO' %}bg-primary
-                                                    {% elif cuenta.tipo_cuenta == 'PASIVO' %}bg-danger
-                                                    {% elif cuenta.tipo_cuenta == 'PATRIMONIO' %}bg-info
-                                                    {% elif cuenta.tipo_cuenta == 'INGRESO' %}bg-success
-                                                    {% elif cuenta.tipo_cuenta == 'GASTO' %}bg-warning
-                                                    {% else %}bg-secondary{% endif %}">
-                                                    {{ cuenta.get_tipo_cuenta_display }}
+                                                    {% if asiento.tipo_asiento == 'manual' %}bg-primary
+                                                    {% else %}bg-info{% endif %}">
+                                                    {{ asiento.get_tipo_asiento_display }}
                                                 </span>
                                             </td>
-                                            <td class="text-center">
-                                                {% if cuenta.naturaleza == 'D' %}
-                                                    <span class="badge bg-success">D</span>
-                                                {% else %}
-                                                    <span class="badge bg-info">C</span>
-                                                {% endif %}
-                                            </td>
-                                            <td class="text-center">{{ cuenta.nivel }}</td>
                                             <td class="text-end">
-                                                <small>{{ cuenta.saldo_debito|floatformat:2 }}</small>
+                                                <small>${{ asiento.total_debito|floatformat:2 }}</small>
                                             </td>
                                             <td class="text-end">
-                                                <small>{{ cuenta.saldo_credito|floatformat:2 }}</small>
-                                            </td>
-                                            <td class="text-center">
-                                                {% if cuenta.acepta_movimiento %}
-                                                    <i class="bi bi-check-circle text-success" title="Acepta movimientos"></i>
-                                                {% else %}
-                                                    <i class="bi bi-x-circle text-muted" title="No acepta movimientos"></i>
-                                                {% endif %}
+                                                <small>${{ asiento.total_credito|floatformat:2 }}</small>
                                             </td>
                                             <td>
-                                                {% if cuenta.activa %}
-                                                    <span class="badge bg-success">Activa</span>
+                                                {% if asiento.estado == 'borrador' %}
+                                                    <span class="badge bg-warning text-dark">Borrador</span>
+                                                {% elif asiento.estado == 'confirmado' %}
+                                                    <span class="badge bg-success">Confirmado</span>
                                                 {% else %}
-                                                    <span class="badge bg-danger">Inactiva</span>
+                                                    <span class="badge bg-danger">Anulado</span>
                                                 {% endif %}
                                             </td>
                                             <td>
                                                 <div class="btn-group btn-group-sm" role="group">
-                                                    <a href="{% url 'contabilidad:cuentas_detalle' cuenta.pk %}" 
+                                                    <a href="{% url 'contabilidad:asientos_detalle' asiento.pk %}" 
                                                        class="btn btn-info btn-sm" 
                                                        title="Ver detalles">
                                                         <i class="bi bi-eye-fill"></i>
                                                     </a>
-                                                    <a href="{% url 'contabilidad:cuentas_editar' cuenta.pk %}" 
+                                                    {% if asiento.estado == 'borrador' %}
+                                                    <a href="{% url 'contabilidad:asientos_editar' asiento.pk %}" 
                                                        class="btn btn-warning btn-sm" 
                                                        title="Editar">
                                                         <i class="bi bi-pencil-fill"></i>
                                                     </a>
-                                                    <a href="{% url 'contabilidad:cuentas_eliminar' cuenta.pk %}" 
+                                                    <a href="{% url 'contabilidad:asientos_eliminar' asiento.pk %}" 
                                                        class="btn btn-danger btn-sm" 
                                                        title="Eliminar">
                                                         <i class="bi bi-trash-fill"></i>
                                                     </a>
+                                                    {% endif %}
                                                 </div>
                                             </td>
                                         </tr>
@@ -172,8 +144,8 @@
                                     <div class="card-body">
                                         <div class="row text-center">
                                             <div class="col-md-3">
-                                                <h6 class="text-muted">Total Cuentas</h6>
-                                                <h4 id="total-cuentas">{{ object_list|length }}</h4>
+                                                <h6 class="text-muted">Total Asientos</h6>
+                                                <h4 id="total-asientos">{{ object_list|length }}</h4>
                                             </div>
                                             <div class="col-md-3">
                                                 <h6 class="text-muted">Total Débitos</h6>
@@ -184,7 +156,7 @@
                                                 <h4 class="text-info" id="total-creditos">$0.00</h4>
                                             </div>
                                             <div class="col-md-3">
-                                                <h6 class="text-muted">Diferencia</h6>
+                                                <h6 class="text-muted">Cuadre</h6>
                                                 <h4 id="diferencia">$0.00</h4>
                                             </div>
                                         </div>
@@ -195,11 +167,11 @@
                     {% else %}
                         <div class="alert alert-info text-center">
                             <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
-                            <h5>No hay cuentas contables registradas</h5>
-                            <p class="mb-3">Comienza creando el plan de cuentas para tu empresa.</p>
-                            <a href="{% url 'contabilidad:cuentas_crear' %}" class="btn btn-primary">
+                            <h5>No hay asientos contables registrados</h5>
+                            <p class="mb-3">Comienza creando tu primer asiento contable.</p>
+                            <a href="{% url 'contabilidad:asientos_crear' %}" class="btn btn-primary">
                                 <i class="bi bi-plus-circle"></i>
-                                Crear Primera Cuenta
+                                Crear Primer Asiento
                             </a>
                         </div>
                     {% endif %}
@@ -212,40 +184,34 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const buscar = document.getElementById('buscar');
+    const filtroEstado = document.getElementById('filtro_estado');
     const filtroTipo = document.getElementById('filtro_tipo');
-    const filtroNaturaleza = document.getElementById('filtro_naturaleza');
-    const filtroNivel = document.getElementById('filtro_nivel');
-    const tabla = document.getElementById('tabla-cuentas');
+    const tabla = document.getElementById('tabla-asientos');
     
     if (tabla) {
         calcularTotales();
         
         function filtrarTabla() {
             const textoBusqueda = buscar.value.toLowerCase();
+            const estadoSeleccionado = filtroEstado.value;
             const tipoSeleccionado = filtroTipo.value;
-            const naturalezaSeleccionada = filtroNaturaleza.value;
-            const nivelSeleccionado = filtroNivel.value;
             
             const filas = tabla.querySelectorAll('tbody tr');
             
             for (const fila of filas) {
                 const texto = fila.textContent.toLowerCase();
+                const estado = fila.dataset.estado;
                 const tipo = fila.dataset.tipo;
-                const naturaleza = fila.dataset.naturaleza;
-                const nivel = fila.dataset.nivel;
                 
                 let mostrar = true;
                 
                 if (textoBusqueda && !texto.includes(textoBusqueda)) {
                     mostrar = false;
                 }
+                if (estadoSeleccionado && estado !== estadoSeleccionado) {
+                    mostrar = false;
+                }
                 if (tipoSeleccionado && tipo !== tipoSeleccionado) {
-                    mostrar = false;
-                }
-                if (naturalezaSeleccionada && naturaleza !== naturalezaSeleccionada) {
-                    mostrar = false;
-                }
-                if (nivelSeleccionado && nivel !== nivelSeleccionado) {
                     mostrar = false;
                 }
                 
@@ -258,14 +224,14 @@ document.addEventListener('DOMContentLoaded', function() {
         function calcularTotales() {
             let totalDebitos = 0;
             let totalCreditos = 0;
-            let cuentasVisibles = 0;
+            let asientosVisibles = 0;
             
             const filas = tabla.querySelectorAll('tbody tr');
             filas.forEach(fila => {
                 if (fila.style.display !== 'none') {
-                    cuentasVisibles++;
-                    const debito = parseFloat(fila.cells[5].textContent.replace(/,/g, ''));
-                    const credito = parseFloat(fila.cells[6].textContent.replace(/,/g, ''));
+                    asientosVisibles++;
+                    const debito = parseFloat(fila.cells[4].textContent.replace(/[\$,]/g, ''));
+                    const credito = parseFloat(fila.cells[5].textContent.replace(/[\$,]/g, ''));
                     totalDebitos += debito;
                     totalCreditos += credito;
                 }
@@ -273,13 +239,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const diferencia = totalDebitos - totalCreditos;
             
-            document.getElementById('total-cuentas').textContent = cuentasVisibles;
+            document.getElementById('total-asientos').textContent = asientosVisibles;
             document.getElementById('total-debitos').textContent = formatearMoneda(totalDebitos);
             document.getElementById('total-creditos').textContent = formatearMoneda(totalCreditos);
             
             const elemDiferencia = document.getElementById('diferencia');
             elemDiferencia.textContent = formatearMoneda(Math.abs(diferencia));
-            elemDiferencia.className = diferencia === 0 ? 'text-success' : (diferencia > 0 ? 'text-primary' : 'text-info');
+            elemDiferencia.className = diferencia === 0 ? 'text-success' : 'text-danger';
         }
         
         function formatearMoneda(valor) {
@@ -291,9 +257,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         buscar.addEventListener('input', filtrarTabla);
+        filtroEstado.addEventListener('change', filtrarTabla);
         filtroTipo.addEventListener('change', filtrarTabla);
-        filtroNaturaleza.addEventListener('change', filtrarTabla);
-        filtroNivel.addEventListener('change', filtrarTabla);
     }
     
     // Event listener para limpiar filtros
@@ -301,9 +266,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnLimpiar) {
         btnLimpiar.addEventListener('click', function() {
             document.getElementById('buscar').value = '';
+            document.getElementById('filtro_estado').value = '';
             document.getElementById('filtro_tipo').value = '';
-            document.getElementById('filtro_naturaleza').value = '';
-            document.getElementById('filtro_nivel').value = '';
             
             if (tabla) {
                 const filas = tabla.querySelectorAll('tbody tr');

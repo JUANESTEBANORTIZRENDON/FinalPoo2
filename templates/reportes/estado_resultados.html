@@ -1,0 +1,405 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Estado de Resultados - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'reportes:index' %}">Reportes</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Estado de Resultados</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-graph-up text-warning"></i>
+                        Estado de Resultados (P&G)
+                    </h4>
+                    <div>
+                        <button class="btn btn-success" id="btn-exportar-excel">
+                            <i class="bi bi-file-earmark-excel"></i>
+                            Excel
+                        </button>
+                        <button class="btn btn-danger" id="btn-exportar-pdf">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            PDF
+                        </button>
+                        <button class="btn btn-secondary" id="btn-imprimir">
+                            <i class="bi bi-printer"></i>
+                            Imprimir
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>¿Qué es el Estado de Resultados?</strong>
+                        <p class="mb-0">También llamado Estado de Pérdidas y Ganancias (P&G), muestra si la empresa ganó o perdió dinero en un período. Fórmula: <strong>Ingresos - Costos - Gastos = Utilidad/Pérdida</strong></p>
+                    </div>
+
+                    <!-- Filtros -->
+                    <form method="GET" id="form-filtros">
+                        <div class="row mb-4">
+                            <div class="col-md-5">
+                                <label for="fecha_inicio" class="form-label"><strong>Desde:</strong></label>
+                                <input type="date" class="form-control form-control-lg" id="fecha_inicio" 
+                                       name="fecha_inicio" value="{{ fecha_inicio }}" required>
+                            </div>
+                            <div class="col-md-5">
+                                <label for="fecha_fin" class="form-label"><strong>Hasta:</strong></label>
+                                <input type="date" class="form-control form-control-lg" id="fecha_fin" 
+                                       name="fecha_fin" value="{{ fecha_fin }}" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-search"></i>
+                                        Generar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if fecha_inicio and fecha_fin %}
+                        <div id="area-impresion">
+                            <!-- Encabezado del reporte -->
+                            <div class="text-center mb-4">
+                                <h3>{{ request.empresa_activa.nombre }}</h3>
+                                <h5>Estado de Resultados (Pérdidas y Ganancias)</h5>
+                                <p class="text-muted">
+                                    Del {{ fecha_inicio }} al {{ fecha_fin }}
+                                </p>
+                            </div>
+
+                            <!-- Estado de Resultados -->
+                            <div class="row">
+                                <div class="col-md-8 offset-md-2">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <!-- INGRESOS -->
+                                            <div class="mb-4">
+                                                <h5 class="text-success border-bottom pb-2">
+                                                    <i class="bi bi-arrow-up-circle"></i>
+                                                    INGRESOS
+                                                </h5>
+                                                {% if ingresos %}
+                                                    {% for cuenta in ingresos %}
+                                                        <div class="row mb-2">
+                                                            <div class="col-8">
+                                                                <span class="ms-3">{{ cuenta.codigo }} - {{ cuenta.nombre }}</span>
+                                                            </div>
+                                                            <div class="col-4 text-end">
+                                                                ${{ cuenta.saldo|floatformat:2 }}
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                    <div class="row border-top pt-2 mb-3">
+                                                        <div class="col-8">
+                                                            <strong>TOTAL INGRESOS</strong>
+                                                        </div>
+                                                        <div class="col-4 text-end">
+                                                            <strong id="total-ingresos">$0.00</strong>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <p class="text-muted ms-3">No hay ingresos registrados</p>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- COSTOS -->
+                                            <div class="mb-4">
+                                                <h5 class="text-danger border-bottom pb-2">
+                                                    <i class="bi bi-arrow-down-circle"></i>
+                                                    COSTOS
+                                                </h5>
+                                                {% if costos %}
+                                                    {% for cuenta in costos %}
+                                                        <div class="row mb-2">
+                                                            <div class="col-8">
+                                                                <span class="ms-3">{{ cuenta.codigo }} - {{ cuenta.nombre }}</span>
+                                                            </div>
+                                                            <div class="col-4 text-end text-danger">
+                                                                (${{ cuenta.saldo|floatformat:2 }})
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                    <div class="row border-top pt-2 mb-3">
+                                                        <div class="col-8">
+                                                            <strong>TOTAL COSTOS</strong>
+                                                        </div>
+                                                        <div class="col-4 text-end text-danger">
+                                                            <strong id="total-costos">($0.00)</strong>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <p class="text-muted ms-3">No hay costos registrados</p>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- UTILIDAD BRUTA -->
+                                            <div class="row bg-light p-3 mb-4">
+                                                <div class="col-8">
+                                                    <h5 class="mb-0">UTILIDAD BRUTA</h5>
+                                                </div>
+                                                <div class="col-4 text-end">
+                                                    <h5 class="mb-0" id="utilidad-bruta">$0.00</h5>
+                                                </div>
+                                            </div>
+
+                                            <!-- GASTOS -->
+                                            <div class="mb-4">
+                                                <h5 class="text-warning border-bottom pb-2">
+                                                    <i class="bi bi-wallet2"></i>
+                                                    GASTOS OPERACIONALES
+                                                </h5>
+                                                {% if gastos %}
+                                                    {% for cuenta in gastos %}
+                                                        <div class="row mb-2">
+                                                            <div class="col-8">
+                                                                <span class="ms-3">{{ cuenta.codigo }} - {{ cuenta.nombre }}</span>
+                                                            </div>
+                                                            <div class="col-4 text-end text-danger">
+                                                                (${{ cuenta.saldo|floatformat:2 }})
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                    <div class="row border-top pt-2 mb-3">
+                                                        <div class="col-8">
+                                                            <strong>TOTAL GASTOS</strong>
+                                                        </div>
+                                                        <div class="col-4 text-end text-danger">
+                                                            <strong id="total-gastos">($0.00)</strong>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <p class="text-muted ms-3">No hay gastos registrados</p>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- UTILIDAD OPERACIONAL -->
+                                            <div class="row bg-light p-3 mb-4">
+                                                <div class="col-8">
+                                                    <h5 class="mb-0">UTILIDAD OPERACIONAL</h5>
+                                                </div>
+                                                <div class="col-4 text-end">
+                                                    <h5 class="mb-0" id="utilidad-operacional">$0.00</h5>
+                                                </div>
+                                            </div>
+
+                                            <!-- UTILIDAD/PÉRDIDA NETA -->
+                                            <div class="row p-3 mb-3" id="card-resultado-final">
+                                                <div class="col-8">
+                                                    <h4 class="mb-0" id="label-resultado">UTILIDAD NETA</h4>
+                                                </div>
+                                                <div class="col-4 text-end">
+                                                    <h4 class="mb-0" id="resultado-final">$0.00</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Resumen -->
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <div class="row text-center">
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Total Ingresos</h6>
+                                                    <h4 class="text-success" id="resumen-ingresos">$0.00</h4>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Total Costos</h6>
+                                                    <h4 class="text-danger" id="resumen-costos">$0.00</h4>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Total Gastos</h6>
+                                                    <h4 class="text-warning" id="resumen-gastos">$0.00</h4>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Resultado Final</h6>
+                                                    <h4 id="resumen-resultado">$0.00</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning text-center">
+                            <i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>
+                            <h5>No hay datos para mostrar</h5>
+                            <p class="mb-0">Selecciona un período para generar el Estado de Resultados.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn, .breadcrumb, .alert, #form-filtros {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcular totales
+    calcularResultados();
+    
+    // Event listener para imprimir
+    const btnImprimir = document.getElementById('btn-imprimir');
+    if (btnImprimir) {
+        btnImprimir.addEventListener('click', function() {
+            window.print();
+        });
+    }
+    
+    // Event listener para exportar a Excel
+    const btnExportarExcel = document.getElementById('btn-exportar-excel');
+    if (btnExportarExcel) {
+        btnExportarExcel.addEventListener('click', function() {
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+            
+            if (!fechaInicio || !fechaFin) {
+                alert('Por favor selecciona un período');
+                return;
+            }
+            
+            const url = `{% url 'reportes:estado_resultados_exportar' %}?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&formato=excel`;
+            window.location.href = url;
+        });
+    }
+    
+    // Event listener para exportar a PDF
+    const btnExportarPdf = document.getElementById('btn-exportar-pdf');
+    if (btnExportarPdf) {
+        btnExportarPdf.addEventListener('click', function() {
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+            
+            if (!fechaInicio || !fechaFin) {
+                alert('Por favor selecciona un período');
+                return;
+            }
+            
+            const url = `{% url 'reportes:estado_resultados_exportar' %}?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&formato=pdf`;
+            window.location.href = url;
+        });
+    }
+    
+    function calcularResultados() {
+        let totalIngresos = 0;
+        let totalCostos = 0;
+        let totalGastos = 0;
+        
+        // Calcular ingresos
+        const ingresosDiv = document.querySelector('.text-success').parentElement;
+        if (ingresosDiv) {
+            const filasIngresos = ingresosDiv.querySelectorAll('.row.mb-2');
+            filasIngresos.forEach(fila => {
+                const valor = parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                totalIngresos += valor;
+            });
+        }
+        
+        // Calcular costos
+        const costosDiv = document.querySelector('.text-danger').parentElement;
+        if (costosDiv) {
+            const filasCostos = costosDiv.querySelectorAll('.row.mb-2');
+            filasCostos.forEach(fila => {
+                const texto = fila.querySelector('.col-4').textContent;
+                const valor = parseFloat(texto.replace(/[\$,()]/g, '')) || 0;
+                totalCostos += valor;
+            });
+        }
+        
+        // Calcular gastos
+        const gastosDiv = document.querySelector('.text-warning').parentElement;
+        if (gastosDiv) {
+            const filasGastos = gastosDiv.querySelectorAll('.row.mb-2');
+            filasGastos.forEach(fila => {
+                const texto = fila.querySelector('.col-4').textContent;
+                const valor = parseFloat(texto.replace(/[\$,()]/g, '')) || 0;
+                totalGastos += valor;
+            });
+        }
+        
+        // Calcular utilidades
+        const utilidadBruta = totalIngresos - totalCostos;
+        const utilidadOperacional = utilidadBruta - totalGastos;
+        const resultadoFinal = utilidadOperacional;
+        
+        // Actualizar UI
+        document.getElementById('total-ingresos').textContent = formatearMoneda(totalIngresos);
+        document.getElementById('total-costos').textContent = '(' + formatearMoneda(totalCostos) + ')';
+        document.getElementById('total-gastos').textContent = '(' + formatearMoneda(totalGastos) + ')';
+        document.getElementById('utilidad-bruta').textContent = formatearMoneda(utilidadBruta);
+        document.getElementById('utilidad-operacional').textContent = formatearMoneda(utilidadOperacional);
+        
+        // Actualizar resultado final
+        const labelResultado = document.getElementById('label-resultado');
+        const elementoResultado = document.getElementById('resultado-final');
+        const cardResultado = document.getElementById('card-resultado-final');
+        
+        if (resultadoFinal >= 0) {
+            labelResultado.textContent = 'UTILIDAD NETA';
+            elementoResultado.textContent = formatearMoneda(resultadoFinal);
+            elementoResultado.className = 'mb-0 text-success';
+            cardResultado.className = 'row bg-success bg-opacity-10 p-3 mb-3 border border-success';
+        } else {
+            labelResultado.textContent = 'PÉRDIDA NETA';
+            elementoResultado.textContent = '(' + formatearMoneda(Math.abs(resultadoFinal)) + ')';
+            elementoResultado.className = 'mb-0 text-danger';
+            cardResultado.className = 'row bg-danger bg-opacity-10 p-3 mb-3 border border-danger';
+        }
+        
+        // Actualizar resumen
+        document.getElementById('resumen-ingresos').textContent = formatearMoneda(totalIngresos);
+        document.getElementById('resumen-costos').textContent = formatearMoneda(totalCostos);
+        document.getElementById('resumen-gastos').textContent = formatearMoneda(totalGastos);
+        
+        const resumenResultado = document.getElementById('resumen-resultado');
+        if (resultadoFinal >= 0) {
+            resumenResultado.textContent = formatearMoneda(resultadoFinal);
+            resumenResultado.className = 'text-success';
+        } else {
+            resumenResultado.textContent = '(' + formatearMoneda(Math.abs(resultadoFinal)) + ')';
+            resumenResultado.className = 'text-danger';
+        }
+    }
+    
+    function formatearMoneda(valor) {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 2
+        }).format(valor);
+    }
+});
+</script>
+{% endblock %}

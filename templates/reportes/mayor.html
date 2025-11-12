@@ -1,0 +1,235 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Libro Mayor - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'reportes:index' %}">Reportes</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Libro Mayor</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-book text-success"></i>
+                        Libro Mayor
+                    </h4>
+                    <div>
+                        <button class="btn btn-success" id="btn-exportar-excel">
+                            <i class="bi bi-file-earmark-excel"></i>
+                            Excel
+                        </button>
+                        <button class="btn btn-danger" id="btn-exportar-pdf">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            PDF
+                        </button>
+                        <button class="btn btn-secondary" id="btn-imprimir">
+                            <i class="bi bi-printer"></i>
+                            Imprimir
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>¿Qué es el Libro Mayor?</strong>
+                        <p class="mb-0">El Libro Mayor muestra el detalle de movimientos de cada cuenta contable. Selecciona una cuenta para ver su historial completo de débitos, créditos y saldo.</p>
+                    </div>
+
+                    <!-- Selector de cuenta -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <label for="cuenta_select" class="form-label">
+                                <strong>Selecciona una Cuenta:</strong>
+                            </label>
+                            <select class="form-select form-select-lg" id="cuenta_select">
+                                <option value="">-- Selecciona una cuenta contable --</option>
+                                {% for cuenta in cuentas %}
+                                    <option value="{{ cuenta.pk }}" 
+                                            data-codigo="{{ cuenta.codigo }}"
+                                            data-nombre="{{ cuenta.nombre }}"
+                                            data-tipo="{{ cuenta.tipo_cuenta }}"
+                                            data-naturaleza="{{ cuenta.naturaleza }}">
+                                        {{ cuenta.codigo }} - {{ cuenta.nombre }} ({{ cuenta.get_tipo_cuenta_display }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-primary btn-lg" id="btn-generar">
+                                    <i class="bi bi-search"></i>
+                                    Ver Movimientos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filtros de fecha (opcionales) -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="bi bi-funnel"></i>
+                                Filtros Opcionales
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="fecha_inicio" class="form-label">Desde:</label>
+                                    <input type="date" class="form-control" id="fecha_inicio">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="fecha_fin" class="form-label">Hasta:</label>
+                                    <input type="date" class="form-control" id="fecha_fin">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Área de resultado -->
+                    <div id="resultado-mayor" style="display: none;">
+                        <div id="area-impresion">
+                            <!-- El contenido se cargará dinámicamente vía AJAX -->
+                        </div>
+                    </div>
+
+                    <!-- Mensaje inicial -->
+                    <div id="mensaje-inicial" class="text-center py-5">
+                        <i class="bi bi-book fs-1 text-muted d-block mb-3"></i>
+                        <h5 class="text-muted">Selecciona una cuenta para ver su Libro Mayor</h5>
+                        <p class="text-muted">Podrás ver todos los movimientos (débitos y créditos) de la cuenta seleccionada.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn, .breadcrumb, .card-header .btn-group, .card:not(#area-impresion .card), .alert, #mensaje-inicial {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cuentaSelect = document.getElementById('cuenta_select');
+    const btnGenerar = document.getElementById('btn-generar');
+    const btnImprimir = document.getElementById('btn-imprimir');
+    const btnExportarExcel = document.getElementById('btn-exportar-excel');
+    const btnExportarPdf = document.getElementById('btn-exportar-pdf');
+    const mensajeInicial = document.getElementById('mensaje-inicial');
+    const resultadoMayor = document.getElementById('resultado-mayor');
+    const areaImpresion = document.getElementById('area-impresion');
+
+    // Event listener para generar libro mayor
+    if (btnGenerar) {
+        btnGenerar.addEventListener('click', function() {
+            const cuentaId = cuentaSelect.value;
+            
+            if (!cuentaId) {
+                alert('Por favor selecciona una cuenta');
+                return;
+            }
+
+            const selectedOption = cuentaSelect.options[cuentaSelect.selectedIndex];
+            const codigo = selectedOption.dataset.codigo;
+            const nombre = selectedOption.dataset.nombre;
+            const tipo = selectedOption.dataset.tipo;
+            const naturaleza = selectedOption.dataset.naturaleza;
+            
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+            
+            // Construir URL con parámetros
+            let url = `/reportes/mayor/cuenta/${cuentaId}/`;
+            const params = new URLSearchParams();
+            if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+            if (fechaFin) params.append('fecha_fin', fechaFin);
+            
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+            
+            // Redirigir a la vista de detalle
+            window.location.href = url;
+        });
+    }
+
+    // Event listener para imprimir
+    if (btnImprimir) {
+        btnImprimir.addEventListener('click', function() {
+            if (resultadoMayor.style.display !== 'none') {
+                window.print();
+            } else {
+                alert('Primero debes generar el libro mayor de una cuenta');
+            }
+        });
+    }
+
+    // Event listener para exportar a Excel
+    if (btnExportarExcel) {
+        btnExportarExcel.addEventListener('click', function() {
+            const cuentaId = cuentaSelect.value;
+            
+            if (!cuentaId) {
+                alert('Por favor selecciona una cuenta y genera el reporte primero');
+                return;
+            }
+
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+            
+            let url = `{% url 'reportes:mayor_exportar' %}?cuenta_id=${cuentaId}&formato=excel`;
+            if (fechaInicio) url += `&fecha_inicio=${fechaInicio}`;
+            if (fechaFin) url += `&fecha_fin=${fechaFin}`;
+            
+            window.location.href = url;
+        });
+    }
+
+    // Event listener para exportar a PDF
+    if (btnExportarPdf) {
+        btnExportarPdf.addEventListener('click', function() {
+            const cuentaId = cuentaSelect.value;
+            
+            if (!cuentaId) {
+                alert('Por favor selecciona una cuenta y genera el reporte primero');
+                return;
+            }
+
+            const fechaInicio = document.getElementById('fecha_inicio').value;
+            const fechaFin = document.getElementById('fecha_fin').value;
+            
+            let url = `{% url 'reportes:mayor_exportar' %}?cuenta_id=${cuentaId}&formato=pdf`;
+            if (fechaInicio) url += `&fecha_inicio=${fechaInicio}`;
+            if (fechaFin) url += `&fecha_fin=${fechaFin}`;
+            
+            window.location.href = url;
+        });
+    }
+
+    // Mejorar la UI del select con búsqueda (opcional, requiere biblioteca)
+    // Si tienes Select2 o similar, puedes activarlo aquí
+});
+</script>
+{% endblock %}

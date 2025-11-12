@@ -15,6 +15,11 @@ from .services import ServicioTesoreria
 from facturacion.models import Factura
 from catalogos.models import Producto, Tercero
 from empresas.middleware import EmpresaFilterMixin
+from contabilidad.asiento_helpers import (
+    crear_asiento_ingreso,
+    crear_asiento_egreso,
+    anular_asiento_pago
+)
 import io
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -26,6 +31,7 @@ from core.constants import MSG_SELECCIONAR_EMPRESA, URL_CAMBIAR_EMPRESA
 
 # Constantes específicas del módulo
 URL_COBROS_LISTA = 'tesoreria:cobros_lista'
+URL_CUENTAS_LISTA = 'tesoreria:cuentas_lista'
 PAGOS_DETALLE_URL = 'tesoreria:pagos_detalle'
 
 # Vistas temporales básicas
@@ -246,14 +252,263 @@ class CobroUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
         )
         return super().form_valid(form)
 
-class EgresoListView(LoginRequiredMixin, ListView):
+class CobroDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
+    model = Pago
+    template_name = 'tesoreria/cobros_eliminar.html'
+    success_url = reverse_lazy(URL_COBROS_LISTA)
+    
+    def get_queryset(self):
+        # Solo permitir eliminar cobros
+        return super().get_queryset().filter(tipo_pago='cobro')
+    
+    def delete(self, request, *args, **kwargs):
+        cobro = self.get_object()
+        messages.success(
+            request,
+            f'Cobro {cobro.numero_pago} eliminado exitosamente'
+        )
+        return super().delete(request, *args, **kwargs)
+
+class IngresoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
+    model = Pago
+    template_name = 'tesoreria/ingresos_lista.html'
+    context_object_name = 'ingresos'
+    paginate_by = 50
+    
+    def get_queryset(self):
+        queryset = super().get_queryset().filter(tipo_pago='cobro')
+        return queryset.select_related('tercero', 'empresa', 'metodo_pago', 'cuenta_bancaria').order_by('-fecha_pago')
+
+class IngresoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
+    model = Pago
+    template_name = 'tesoreria/ingresos_crear.html'
+    fields = ['tercero', 'fecha_pago', 'valor', 'metodo_pago', 'cuenta_bancaria', 'referencia', 'observaciones']
+    success_url = reverse_lazy('tesoreria:ingresos_lista')
+    
+    def form_valid(self, form):
+        empresa_activa = getattr(self.request, 'empresa_activa', None)
+        form.instance.empresa = empresa_activa
+        form.instance.tipo_pago = 'cobro'
+        form.instance.creado_por = self.request.user
+        form.instance.estado = 'pendiente'
+        
+        # Generar número consecutivo
+        ultimo_ingreso = Pago.objects.filter(
+            empresa=empresa_activa,
+            tipo_pago='cobro',
+            numero_pago__startswith='ING-'
+        ).order_by('-numero_pago').first()
+        
+        if ultimo_ingreso and ultimo_ingreso.numero_pago:
+            try:
+                ultimo_num = int(ultimo_ingreso.numero_pago.split('-')[1])
+                nuevo_numero = f'ING-{str(ultimo_num + 1).zfill(6)}'
+            except (ValueError, AttributeError):
+                nuevo_numero = 'ING-000001'
+        else:
+            nuevo_numero = 'ING-000001'
+        
+        form.instance.numero_pago = nuevo_numero
+        
+        # Guardar primero el ingreso
+        response = super().form_valid(form)
+        
+        # Generar asiento contable automáticamente
+        try:
+            asiento = crear_asiento_ingreso(form.instance, self.request.user)
+            messages.success(
+                self.request,
+                f'Ingreso {nuevo_numero} registrado exitosamente. '
+                f'Asiento contable {asiento.numero_asiento} generado automáticamente.'
+            )
+        except ValueError as e:
+            messages.warning(
+                self.request,
+                f'Ingreso {nuevo_numero} registrado, pero no se pudo generar el asiento contable: {str(e)}'
+            )
+        except Exception as e:
+            messages.error(
+                self.request,
+                f'Ingreso {nuevo_numero} registrado, pero ocurrió un error al generar el asiento: {str(e)}'
+            )
+        
+        return response
+
+# ============================================================
+# VISTAS PARA EGRESOS (PAGOS A PROVEEDORES)
+# ============================================================
+
+class EgresoListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = Pago
     template_name = 'tesoreria/egresos_lista.html'
+    context_object_name = 'egresos'
+    paginate_by = 50
+    
+    def get_queryset(self):
+        queryset = super().get_queryset().filter(tipo_pago='egreso')
+        return queryset.select_related('tercero', 'empresa', 'metodo_pago', 'cuenta_bancaria').order_by('-fecha_pago')
 
-class EgresoCreateView(LoginRequiredMixin, CreateView):
+class EgresoCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = Pago
     template_name = 'tesoreria/egresos_crear.html'
-    fields = '__all__'
+    fields = ['tercero', 'fecha_pago', 'valor', 'metodo_pago', 'cuenta_bancaria', 'referencia', 'observaciones']
+    success_url = reverse_lazy('tesoreria:egresos_lista')
+    
+    def form_valid(self, form):
+        empresa_activa = getattr(self.request, 'empresa_activa', None)
+        form.instance.empresa = empresa_activa
+        form.instance.tipo_pago = 'egreso'
+        form.instance.creado_por = self.request.user
+        form.instance.estado = 'pendiente'
+        
+        # Generar número consecutivo
+        ultimo_egreso = Pago.objects.filter(
+            empresa=empresa_activa,
+            tipo_pago='egreso',
+            numero_pago__startswith='EGR-'
+        ).order_by('-numero_pago').first()
+        
+        if ultimo_egreso and ultimo_egreso.numero_pago:
+            try:
+                ultimo_num = int(ultimo_egreso.numero_pago.split('-')[1])
+                nuevo_numero = f'EGR-{str(ultimo_num + 1).zfill(6)}'
+            except (ValueError, AttributeError):
+                nuevo_numero = 'EGR-000001'
+        else:
+            nuevo_numero = 'EGR-000001'
+        
+        form.instance.numero_pago = nuevo_numero
+        
+        # Descontar del saldo de la cuenta bancaria si hay cuenta seleccionada
+        if form.instance.cuenta_bancaria:
+            cuenta = form.instance.cuenta_bancaria
+            if cuenta.saldo_actual >= form.instance.valor:
+                cuenta.saldo_actual -= form.instance.valor
+                cuenta.save()
+            else:
+                messages.warning(
+                    self.request,
+                    f'Advertencia: La cuenta {cuenta.nombre} tiene saldo insuficiente. '
+                    f'Saldo: ${cuenta.saldo_actual:,.2f}, Egreso: ${form.instance.valor:,.2f}. '
+                    f'El descuento se realizó de todas formas.'
+                )
+                cuenta.saldo_actual -= form.instance.valor
+                cuenta.save()
+        
+        # Guardar primero el egreso
+        response = super().form_valid(form)
+        
+        # Generar asiento contable automáticamente
+        try:
+            asiento = crear_asiento_egreso(form.instance, self.request.user)
+            if form.instance.cuenta_bancaria:
+                messages.success(
+                    self.request,
+                    f'Egreso {nuevo_numero} registrado exitosamente. '
+                    f'Se descontaron ${form.instance.valor:,.2f} de {form.instance.cuenta_bancaria.nombre}. '
+                    f'Asiento contable {asiento.numero_asiento} generado automáticamente.'
+                )
+            else:
+                messages.success(
+                    self.request,
+                    f'Egreso {nuevo_numero} registrado exitosamente. '
+                    f'Asiento contable {asiento.numero_asiento} generado automáticamente.'
+                )
+        except ValueError as e:
+            messages.warning(
+                self.request,
+                f'Egreso {nuevo_numero} registrado, pero no se pudo generar el asiento contable: {str(e)}'
+            )
+        except Exception as e:
+            messages.error(
+                self.request,
+                f'Egreso {nuevo_numero} registrado, pero ocurrió un error al generar el asiento: {str(e)}'
+            )
+        
+        return response
+
+class EgresoUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
+    model = Pago
+    template_name = 'tesoreria/egresos_editar.html'
+    fields = ['tercero', 'fecha_pago', 'valor', 'metodo_pago', 'cuenta_bancaria', 'referencia', 'observaciones']
+    success_url = reverse_lazy('tesoreria:egresos_lista')
+    
+    def get_queryset(self):
+        return super().get_queryset().filter(tipo_pago='egreso')
+    
+    def form_valid(self, form):
+        egreso_original = self.get_object()
+        
+        # Si cambió la cuenta o el valor, ajustar saldos
+        if egreso_original.cuenta_bancaria:
+            # Devolver el monto a la cuenta original
+            cuenta_original = egreso_original.cuenta_bancaria
+            cuenta_original.saldo_actual += egreso_original.valor
+            cuenta_original.save()
+            
+            # Descontar de la nueva cuenta si hay
+            if form.instance.cuenta_bancaria:
+                cuenta_nueva = form.instance.cuenta_bancaria
+                cuenta_nueva.saldo_actual -= form.instance.valor
+                cuenta_nueva.save()
+                messages.success(
+                    self.request,
+                    f'Egreso {egreso_original.numero_pago} actualizado. '
+                    f'Saldo ajustado: devuelto a {cuenta_original.nombre}, descontado de {cuenta_nueva.nombre}'
+                )
+            else:
+                messages.success(
+                    self.request,
+                    f'Egreso {egreso_original.numero_pago} actualizado. '
+                    f'Saldo de ${egreso_original.valor:,.2f} devuelto a {cuenta_original.nombre}'
+                )
+        else:
+            # No tenía cuenta antes, pero ahora sí
+            if form.instance.cuenta_bancaria:
+                cuenta_nueva = form.instance.cuenta_bancaria
+                cuenta_nueva.saldo_actual -= form.instance.valor
+                cuenta_nueva.save()
+                messages.success(
+                    self.request,
+                    f'Egreso {egreso_original.numero_pago} actualizado. '
+                    f'Descontados ${form.instance.valor:,.2f} de {cuenta_nueva.nombre}'
+                )
+            else:
+                messages.success(self.request, f'Egreso {egreso_original.numero_pago} actualizado exitosamente.')
+        
+        return super().form_valid(form)
+
+class EgresoDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
+    model = Pago
+    template_name = 'tesoreria/egresos_eliminar.html'
+    success_url = reverse_lazy('tesoreria:egresos_lista')
+    
+    def get_queryset(self):
+        return super().get_queryset().filter(tipo_pago='egreso')
+    
+    def delete(self, request, *args, **kwargs):
+        egreso = self.get_object()
+        
+        # Devolver el monto a la cuenta bancaria si existe
+        if egreso.cuenta_bancaria:
+            cuenta = egreso.cuenta_bancaria
+            cuenta.saldo_actual += egreso.valor
+            cuenta.save()
+        
+        # Anular asiento contable si existe
+        asiento_anulado = anular_asiento_pago(egreso)
+        
+        # Mensaje de confirmación
+        if egreso.cuenta_bancaria:
+            msg = f'Egreso {egreso.numero_pago} eliminado exitosamente. Saldo de ${egreso.valor:,.2f} devuelto a {egreso.cuenta_bancaria.nombre}'
+        else:
+            msg = f'Egreso {egreso.numero_pago} eliminado exitosamente.'
+        
+        if asiento_anulado:
+            msg += f' Asiento contable {egreso.asiento_contable.numero_asiento} anulado.'
+        
+        messages.success(request, msg)
+        return super().delete(request, *args, **kwargs)
 
 class CuentaBancariaListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
     model = CuentaBancaria
@@ -265,23 +520,40 @@ class CuentaBancariaListView(LoginRequiredMixin, EmpresaFilterMixin, ListView):
         queryset = super().get_queryset()
         return queryset.select_related('empresa', 'cuenta_contable').order_by('nombre')
 
-class CuentaBancariaDetailView(LoginRequiredMixin, DetailView):
+class CuentaBancariaDetailView(LoginRequiredMixin, EmpresaFilterMixin, DetailView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_detalle.html'
 
-class CuentaBancariaCreateView(LoginRequiredMixin, CreateView):
+class CuentaBancariaCreateView(LoginRequiredMixin, EmpresaFilterMixin, CreateView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_crear.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_cuenta', 'numero_cuenta', 'banco', 'saldo_actual', 'cuenta_contable', 'activa']
+    success_url = reverse_lazy(URL_CUENTAS_LISTA)
+    
+    def form_valid(self, form):
+        form.instance.empresa = getattr(self.request, 'empresa_activa', None)
+        messages.success(self.request, f'Cuenta bancaria {form.instance.nombre} creada exitosamente.')
+        return super().form_valid(form)
 
-class CuentaBancariaUpdateView(LoginRequiredMixin, UpdateView):
+class CuentaBancariaUpdateView(LoginRequiredMixin, EmpresaFilterMixin, UpdateView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_editar.html'
-    fields = '__all__'
+    fields = ['codigo', 'nombre', 'tipo_cuenta', 'numero_cuenta', 'banco', 'saldo_actual', 'cuenta_contable', 'activa']
+    success_url = reverse_lazy(URL_CUENTAS_LISTA)
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Cuenta bancaria {form.instance.nombre} actualizada exitosamente.')
+        return super().form_valid(form)
 
-class CuentaBancariaDeleteView(LoginRequiredMixin, DeleteView):
+class CuentaBancariaDeleteView(LoginRequiredMixin, EmpresaFilterMixin, DeleteView):
     model = CuentaBancaria
     template_name = 'tesoreria/cuentas_eliminar.html'
+    success_url = reverse_lazy(URL_CUENTAS_LISTA)
+    
+    def delete(self, request, *args, **kwargs):
+        cuenta = self.get_object()
+        messages.success(request, f'Cuenta bancaria {cuenta.nombre} eliminada exitosamente.')
+        return super().delete(request, *args, **kwargs)
 
 class FlujoCajaView(LoginRequiredMixin, TemplateView):
     template_name = 'tesoreria/flujo_caja.html'
@@ -834,11 +1106,14 @@ def crear_cliente_ajax(request):
                 'error': 'Los campos Tipo de Documento, Número de Documento y Razón Social son obligatorios.'
             }, status=400)
         
-        # Verificar si ya existe un tercero con ese documento
-        if Tercero.objects.filter(numero_documento=numero_documento).exists():
+        # Verificar si ya existe un tercero con ese documento en la misma empresa
+        if Tercero.objects.filter(
+            empresa=empresa_activa,
+            numero_documento=numero_documento
+        ).exists():
             return JsonResponse({
                 'success': False,
-                'error': f'Ya existe un tercero registrado con el documento {numero_documento}.'
+                'error': f'Ya existe un tercero registrado con el documento {numero_documento} en tu empresa.'
             }, status=400)
         
         # Crear el nuevo cliente
@@ -847,21 +1122,27 @@ def crear_cliente_ajax(request):
             tipo_documento=tipo_documento,
             numero_documento=numero_documento,
             razon_social=razon_social,
+            nombre_comercial='',
             telefono=telefono if telefono else '',
             email=email if email else '',
             direccion=direccion if direccion else '',
+            ciudad='',
+            departamento='',
             tipo_tercero='cliente',  # Automáticamente como cliente
             activo=True  # Automáticamente activo
         )
         
-        # Retornar respuesta exitosa
+        # Retornar respuesta exitosa con formato para el dropdown
+        display_text = f"{cliente.razon_social} ({cliente.numero_documento})"
+        
         return JsonResponse({
             'success': True,
             'cliente': {
                 'id': cliente.id,  # type: ignore[attr-defined]
                 'razon_social': cliente.razon_social,
                 'numero_documento': cliente.numero_documento,
-                'tipo_documento': cliente.get_tipo_documento_display()  # type: ignore[attr-defined]
+                'tipo_documento': cliente.get_tipo_documento_display(),  # type: ignore[attr-defined]
+                'display_text': display_text
             },
             'message': f'Cliente {cliente.razon_social} registrado exitosamente.'
         })

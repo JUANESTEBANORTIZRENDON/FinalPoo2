@@ -1,0 +1,316 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Libro Mayor - {{ cuenta.codigo }} - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'reportes:index' %}">Reportes</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'reportes:mayor' %}">Libro Mayor</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ cuenta.codigo }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-book text-success"></i>
+                        Libro Mayor - Cuenta {{ cuenta.codigo }}
+                    </h4>
+                    <div>
+                        <a href="{% url 'reportes:mayor' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i>
+                            Volver
+                        </a>
+                        <button class="btn btn-success" id="btn-exportar-excel">
+                            <i class="bi bi-file-earmark-excel"></i>
+                            Excel
+                        </button>
+                        <button class="btn btn-danger" id="btn-exportar-pdf">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            PDF
+                        </button>
+                        <button class="btn btn-secondary" id="btn-imprimir">
+                            <i class="bi bi-printer"></i>
+                            Imprimir
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div id="area-impresion">
+                        <!-- Encabezado del reporte -->
+                        <div class="text-center mb-4">
+                            <h3>{{ request.empresa_activa.nombre }}</h3>
+                            <h5>Libro Mayor</h5>
+                            <h6>Cuenta: {{ cuenta.codigo }} - {{ cuenta.nombre }}</h6>
+                            {% if fecha_inicio and fecha_fin %}
+                                <p class="text-muted">
+                                    Período: {{ fecha_inicio }} al {{ fecha_fin }}
+                                </p>
+                            {% else %}
+                                <p class="text-muted">Todos los movimientos</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Información de la cuenta -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <strong>Código:</strong><br>
+                                        {{ cuenta.codigo }}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Tipo:</strong><br>
+                                        <span class="badge bg-{% if cuenta.tipo_cuenta == 'ACTIVO' %}primary{% elif cuenta.tipo_cuenta == 'PASIVO' %}danger{% elif cuenta.tipo_cuenta == 'INGRESO' %}success{% else %}warning{% endif %}">
+                                            {{ cuenta.get_tipo_cuenta_display }}
+                                        </span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Naturaleza:</strong><br>
+                                        <span class="badge bg-{% if cuenta.naturaleza == 'D' %}success{% else %}info{% endif %}">
+                                            {{ cuenta.get_naturaleza_display }}
+                                        </span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Saldo Inicial:</strong><br>
+                                        ${{ cuenta.saldo_inicial|floatformat:2 }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de movimientos -->
+                        {% if partidas %}
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th style="width: 100px;">Fecha</th>
+                                            <th style="width: 100px;">Asiento</th>
+                                            <th>Concepto</th>
+                                            <th style="width: 150px;" class="text-end">Débito</th>
+                                            <th style="width: 150px;" class="text-end">Crédito</th>
+                                            <th style="width: 150px;" class="text-end">Saldo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Saldo inicial -->
+                                        <tr class="table-secondary">
+                                            <td colspan="5"><strong>SALDO INICIAL</strong></td>
+                                            <td class="text-end">
+                                                <strong>${{ cuenta.saldo_inicial|floatformat:2 }}</strong>
+                                            </td>
+                                        </tr>
+                                        
+                                        {% for partida in partidas %}
+                                            <tr>
+                                                <td>{{ partida.asiento.fecha_asiento|date:"d/m/Y" }}</td>
+                                                <td>{{ partida.asiento.numero_asiento }}</td>
+                                                <td>{{ partida.concepto }}</td>
+                                                <td class="text-end">
+                                                    {% if partida.valor_debito > 0 %}
+                                                        ${{ partida.valor_debito|floatformat:2 }}
+                                                    {% else %}
+                                                        —
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">
+                                                    {% if partida.valor_credito > 0 %}
+                                                        ${{ partida.valor_credito|floatformat:2 }}
+                                                    {% else %}
+                                                        —
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">
+                                                    <span id="saldo-{{ forloop.counter }}">—</span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-secondary">
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>TOTALES:</strong></td>
+                                            <td class="text-end">
+                                                <strong id="total-debitos">$0.00</strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong id="total-creditos">$0.00</strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong id="saldo-final">$0.00</strong>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <!-- Resumen -->
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <div class="row text-center">
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Total Movimientos</h6>
+                                                    <h4>{{ partidas|length }}</h4>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Total Débitos</h6>
+                                                    <h4 class="text-success" id="resumen-debitos">$0.00</h4>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Total Créditos</h6>
+                                                    <h4 class="text-info" id="resumen-creditos">$0.00</h4>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Saldo Final</h6>
+                                                    <h4 id="resumen-saldo-final">$0.00</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning text-center">
+                                <i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>
+                                <h5>No hay movimientos para esta cuenta</h5>
+                                <p class="mb-0">La cuenta no tiene partidas registradas en el período seleccionado.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn, .breadcrumb {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcular saldos y totales
+    calcularSaldos();
+    
+    // Event listener para imprimir
+    const btnImprimir = document.getElementById('btn-imprimir');
+    if (btnImprimir) {
+        btnImprimir.addEventListener('click', function() {
+            window.print();
+        });
+    }
+    
+    // Event listener para exportar a Excel
+    const btnExportarExcel = document.getElementById('btn-exportar-excel');
+    if (btnExportarExcel) {
+        btnExportarExcel.addEventListener('click', function() {
+            const params = new URLSearchParams(window.location.search);
+            let url = `{% url 'reportes:mayor_exportar' %}?cuenta_id={{ cuenta.pk }}&formato=excel`;
+            
+            const fechaInicio = params.get('fecha_inicio');
+            const fechaFin = params.get('fecha_fin');
+            
+            if (fechaInicio) url += `&fecha_inicio=${fechaInicio}`;
+            if (fechaFin) url += `&fecha_fin=${fechaFin}`;
+            
+            window.location.href = url;
+        });
+    }
+    
+    // Event listener para exportar a PDF
+    const btnExportarPdf = document.getElementById('btn-exportar-pdf');
+    if (btnExportarPdf) {
+        btnExportarPdf.addEventListener('click', function() {
+            const params = new URLSearchParams(window.location.search);
+            let url = `{% url 'reportes:mayor_exportar' %}?cuenta_id={{ cuenta.pk }}&formato=pdf`;
+            
+            const fechaInicio = params.get('fecha_inicio');
+            const fechaFin = params.get('fecha_fin');
+            
+            if (fechaInicio) url += `&fecha_inicio=${fechaInicio}`;
+            if (fechaFin) url += `&fecha_fin=${fechaFin}`;
+            
+            window.location.href = url;
+        });
+    }
+    
+    function calcularSaldos() {
+        const naturaleza = '{{ cuenta.naturaleza }}';
+        const saldoInicial = parseFloat('{{ cuenta.saldo_inicial }}') || 0;
+        
+        let saldoActual = saldoInicial;
+        let totalDebitos = 0;
+        let totalCreditos = 0;
+        
+        const tabla = document.querySelector('tbody');
+        if (!tabla) return;
+        
+        const filas = tabla.querySelectorAll('tr:not(.table-secondary)');
+        
+        filas.forEach((fila, index) => {
+            const debitoText = fila.cells[3].textContent.replace(/[\$,—\s]/g, '');
+            const creditoText = fila.cells[4].textContent.replace(/[\$,—\s]/g, '');
+            
+            const debito = parseFloat(debitoText) || 0;
+            const credito = parseFloat(creditoText) || 0;
+            
+            totalDebitos += debito;
+            totalCreditos += credito;
+            
+            // Calcular saldo según naturaleza
+            if (naturaleza === 'D') {
+                // Cuenta de naturaleza deudora
+                saldoActual = saldoActual + debito - credito;
+            } else {
+                // Cuenta de naturaleza acreedora
+                saldoActual = saldoActual + credito - debito;
+            }
+            
+            // Actualizar celda de saldo
+            const saldoCell = document.getElementById(`saldo-${index + 1}`);
+            if (saldoCell) {
+                saldoCell.textContent = formatearMoneda(saldoActual);
+            }
+        });
+        
+        // Actualizar totales en el footer
+        document.getElementById('total-debitos').textContent = formatearMoneda(totalDebitos);
+        document.getElementById('total-creditos').textContent = formatearMoneda(totalCreditos);
+        document.getElementById('saldo-final').textContent = formatearMoneda(saldoActual);
+        
+        // Actualizar resumen
+        document.getElementById('resumen-debitos').textContent = formatearMoneda(totalDebitos);
+        document.getElementById('resumen-creditos').textContent = formatearMoneda(totalCreditos);
+        document.getElementById('resumen-saldo-final').textContent = formatearMoneda(saldoActual);
+    }
+    
+    function formatearMoneda(valor) {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 2
+        }).format(valor);
+    }
+});
+</script>
+{% endblock %}

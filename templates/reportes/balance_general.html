@@ -1,0 +1,500 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Balance General - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'reportes:index' %}">Reportes</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Balance General</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-pie-chart text-primary"></i>
+                        Balance General
+                    </h4>
+                    <div>
+                        <button class="btn btn-success" id="btn-exportar-excel">
+                            <i class="bi bi-file-earmark-excel"></i>
+                            Excel
+                        </button>
+                        <button class="btn btn-danger" id="btn-exportar-pdf">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            PDF
+                        </button>
+                        <button class="btn btn-secondary" id="btn-imprimir">
+                            <i class="bi bi-printer"></i>
+                            Imprimir
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>¿Qué es el Balance General?</strong>
+                        <p class="mb-0">Muestra la situación financiera de la empresa en un momento específico. Ecuación contable: <strong>ACTIVOS = PASIVOS + PATRIMONIO</strong></p>
+                    </div>
+
+                    <!-- Filtros -->
+                    <form method="GET" id="form-filtros">
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <label for="fecha_corte" class="form-label"><strong>Fecha de Corte:</strong></label>
+                                <input type="date" class="form-control form-control-lg" id="fecha_corte" 
+                                       name="fecha_corte" value="{{ fecha_corte }}" required>
+                                <small class="text-muted">El balance mostrará la situación financiera a esta fecha</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-search"></i>
+                                        Generar Balance
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if fecha_corte %}
+                        <div id="area-impresion">
+                            <!-- Encabezado del reporte -->
+                            <div class="text-center mb-4">
+                                <h3>{{ request.empresa_activa.nombre }}</h3>
+                                <h5>Balance General (Estado de Situación Financiera)</h5>
+                                <p class="text-muted">Al {{ fecha_corte }}</p>
+                            </div>
+
+                            <!-- Balance General en dos columnas -->
+                            <div class="row">
+                                <!-- ACTIVOS -->
+                                <div class="col-md-6">
+                                    <div class="card border-primary">
+                                        <div class="card-header bg-primary text-white">
+                                            <h5 class="mb-0">
+                                                <i class="bi bi-cash-stack"></i>
+                                                ACTIVOS
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <!-- Activos Corrientes -->
+                                            <h6 class="text-primary border-bottom pb-2">Activos Corrientes</h6>
+                                            {% if activos_corrientes %}
+                                                {% for cuenta in activos_corrientes %}
+                                                    <div class="row mb-1">
+                                                        <div class="col-8">
+                                                            <small>{{ cuenta.codigo }} - {{ cuenta.nombre }}</small>
+                                                        </div>
+                                                        <div class="col-4 text-end">
+                                                            <small>${{ cuenta.saldo|floatformat:2 }}</small>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                                <div class="row border-top pt-2 mb-3">
+                                                    <div class="col-8">
+                                                        <strong>Subtotal Activos Corrientes</strong>
+                                                    </div>
+                                                    <div class="col-4 text-end">
+                                                        <strong id="subtotal-activos-corrientes">$0.00</strong>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <p class="text-muted small">Sin activos corrientes</p>
+                                            {% endif %}
+
+                                            <!-- Activos No Corrientes -->
+                                            <h6 class="text-primary border-bottom pb-2 mt-3">Activos No Corrientes</h6>
+                                            {% if activos_no_corrientes %}
+                                                {% for cuenta in activos_no_corrientes %}
+                                                    <div class="row mb-1">
+                                                        <div class="col-8">
+                                                            <small>{{ cuenta.codigo }} - {{ cuenta.nombre }}</small>
+                                                        </div>
+                                                        <div class="col-4 text-end">
+                                                            <small>${{ cuenta.saldo|floatformat:2 }}</small>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                                <div class="row border-top pt-2 mb-3">
+                                                    <div class="col-8">
+                                                        <strong>Subtotal Activos No Corrientes</strong>
+                                                    </div>
+                                                    <div class="col-4 text-end">
+                                                        <strong id="subtotal-activos-no-corrientes">$0.00</strong>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <p class="text-muted small">Sin activos no corrientes</p>
+                                            {% endif %}
+
+                                            <!-- Total Activos -->
+                                            <div class="row bg-primary bg-opacity-25 p-2 mt-3">
+                                                <div class="col-8">
+                                                    <h5 class="mb-0">TOTAL ACTIVOS</h5>
+                                                </div>
+                                                <div class="col-4 text-end">
+                                                    <h5 class="mb-0" id="total-activos">$0.00</h5>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- PASIVOS Y PATRIMONIO -->
+                                <div class="col-md-6">
+                                    <!-- PASIVOS -->
+                                    <div class="card border-danger mb-3">
+                                        <div class="card-header bg-danger text-white">
+                                            <h5 class="mb-0">
+                                                <i class="bi bi-credit-card"></i>
+                                                PASIVOS
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <!-- Pasivos Corrientes -->
+                                            <h6 class="text-danger border-bottom pb-2">Pasivos Corrientes</h6>
+                                            {% if pasivos_corrientes %}
+                                                {% for cuenta in pasivos_corrientes %}
+                                                    <div class="row mb-1">
+                                                        <div class="col-8">
+                                                            <small>{{ cuenta.codigo }} - {{ cuenta.nombre }}</small>
+                                                        </div>
+                                                        <div class="col-4 text-end">
+                                                            <small>${{ cuenta.saldo|floatformat:2 }}</small>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                                <div class="row border-top pt-2 mb-3">
+                                                    <div class="col-8">
+                                                        <strong>Subtotal Pasivos Corrientes</strong>
+                                                    </div>
+                                                    <div class="col-4 text-end">
+                                                        <strong id="subtotal-pasivos-corrientes">$0.00</strong>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <p class="text-muted small">Sin pasivos corrientes</p>
+                                            {% endif %}
+
+                                            <!-- Pasivos No Corrientes -->
+                                            <h6 class="text-danger border-bottom pb-2 mt-3">Pasivos No Corrientes</h6>
+                                            {% if pasivos_no_corrientes %}
+                                                {% for cuenta in pasivos_no_corrientes %}
+                                                    <div class="row mb-1">
+                                                        <div class="col-8">
+                                                            <small>{{ cuenta.codigo }} - {{ cuenta.nombre }}</small>
+                                                        </div>
+                                                        <div class="col-4 text-end">
+                                                            <small>${{ cuenta.saldo|floatformat:2 }}</small>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                                <div class="row border-top pt-2 mb-3">
+                                                    <div class="col-8">
+                                                        <strong>Subtotal Pasivos No Corrientes</strong>
+                                                    </div>
+                                                    <div class="col-4 text-end">
+                                                        <strong id="subtotal-pasivos-no-corrientes">$0.00</strong>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <p class="text-muted small">Sin pasivos no corrientes</p>
+                                            {% endif %}
+
+                                            <!-- Total Pasivos -->
+                                            <div class="row bg-danger bg-opacity-25 p-2">
+                                                <div class="col-8">
+                                                    <strong>TOTAL PASIVOS</strong>
+                                                </div>
+                                                <div class="col-4 text-end">
+                                                    <strong id="total-pasivos">$0.00</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- PATRIMONIO -->
+                                    <div class="card border-info">
+                                        <div class="card-header bg-info text-white">
+                                            <h5 class="mb-0">
+                                                <i class="bi bi-bank"></i>
+                                                PATRIMONIO
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            {% if patrimonio %}
+                                                {% for cuenta in patrimonio %}
+                                                    <div class="row mb-1">
+                                                        <div class="col-8">
+                                                            <small>{{ cuenta.codigo }} - {{ cuenta.nombre }}</small>
+                                                        </div>
+                                                        <div class="col-4 text-end">
+                                                            <small>${{ cuenta.saldo|floatformat:2 }}</small>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <p class="text-muted small">Sin patrimonio registrado</p>
+                                            {% endif %}
+
+                                            <!-- Total Patrimonio -->
+                                            <div class="row bg-info bg-opacity-25 p-2 mt-3">
+                                                <div class="col-8">
+                                                    <strong>TOTAL PATRIMONIO</strong>
+                                                </div>
+                                                <div class="col-4 text-end">
+                                                    <strong id="total-patrimonio">$0.00</strong>
+                                                </div>
+                                            </div>
+
+                                            <!-- Total Pasivo + Patrimonio -->
+                                            <div class="row bg-secondary bg-opacity-25 p-2 mt-3">
+                                                <div class="col-8">
+                                                    <h5 class="mb-0">TOTAL PASIVO + PATRIMONIO</h5>
+                                                </div>
+                                                <div class="col-4 text-end">
+                                                    <h5 class="mb-0" id="total-pasivo-patrimonio">$0.00</h5>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Verificación de la ecuación contable -->
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <div class="card" id="card-verificacion">
+                                        <div class="card-body">
+                                            <h5 class="text-center mb-3">Verificación de Ecuación Contable</h5>
+                                            <div class="row text-center">
+                                                <div class="col-md-4">
+                                                    <h6 class="text-muted">Total Activos</h6>
+                                                    <h4 class="text-primary" id="verif-activos">$0.00</h4>
+                                                </div>
+                                                <div class="col-md-1 d-flex align-items-center justify-content-center">
+                                                    <h3>=</h3>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Total Pasivos</h6>
+                                                    <h4 class="text-danger" id="verif-pasivos">$0.00</h4>
+                                                </div>
+                                                <div class="col-md-1 d-flex align-items-center justify-content-center">
+                                                    <h3>+</h3>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Total Patrimonio</h6>
+                                                    <h4 class="text-info" id="verif-patrimonio">$0.00</h4>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-md-12 text-center">
+                                                    <h5 id="estado-ecuacion">—</h5>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning text-center">
+                            <i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>
+                            <h5>No hay datos para mostrar</h5>
+                            <p class="mb-0">Selecciona una fecha de corte para generar el Balance General.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn, .breadcrumb, .alert, #form-filtros {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcular totales
+    calcularBalance();
+    
+    // Event listeners
+    const btnImprimir = document.getElementById('btn-imprimir');
+    if (btnImprimir) {
+        btnImprimir.addEventListener('click', function() {
+            window.print();
+        });
+    }
+    
+    const btnExportarExcel = document.getElementById('btn-exportar-excel');
+    if (btnExportarExcel) {
+        btnExportarExcel.addEventListener('click', function() {
+            const fechaCorte = document.getElementById('fecha_corte').value;
+            if (!fechaCorte) {
+                alert('Por favor selecciona una fecha de corte');
+                return;
+            }
+            window.location.href = `{% url 'reportes:balance_general_exportar' %}?fecha_corte=${fechaCorte}&formato=excel`;
+        });
+    }
+    
+    const btnExportarPdf = document.getElementById('btn-exportar-pdf');
+    if (btnExportarPdf) {
+        btnExportarPdf.addEventListener('click', function() {
+            const fechaCorte = document.getElementById('fecha_corte').value;
+            if (!fechaCorte) {
+                alert('Por favor selecciona una fecha de corte');
+                return;
+            }
+            window.location.href = `{% url 'reportes:balance_general_exportar' %}?fecha_corte=${fechaCorte}&formato=pdf`;
+        });
+    }
+    
+    function calcularBalance() {
+        // Calcular activos
+        let activosCorrientes = 0;
+        let activosNoCorrientes = 0;
+        
+        const activosCorrientesDiv = document.getElementById('subtotal-activos-corrientes');
+        if (activosCorrientesDiv) {
+            const parent = activosCorrientesDiv.closest('.card-body');
+            const filas = parent.querySelectorAll('h6.text-primary:first-of-type + .row');
+            filas.forEach(fila => {
+                const valor = parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                activosCorrientes += valor;
+            });
+        }
+        
+        const activosNoCorrientesDiv = document.getElementById('subtotal-activos-no-corrientes');
+        if (activosNoCorrientesDiv) {
+            const parent = activosNoCorrientesDiv.closest('.card-body');
+            const secciones = parent.querySelectorAll('h6.text-primary');
+            if (secciones.length > 1) {
+                let capturando = false;
+                const todasFilas = parent.querySelectorAll('.row.mb-1');
+                todasFilas.forEach(fila => {
+                    const h6Anterior = fila.previousElementSibling;
+                    if (h6Anterior && h6Anterior.textContent.includes('No Corrientes')) {
+                        capturando = true;
+                    }
+                    if (capturando && fila.classList.contains('mb-1')) {
+                        const valor = parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                        activosNoCorrientes += valor;
+                    }
+                });
+            }
+        }
+        
+        const totalActivos = activosCorrientes + activosNoCorrientes;
+        
+        // Calcular pasivos
+        let pasivosCorrientes = 0;
+        let pasivosNoCorrientes = 0;
+        
+        const pasivosCorrientesDiv = document.getElementById('subtotal-pasivos-corrientes');
+        if (pasivosCorrientesDiv) {
+            const parent = pasivosCorrientesDiv.closest('.card-body');
+            const filas = parent.querySelectorAll('h6.text-danger:first-of-type + .row');
+            filas.forEach(fila => {
+                const valor = parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                pasivosCorrientes += valor;
+            });
+        }
+        
+        const pasivosNoCorrientesDiv = document.getElementById('subtotal-pasivos-no-corrientes');
+        if (pasivosNoCorrientesDiv) {
+            const parent = pasivosNoCorrientesDiv.closest('.card-body');
+            const secciones = parent.querySelectorAll('h6.text-danger');
+            if (secciones.length > 1) {
+                let capturando = false;
+                const todasFilas = parent.querySelectorAll('.row.mb-1');
+                todasFilas.forEach(fila => {
+                    const h6Anterior = fila.previousElementSibling;
+                    if (h6Anterior && h6Anterior.textContent.includes('No Corrientes')) {
+                        capturando = true;
+                    }
+                    if (capturando && fila.classList.contains('mb-1')) {
+                        const valor = parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                        pasivosNoCorrientes += valor;
+                    }
+                });
+            }
+        }
+        
+        const totalPasivos = pasivosCorrientes + pasivosNoCorrientes;
+        
+        // Calcular patrimonio
+        let totalPatrimonio = 0;
+        const patrimonioCard = document.getElementById('total-patrimonio');
+        if (patrimonioCard) {
+            const parent = patrimonioCard.closest('.card-body');
+            const filas = parent.querySelectorAll('.row.mb-1');
+            filas.forEach(fila => {
+                const valor = parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                totalPatrimonio += valor;
+            });
+        }
+        
+        // Actualizar UI
+        if (activosCorrientesDiv) activosCorrientesDiv.textContent = formatearMoneda(activosCorrientes);
+        if (activosNoCorrientesDiv) activosNoCorrientesDiv.textContent = formatearMoneda(activosNoCorrientes);
+        document.getElementById('total-activos').textContent = formatearMoneda(totalActivos);
+        
+        if (pasivosCorrientesDiv) pasivosCorrientesDiv.textContent = formatearMoneda(pasivosCorrientes);
+        if (pasivosNoCorrientesDiv) pasivosNoCorrientesDiv.textContent = formatearMoneda(pasivosNoCorrientes);
+        document.getElementById('total-pasivos').textContent = formatearMoneda(totalPasivos);
+        
+        document.getElementById('total-patrimonio').textContent = formatearMoneda(totalPatrimonio);
+        document.getElementById('total-pasivo-patrimonio').textContent = formatearMoneda(totalPasivos + totalPatrimonio);
+        
+        // Verificación
+        document.getElementById('verif-activos').textContent = formatearMoneda(totalActivos);
+        document.getElementById('verif-pasivos').textContent = formatearMoneda(totalPasivos);
+        document.getElementById('verif-patrimonio').textContent = formatearMoneda(totalPatrimonio);
+        
+        const diferencia = Math.abs(totalActivos - (totalPasivos + totalPatrimonio));
+        const estadoEcuacion = document.getElementById('estado-ecuacion');
+        const cardVerificacion = document.getElementById('card-verificacion');
+        
+        if (diferencia < 0.01) {
+            estadoEcuacion.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> La ecuación contable está balanceada';
+            estadoEcuacion.className = 'text-success';
+            cardVerificacion.className = 'card border-success';
+        } else {
+            estadoEcuacion.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i> La ecuación contable NO está balanceada (Diferencia: ' + formatearMoneda(diferencia) + ')';
+            estadoEcuacion.className = 'text-danger';
+            cardVerificacion.className = 'card border-danger';
+        }
+    }
+    
+    function formatearMoneda(valor) {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 2
+        }).format(valor);
+    }
+});
+</script>
+{% endblock %}

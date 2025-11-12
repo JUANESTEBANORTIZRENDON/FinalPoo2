@@ -193,8 +193,10 @@ class Asiento(models.Model):
     Modelo para gestionar asientos contables.
     """
     TIPO_ASIENTO_CHOICES = [
-        ('manual', 'Manual'),
-        ('automatico', 'Automático'),
+        ('ordinario', 'Ordinario'),
+        ('apertura', 'Apertura'),
+        ('ajuste', 'Ajuste'),
+        ('cierre', 'Cierre'),
     ]
     
     ESTADO_CHOICES = [
@@ -224,7 +226,7 @@ class Asiento(models.Model):
     tipo_asiento = models.CharField(
         max_length=15,
         choices=TIPO_ASIENTO_CHOICES,
-        default='manual',
+        default='ordinario',
         verbose_name="Tipo de Asiento"
     )
     

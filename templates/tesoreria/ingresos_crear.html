@@ -1,56 +1,28 @@
 {% extends 'base_contable.html' %}
 {% load form_helpers %}
 
-{% block title %}Registrar Egreso - S_CONTABLE{% endblock %}
+{% block title %}Nuevo Ingreso - S_CONTABLE{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-1">
-                                <i class="bi bi-cash-stack text-danger"></i>
-                                Registrar Nuevo Egreso
-                            </h2>
-                            <p class="text-muted mb-0">Registra un pago a proveedor o gasto para {{ request.empresa_activa.razon_social }}</p>
-                        </div>
-                        <a href="{% url 'tesoreria:egresos_lista' %}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Volver
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Formulario -->
     <div class="row">
-        <div class="col-lg-10 mx-auto">
+        <div class="col-md-10 offset-md-1">
             <div class="card shadow-sm">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-text"></i>
-                        Información del Egreso
-                    </h5>
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-cash-coin"></i>
+                        Registrar Nuevo Ingreso
+                    </h4>
                 </div>
                 <div class="card-body">
-                    <form method="post" novalidate>
+                    <form method="post">
                         {% csrf_token %}
                         
-                        <div class="alert alert-warning">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
-                            <strong>Importante:</strong> El monto del egreso se descontará automáticamente del saldo de la cuenta bancaria seleccionada.
-                        </div>
-
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="{{ form.tercero.id_for_label }}" class="form-label">
-                                        <strong>Proveedor:</strong> <span class="text-danger">*</span>
+                                        <strong>Cliente:</strong> <span class="text-danger">*</span>
                                     </label>
                                     {{ form.tercero }}
                                     {% if form.tercero.errors %}
@@ -62,7 +34,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="{{ form.fecha_pago.id_for_label }}" class="form-label">
-                                        <strong>Fecha del Egreso:</strong> <span class="text-danger">*</span>
+                                        <strong>Fecha de Ingreso:</strong> <span class="text-danger">*</span>
                                     </label>
                                     {{ form.fecha_pago }}
                                     {% if form.fecha_pago.errors %}
@@ -76,7 +48,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="{{ form.valor.id_for_label }}" class="form-label">
-                                        <strong>Valor a Pagar:</strong> <span class="text-danger">*</span>
+                                        <strong>Valor:</strong> <span class="text-danger">*</span>
                                     </label>
                                     {{ form.valor }}
                                     {% if form.valor.errors %}
@@ -105,7 +77,7 @@
                                         <strong>Cuenta Bancaria:</strong>
                                     </label>
                                     {{ form.cuenta_bancaria }}
-                                    <small class="text-muted">Seleccione la cuenta de donde se descontará el monto</small>
+                                    <small class="text-muted">Opcional: selecciona la cuenta donde se depositó</small>
                                     {% if form.cuenta_bancaria.errors %}
                                         <div class="text-danger small">{{ form.cuenta_bancaria.errors.0 }}</div>
                                     {% endif %}
@@ -138,15 +110,18 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Botones -->
-                        <div class="d-flex justify-content-between mt-4">
-                            <a href="{% url 'tesoreria:egresos_lista' %}" class="btn btn-secondary">
-                                <i class="bi bi-x-circle"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-danger">
-                                <i class="bi bi-save"></i> Guardar Egreso
-                            </button>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'tesoreria:ingresos_lista' %}" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-save"></i> Guardar Ingreso
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>

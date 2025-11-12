@@ -1,0 +1,88 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Eliminar Asiento - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'contabilidad:asientos_lista' %}">Asientos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Eliminar</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        ¿Eliminar Asiento Contable?
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <h5><i class="bi bi-exclamation-triangle-fill"></i> ¡Advertencia!</h5>
+                        <p class="mb-0">
+                            Esta acción eliminará permanentemente el asiento contable y todas sus partidas.
+                            Esta operación <strong>NO</strong> se puede deshacer.
+                        </p>
+                    </div>
+
+                    <h5 class="mb-3">Información del Asiento:</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th style="width: 30%;">Número de Asiento:</th>
+                            <td><strong>{{ object.numero_asiento }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Fecha:</th>
+                            <td>{{ object.fecha_asiento|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tipo:</th>
+                            <td>{{ object.get_tipo_asiento_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Concepto:</th>
+                            <td>{{ object.concepto }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Débito:</th>
+                            <td>${{ object.total_debito|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Crédito:</th>
+                            <td>${{ object.total_credito|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Partidas:</th>
+                            <td>{{ object.partidas.count }} partida{{ object.partidas.count|pluralize }}</td>
+                        </tr>
+                    </table>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'contabilidad:asientos_detalle' object.pk %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash-fill"></i>
+                                Sí, eliminar asiento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

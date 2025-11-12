@@ -78,47 +78,53 @@
                         
                         <div class="row">
                             <div class="col-md-4">
+                                {% render_field form.departamento %}
+                            </div>
+                            
+                            <div class="col-md-4">
                                 {% render_field form.ciudad %}
                             </div>
                             
                             <div class="col-md-4">
                                 {% render_field form.telefono %}
                             </div>
-                            
-                            <div class="col-md-4">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
                                 {% render_field form.email %}
                             </div>
                         </div>
                         
-                        <!-- Información Adicional -->
+                        <!-- Estado -->
                         <div class="row mt-4">
                             <div class="col-12">
-                                <h6 class="text-muted border-bottom pb-2 mb-3">Información Adicional</h6>
+                                <h6 class="text-muted border-bottom pb-2 mb-3">Estado</h6>
                             </div>
                         </div>
                         
-                        <div class="row">
-                            <div class="col-md-6">
-                                {% render_field form.regimen_tributario %}
-                            </div>
-                            
-                            <div class="col-md-6">
+                        <div class="row mb-4">
+                            <div class="col-md-12">
                                 {% render_field form.activo %}
                             </div>
                         </div>
                         
-                        {% render_field form.observaciones %}
-                        
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'catalogos:tercero_list' %}" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i>
-                                Cancelar
-                            </a>
-                            
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle"></i>
-                                {% if object %}Actualizar{% else %}Crear{% endif %} Tercero
-                            </button>
+                        <!-- Botones de Acción -->
+                        <div class="row">
+                            <div class="col-12">
+                                <hr class="my-4">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'catalogos:tercero_list' %}" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left"></i>
+                                        Cancelar
+                                    </a>
+                                    
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle"></i>
+                                        {% if object %}Actualizar{% else %}Crear{% endif %} Tercero
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>

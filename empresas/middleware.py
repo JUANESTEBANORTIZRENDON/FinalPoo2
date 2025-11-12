@@ -217,8 +217,10 @@ class EmpresaFilterMixin:
     def form_valid(self, form):
         """
         Establece la empresa activa en el formulario antes de guardar.
+        Solo aplica para vistas que usan formularios (CreateView, UpdateView).
         """
-        if hasattr(form.instance, 'empresa'):
+        # Verificar que form tenga el atributo instance (FormMixin)
+        if hasattr(form, 'instance') and hasattr(form.instance, 'empresa'):
             empresa_activa = getattr(self.request, 'empresa_activa', None)
             if empresa_activa:
                 form.instance.empresa = empresa_activa

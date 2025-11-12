@@ -1,27 +1,51 @@
-{% extends 'components/lista_base.html' %}
+{% extends 'base_contable.html' %}
+{% load static %}
 
-{% with page_title='Impuestos' breadcrumb_active='Impuestos' card_title='Gestión de Impuestos' create_url='catalogos:impuestos_crear' create_button_text='Nuevo Impuesto' item_name='impuesto' item_name_plural='impuestos' empty_message='Comienza agregando los impuestos que utilizarás en tu sistema contable.' create_first_text='Crear Primer Impuesto' table_id='tabla-impuestos' %}
+{% block title %}Impuestos - S_CONTABLE{% endblock %}
 
-{% block breadcrumb_items %}
-<li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Impuestos</li>
+    </ol>
+</nav>
 {% endblock %}
 
-{% block header_icon %}percent{% endblock %}
-
-{% block filtros %}
-{% include 'catalogos/includes/filtros_catalogo.html' with filtro_tipo_options=tipo_impuesto_options table_id='tabla-impuestos' %}
-{% endblock %}
-
-{% block table_headers %}
-<th scope="col">Código</th>
-<th scope="col">Nombre</th>
-<th scope="col">Tipo</th>
-<th scope="col">Porcentaje</th>
-<th scope="col">Estado</th>
-<th scope="col">Acciones</th>
-{% endblock %}
-
-{% block table_body %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-percent"></i>
+                        Gestión de Impuestos
+                    </h4>
+                    <a href="{% url 'catalogos:impuestos_crear' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Nuevo Impuesto
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    {% include 'catalogos/includes/filtros_catalogo.html' with filtro_tipo_options=tipo_impuesto_options table_id='tabla-impuestos' %}
+                    
+                    {% if object_list %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="tabla-impuestos">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th scope="col">Código</th>
+                                        <th scope="col">Nombre</th>
+                                        <th scope="col">Tipo</th>
+                                        <th scope="col">Porcentaje</th>
+                                        <th scope="col">Estado</th>
+                                        <th scope="col">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
 {% for impuesto in object_list %}
 <tr data-tipo="{{ impuesto.tipo_impuesto }}" data-activo="{{ impuesto.activo }}">
     <td><strong>{{ impuesto.codigo }}</strong></td>
@@ -46,10 +70,54 @@
         {% endif %}
     </td>
     <td>
-        {% include 'catalogos/includes/acciones_lista.html' with item=impuesto detail_url=impuesto.get_absolute_url edit_url=impuesto.get_edit_url delete_url=impuesto.get_delete_url item_name=impuesto.nombre %}
+        <div class="btn-group" aria-label="Acciones para {{ impuesto.nombre }}">
+            <a href="{% url 'catalogos:impuestos_detalle' impuesto.pk %}" 
+               class="btn btn-sm btn-outline-info" 
+               title="Ver detalles de {{ impuesto.nombre }}">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+                <span class="visually-hidden">Ver detalles</span>
+            </a>
+            <a href="{% url 'catalogos:impuestos_editar' impuesto.pk %}" 
+               class="btn btn-sm btn-outline-warning" 
+               title="Editar {{ impuesto.nombre }}">
+                <i class="bi bi-pencil" aria-hidden="true"></i>
+                <span class="visually-hidden">Editar</span>
+            </a>
+            <a href="{% url 'catalogos:impuestos_eliminar' impuesto.pk %}" 
+               class="btn btn-sm btn-outline-danger" 
+               title="Eliminar {{ impuesto.nombre }}">
+                <i class="bi bi-trash" aria-hidden="true"></i>
+                <span class="visually-hidden">Eliminar</span>
+            </a>
+        </div>
     </td>
 </tr>
 {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    Mostrando {{ object_list|length }} impuesto{{ object_list|length|pluralize }}
+                                </small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+                            <h5>No hay impuestos registrados</h5>
+                            <p class="mb-3">Comienza agregando los impuestos que utilizarás en tu sistema contable.</p>
+                            <a href="{% url 'catalogos:impuestos_crear' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i>
+                                Crear Primer Impuesto
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
-
-{% endwith %}

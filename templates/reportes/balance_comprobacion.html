@@ -1,0 +1,358 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}Balance de Comprobación - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'reportes:index' %}">Reportes</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Balance de Comprobación</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-clipboard-data text-info"></i>
+                        Balance de Comprobación
+                    </h4>
+                    <div>
+                        <button class="btn btn-success" id="btn-exportar-excel">
+                            <i class="bi bi-file-earmark-excel"></i>
+                            Excel
+                        </button>
+                        <button class="btn btn-danger" id="btn-exportar-pdf">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            PDF
+                        </button>
+                        <button class="btn btn-secondary" id="btn-imprimir">
+                            <i class="bi bi-printer"></i>
+                            Imprimir
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>¿Qué es el Balance de Comprobación?</strong>
+                        <p class="mb-0">Es un resumen que muestra el saldo de TODAS las cuentas en un momento determinado. Sirve para verificar que los débitos totales sean iguales a los créditos totales.</p>
+                    </div>
+
+                    <!-- Filtros -->
+                    <form method="GET" id="form-filtros">
+                        <div class="row mb-4">
+                            <div class="col-md-5">
+                                <label for="fecha_corte" class="form-label"><strong>Fecha de Corte:</strong></label>
+                                <input type="date" class="form-control form-control-lg" id="fecha_corte" 
+                                       name="fecha_corte" value="{{ fecha_corte }}" required>
+                                <small class="text-muted">El balance mostrará los saldos acumulados hasta esta fecha</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="tipo_cuenta" class="form-label"><strong>Filtrar por Tipo:</strong></label>
+                                <select class="form-select form-select-lg" id="tipo_cuenta" name="tipo_cuenta">
+                                    <option value="">Todos los tipos</option>
+                                    <option value="ACTIVO" {% if tipo_cuenta == 'ACTIVO' %}selected{% endif %}>Activos</option>
+                                    <option value="PASIVO" {% if tipo_cuenta == 'PASIVO' %}selected{% endif %}>Pasivos</option>
+                                    <option value="PATRIMONIO" {% if tipo_cuenta == 'PATRIMONIO' %}selected{% endif %}>Patrimonio</option>
+                                    <option value="INGRESO" {% if tipo_cuenta == 'INGRESO' %}selected{% endif %}>Ingresos</option>
+                                    <option value="GASTO" {% if tipo_cuenta == 'GASTO' %}selected{% endif %}>Gastos</option>
+                                    <option value="COSTO" {% if tipo_cuenta == 'COSTO' %}selected{% endif %}>Costos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-search"></i>
+                                        Generar Balance
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if cuentas %}
+                        <div id="area-impresion">
+                            <!-- Encabezado del reporte -->
+                            <div class="text-center mb-4">
+                                <h3>{{ request.empresa_activa.nombre }}</h3>
+                                <h5>Balance de Comprobación</h5>
+                                {% if fecha_corte %}
+                                    <p class="text-muted">Al {{ fecha_corte }}</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Tabla del balance -->
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered table-hover" id="tabla-balance">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th style="width: 100px;">Código</th>
+                                            <th>Cuenta</th>
+                                            <th style="width: 80px;" class="text-center">Tipo</th>
+                                            <th style="width: 130px;" class="text-end">Débitos</th>
+                                            <th style="width: 130px;" class="text-end">Créditos</th>
+                                            <th style="width: 130px;" class="text-end">Saldo Deudor</th>
+                                            <th style="width: 130px;" class="text-end">Saldo Acreedor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in cuentas %}
+                                            <tr data-tipo="{{ item.cuenta.tipo_cuenta }}"
+                                                data-debito="{{ item.total_debito }}"
+                                                data-credito="{{ item.total_credito }}">
+                                                <td><strong>{{ item.cuenta.codigo }}</strong></td>
+                                                <td>{{ item.cuenta.nombre }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-{% if item.cuenta.tipo_cuenta == 'ACTIVO' %}primary{% elif item.cuenta.tipo_cuenta == 'PASIVO' %}danger{% elif item.cuenta.tipo_cuenta == 'PATRIMONIO' %}info{% elif item.cuenta.tipo_cuenta == 'INGRESO' %}success{% elif item.cuenta.tipo_cuenta == 'GASTO' %}warning{% else %}secondary{% endif %}">
+                                                        {{ item.cuenta.tipo_cuenta|slice:":3" }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-end">
+                                                    ${{ item.total_debito|floatformat:2 }}
+                                                </td>
+                                                <td class="text-end">
+                                                    ${{ item.total_credito|floatformat:2 }}
+                                                </td>
+                                                <td class="text-end">
+                                                    {% if item.saldo_deudor > 0 %}
+                                                        ${{ item.saldo_deudor|floatformat:2 }}
+                                                    {% else %}
+                                                        —
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">
+                                                    {% if item.saldo_acreedor > 0 %}
+                                                        ${{ item.saldo_acreedor|floatformat:2 }}
+                                                    {% else %}
+                                                        —
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-secondary">
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>TOTALES:</strong></td>
+                                            <td class="text-end">
+                                                <strong id="total-debitos">$0.00</strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong id="total-creditos">$0.00</strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong id="total-saldo-deudor">$0.00</strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong id="total-saldo-acreedor">$0.00</strong>
+                                            </td>
+                                        </tr>
+                                        <tr id="diferencia-row" style="display: none;">
+                                            <td colspan="3" class="text-end text-danger"><strong>DIFERENCIA:</strong></td>
+                                            <td colspan="2" class="text-end text-danger">
+                                                <strong id="diferencia-valor">$0.00</strong>
+                                            </td>
+                                            <td colspan="2" class="text-center text-danger">
+                                                <i class="bi bi-exclamation-triangle"></i>
+                                                <strong>¡No cuadra!</strong>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <!-- Verificación de cuadre -->
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <div class="card" id="card-verificacion">
+                                        <div class="card-body">
+                                            <div class="row text-center">
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Total Cuentas</h6>
+                                                    <h4>{{ cuentas|length }}</h4>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Total Débitos</h6>
+                                                    <h4 class="text-success" id="resumen-debitos">$0.00</h4>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Total Créditos</h6>
+                                                    <h4 class="text-info" id="resumen-creditos">$0.00</h4>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h6 class="text-muted">Estado</h6>
+                                                    <h4 id="estado-cuadre">—</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning text-center">
+                            <i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>
+                            <h5>No hay datos para mostrar</h5>
+                            <p class="mb-0">Selecciona una fecha de corte para generar el Balance de Comprobación.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn, .breadcrumb, .alert, #form-filtros {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    table {
+        font-size: 10px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcular totales y verificar cuadre
+    calcularTotales();
+    
+    // Event listener para imprimir
+    const btnImprimir = document.getElementById('btn-imprimir');
+    if (btnImprimir) {
+        btnImprimir.addEventListener('click', function() {
+            window.print();
+        });
+    }
+    
+    // Event listener para exportar a Excel
+    const btnExportarExcel = document.getElementById('btn-exportar-excel');
+    if (btnExportarExcel) {
+        btnExportarExcel.addEventListener('click', function() {
+            console.log('Click en botón Excel');
+            const fechaCorte = document.getElementById('fecha_corte').value;
+            const tipoCuenta = document.getElementById('tipo_cuenta').value;
+            
+            console.log('Fecha de corte:', fechaCorte);
+            
+            if (!fechaCorte) {
+                alert('Por favor selecciona una fecha de corte y genera el balance primero');
+                return;
+            }
+            
+            const url = '{% url "reportes:balance_comprobacion_exportar" %}?fecha_corte=' + fechaCorte + '&formato=excel' + (tipoCuenta ? '&tipo_cuenta=' + tipoCuenta : '');
+            console.log('URL:', url);
+            
+            window.location.href = url;
+        });
+    } else {
+        console.error('Botón Excel no encontrado');
+    }
+    
+    // Event listener para exportar a PDF
+    const btnExportarPdf = document.getElementById('btn-exportar-pdf');
+    if (btnExportarPdf) {
+        btnExportarPdf.addEventListener('click', function() {
+            console.log('Click en botón PDF');
+            const fechaCorte = document.getElementById('fecha_corte').value;
+            const tipoCuenta = document.getElementById('tipo_cuenta').value;
+            
+            console.log('Fecha de corte:', fechaCorte);
+            
+            if (!fechaCorte) {
+                alert('Por favor selecciona una fecha de corte y genera el balance primero');
+                return;
+            }
+            
+            const url = '{% url "reportes:balance_comprobacion_exportar" %}?fecha_corte=' + fechaCorte + '&formato=pdf' + (tipoCuenta ? '&tipo_cuenta=' + tipoCuenta : '');
+            console.log('URL:', url);
+            
+            window.location.href = url;
+        });
+    } else {
+        console.error('Botón PDF no encontrado');
+    }
+    
+    function calcularTotales() {
+        const tabla = document.getElementById('tabla-balance');
+        if (!tabla) return;
+        
+        let totalDebitos = 0;
+        let totalCreditos = 0;
+        let totalSaldoDeudor = 0;
+        let totalSaldoAcreedor = 0;
+        
+        const filas = tabla.querySelectorAll('tbody tr');
+        filas.forEach(fila => {
+            const debito = parseFloat(fila.cells[3].textContent.replace(/[\$,]/g, '')) || 0;
+            const credito = parseFloat(fila.cells[4].textContent.replace(/[\$,]/g, '')) || 0;
+            const saldoDeudor = parseFloat(fila.cells[5].textContent.replace(/[\$,—\s]/g, '')) || 0;
+            const saldoAcreedor = parseFloat(fila.cells[6].textContent.replace(/[\$,—\s]/g, '')) || 0;
+            
+            totalDebitos += debito;
+            totalCreditos += credito;
+            totalSaldoDeudor += saldoDeudor;
+            totalSaldoAcreedor += saldoAcreedor;
+        });
+        
+        // Actualizar totales
+        document.getElementById('total-debitos').textContent = formatearMoneda(totalDebitos);
+        document.getElementById('total-creditos').textContent = formatearMoneda(totalCreditos);
+        document.getElementById('total-saldo-deudor').textContent = formatearMoneda(totalSaldoDeudor);
+        document.getElementById('total-saldo-acreedor').textContent = formatearMoneda(totalSaldoAcreedor);
+        
+        // Actualizar resumen
+        document.getElementById('resumen-debitos').textContent = formatearMoneda(totalDebitos);
+        document.getElementById('resumen-creditos').textContent = formatearMoneda(totalCreditos);
+        
+        // Verificar cuadre
+        const diferencia = totalDebitos - totalCreditos;
+        const diferenciaSaldos = totalSaldoDeudor - totalSaldoAcreedor;
+        const estadoCuadre = document.getElementById('estado-cuadre');
+        const cardVerificacion = document.getElementById('card-verificacion');
+        const diferenciaRow = document.getElementById('diferencia-row');
+        
+        if (Math.abs(diferencia) < 0.01 && Math.abs(diferenciaSaldos) < 0.01) {
+            // Cuadra perfectamente
+            estadoCuadre.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> Cuadrado';
+            estadoCuadre.className = 'text-success';
+            cardVerificacion.className = 'card border-success';
+            if (diferenciaRow) diferenciaRow.style.display = 'none';
+        } else {
+            // No cuadra
+            estadoCuadre.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i> No Cuadra';
+            estadoCuadre.className = 'text-danger';
+            cardVerificacion.className = 'card border-danger';
+            
+            if (diferenciaRow) {
+                diferenciaRow.style.display = '';
+                document.getElementById('diferencia-valor').textContent = formatearMoneda(Math.abs(diferencia));
+            }
+        }
+    }
+    
+    function formatearMoneda(valor) {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 2
+        }).format(valor);
+    }
+});
+</script>
+{% endblock %}
