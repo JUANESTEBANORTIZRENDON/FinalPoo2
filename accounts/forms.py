@@ -70,7 +70,7 @@ class RegistroCompletoForm(UserCreationForm):
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': '+573001234567 o 3001234567',
-            'pattern': '(\+57)?[0-9]{10,12}'
+            'pattern': r'(\+57)?[0-9]{10,12}'
         })
     )
     
