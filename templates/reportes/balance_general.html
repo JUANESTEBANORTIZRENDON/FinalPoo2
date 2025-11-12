@@ -380,108 +380,58 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    function calcularBalance() {
-        // Calcular activos
-        let activosCorrientes = 0;
-        let activosNoCorrientes = 0;
+    // Funciones auxiliares para cálculos
+    function parsearValorMoneda(elemento) {
+        const texto = elemento.querySelector('.col-4').textContent;
+        return Number.parseFloat(texto.replaceAll(/[$,]/, '')) || 0;
+    }
+    
+    function sumarFilas(filas) {
+        let total = 0;
+        for (const fila of filas) {
+            total += parsearValorMoneda(fila);
+        }
+        return total;
+    }
+    
+    function calcularSeccionCorriente(elementoId, selectorFilas) {
+        const div = document.getElementById(elementoId);
+        if (!div) return 0;
         
-        const activosCorrientesDiv = document.getElementById('subtotal-activos-corrientes');
-        if (activosCorrientesDiv) {
-            const parent = activosCorrientesDiv.closest('.card-body');
-            const filas = parent.querySelectorAll('h6.text-primary:first-of-type + .row');
-            for (const fila of filas) {
-                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[$,]/, '')) || 0;
-                activosCorrientes += valor;
+        const parent = div.closest('.card-body');
+        const filas = parent.querySelectorAll(selectorFilas);
+        return sumarFilas(filas);
+    }
+    
+    function calcularSeccionNoCorriente(elementoId, textoIdentificador) {
+        const div = document.getElementById(elementoId);
+        if (!div) return 0;
+        
+        const parent = div.closest('.card-body');
+        const todasFilas = parent.querySelectorAll('.row.mb-1');
+        let capturando = false;
+        let total = 0;
+        
+        for (const fila of todasFilas) {
+            const h6Anterior = fila.previousElementSibling;
+            if (h6Anterior && h6Anterior.textContent.includes(textoIdentificador)) {
+                capturando = true;
+            }
+            if (capturando && fila.classList.contains('mb-1')) {
+                total += parsearValorMoneda(fila);
             }
         }
-        
-        const activosNoCorrientesDiv = document.getElementById('subtotal-activos-no-corrientes');
-        if (activosNoCorrientesDiv) {
-            const parent = activosNoCorrientesDiv.closest('.card-body');
-            const secciones = parent.querySelectorAll('h6.text-primary');
-            if (secciones.length > 1) {
-                let capturando = false;
-                const todasFilas = parent.querySelectorAll('.row.mb-1');
-                for (const fila of todasFilas) {
-                    const h6Anterior = fila.previousElementSibling;
-                    if (h6Anterior && h6Anterior.textContent.includes('No Corrientes')) {
-                        capturando = true;
-                    }
-                    if (capturando && fila.classList.contains('mb-1')) {
-                        const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[$,]/, '')) || 0;
-                        activosNoCorrientes += valor;
-                    }
-                }
-            }
+        return total;
+    }
+    
+    function actualizarElemento(elementoId, valor) {
+        const elemento = document.getElementById(elementoId);
+        if (elemento) {
+            elemento.textContent = formatearMoneda(valor);
         }
-        
-        const totalActivos = activosCorrientes + activosNoCorrientes;
-        
-        // Calcular pasivos
-        let pasivosCorrientes = 0;
-        let pasivosNoCorrientes = 0;
-        
-        const pasivosCorrientesDiv = document.getElementById('subtotal-pasivos-corrientes');
-        if (pasivosCorrientesDiv) {
-            const parent = pasivosCorrientesDiv.closest('.card-body');
-            const filas = parent.querySelectorAll('h6.text-danger:first-of-type + .row');
-            for (const fila of filas) {
-                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[$,]/, '')) || 0;
-                pasivosCorrientes += valor;
-            }
-        }
-        
-        const pasivosNoCorrientesDiv = document.getElementById('subtotal-pasivos-no-corrientes');
-        if (pasivosNoCorrientesDiv) {
-            const parent = pasivosNoCorrientesDiv.closest('.card-body');
-            const secciones = parent.querySelectorAll('h6.text-danger');
-            if (secciones.length > 1) {
-                let capturando = false;
-                const todasFilas = parent.querySelectorAll('.row.mb-1');
-                for (const fila of todasFilas) {
-                    const h6Anterior = fila.previousElementSibling;
-                    if (h6Anterior && h6Anterior.textContent.includes('No Corrientes')) {
-                        capturando = true;
-                    }
-                    if (capturando && fila.classList.contains('mb-1')) {
-                        const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[$,]/, '')) || 0;
-                        pasivosNoCorrientes += valor;
-                    }
-                }
-            }
-        }
-        
-        const totalPasivos = pasivosCorrientes + pasivosNoCorrientes;
-        
-        // Calcular patrimonio
-        let totalPatrimonio = 0;
-        const patrimonioCard = document.getElementById('total-patrimonio');
-        if (patrimonioCard) {
-            const parent = patrimonioCard.closest('.card-body');
-            const filas = parent.querySelectorAll('.row.mb-1');
-            for (const fila of filas) {
-                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[$,]/, '')) || 0;
-                totalPatrimonio += valor;
-            }
-        }
-        
-        // Actualizar UI
-        if (activosCorrientesDiv) activosCorrientesDiv.textContent = formatearMoneda(activosCorrientes);
-        if (activosNoCorrientesDiv) activosNoCorrientesDiv.textContent = formatearMoneda(activosNoCorrientes);
-        document.getElementById('total-activos').textContent = formatearMoneda(totalActivos);
-        
-        if (pasivosCorrientesDiv) pasivosCorrientesDiv.textContent = formatearMoneda(pasivosCorrientes);
-        if (pasivosNoCorrientesDiv) pasivosNoCorrientesDiv.textContent = formatearMoneda(pasivosNoCorrientes);
-        document.getElementById('total-pasivos').textContent = formatearMoneda(totalPasivos);
-        
-        document.getElementById('total-patrimonio').textContent = formatearMoneda(totalPatrimonio);
-        document.getElementById('total-pasivo-patrimonio').textContent = formatearMoneda(totalPasivos + totalPatrimonio);
-        
-        // Verificación
-        document.getElementById('verif-activos').textContent = formatearMoneda(totalActivos);
-        document.getElementById('verif-pasivos').textContent = formatearMoneda(totalPasivos);
-        document.getElementById('verif-patrimonio').textContent = formatearMoneda(totalPatrimonio);
-        
+    }
+    
+    function actualizarVerificacionEcuacion(totalActivos, totalPasivos, totalPatrimonio) {
         const diferencia = Math.abs(totalActivos - (totalPasivos + totalPatrimonio));
         const estadoEcuacion = document.getElementById('estado-ecuacion');
         const cardVerificacion = document.getElementById('card-verificacion');
@@ -495,6 +445,58 @@ document.addEventListener('DOMContentLoaded', function() {
             estadoEcuacion.className = 'text-danger';
             cardVerificacion.className = 'card border-danger';
         }
+    }
+    
+    function calcularBalance() {
+        // Calcular activos
+        const activosCorrientes = calcularSeccionCorriente(
+            'subtotal-activos-corrientes',
+            'h6.text-primary:first-of-type + .row'
+        );
+        const activosNoCorrientes = calcularSeccionNoCorriente(
+            'subtotal-activos-no-corrientes',
+            'No Corrientes'
+        );
+        const totalActivos = activosCorrientes + activosNoCorrientes;
+        
+        // Calcular pasivos
+        const pasivosCorrientes = calcularSeccionCorriente(
+            'subtotal-pasivos-corrientes',
+            'h6.text-danger:first-of-type + .row'
+        );
+        const pasivosNoCorrientes = calcularSeccionNoCorriente(
+            'subtotal-pasivos-no-corrientes',
+            'No Corrientes'
+        );
+        const totalPasivos = pasivosCorrientes + pasivosNoCorrientes;
+        
+        // Calcular patrimonio
+        const totalPatrimonio = calcularSeccionCorriente(
+            'total-patrimonio',
+            '.row.mb-1'
+        );
+        
+        // Actualizar UI - Activos
+        actualizarElemento('subtotal-activos-corrientes', activosCorrientes);
+        actualizarElemento('subtotal-activos-no-corrientes', activosNoCorrientes);
+        actualizarElemento('total-activos', totalActivos);
+        
+        // Actualizar UI - Pasivos
+        actualizarElemento('subtotal-pasivos-corrientes', pasivosCorrientes);
+        actualizarElemento('subtotal-pasivos-no-corrientes', pasivosNoCorrientes);
+        actualizarElemento('total-pasivos', totalPasivos);
+        
+        // Actualizar UI - Patrimonio
+        actualizarElemento('total-patrimonio', totalPatrimonio);
+        actualizarElemento('total-pasivo-patrimonio', totalPasivos + totalPatrimonio);
+        
+        // Actualizar UI - Verificación
+        actualizarElemento('verif-activos', totalActivos);
+        actualizarElemento('verif-pasivos', totalPasivos);
+        actualizarElemento('verif-patrimonio', totalPatrimonio);
+        
+        // Verificar ecuación contable
+        actualizarVerificacionEcuacion(totalActivos, totalPasivos, totalPatrimonio);
     }
 });
 </script>
