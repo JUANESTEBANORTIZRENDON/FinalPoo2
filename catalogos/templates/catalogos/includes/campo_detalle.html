@@ -1,0 +1,12 @@
+{% comment %}
+Componente reutilizable para mostrar un campo en una página de detalle
+Parámetros:
+  - label: etiqueta del campo
+  - value: valor del campo
+  - col_class: clase CSS para la columna (opcional, por defecto col-md-6)
+{% endcomment %}
+
+<div class="{{ col_class|default:'col-md-6' }} mb-3">
+    <div class="text-muted small">{{ label }}</div>
+    <p class="h5">{{ value }}</p>
+</div>

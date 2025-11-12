@@ -1,0 +1,107 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}{{ page_title|default:object.nombre }} - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        {% block breadcrumb_items %}
+        {# Breadcrumb items personalizados aquí #}
+        {% endblock %}
+        <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb_active|default:object.nombre }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-{% block header_icon %}file-earmark{% endblock %}"></i>
+                        {{ card_title|default:object.nombre }}
+                    </h4>
+                    <div>
+                        {% if object.activo %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactivo</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% block detalle_content %}
+                    {# Contenido principal del detalle #}
+                    {% endblock %}
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ list_url }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i>
+                            Volver a la lista
+                        </a>
+                        <div>
+                            <a href="{{ edit_url }}" class="btn btn-warning">
+                                <i class="bi bi-pencil"></i>
+                                Editar
+                            </a>
+                            <a href="{{ delete_url }}" class="btn btn-danger">
+                                <i class="bi bi-trash"></i>
+                                Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            {% block sidebar %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Información Adicional
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-building"></i>
+                        <strong>Empresa:</strong>
+                    </p>
+                    <p>{{ object.empresa.nombre }}</p>
+                    
+                    <hr>
+                    
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-clock-history"></i>
+                        <strong>Estado:</strong>
+                    </p>
+                    <p>
+                        {% if object.activo %}
+                            <span class="badge bg-success">Activo</span>
+                            <small class="d-block text-muted mt-1">
+                                {{ mensaje_activo|default:"Este elemento está activo y disponible para usar" }}
+                            </small>
+                        {% else %}
+                            <span class="badge bg-danger">Inactivo</span>
+                            <small class="d-block text-muted mt-1">
+                                {{ mensaje_inactivo|default:"Este elemento no está disponible" }}
+                            </small>
+                        {% endif %}
+                    </p>
+                    
+                    {% block sidebar_extra %}
+                    {# Contenido adicional del sidebar #}
+                    {% endblock %}
+                </div>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
