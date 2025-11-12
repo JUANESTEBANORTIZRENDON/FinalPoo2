@@ -1,22 +1,7 @@
-{% extends 'base_contable.html' %}
-{% load static %}
+{% extends 'components/page_base.html' %}
 {% load form_helpers %}
 
-{% block title %}{{ page_title }} - S_CONTABLE{% endblock %}
-
-{% block breadcrumb %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
-        {% block breadcrumb_items %}
-        {# Breadcrumb items personalizados aquí #}
-        {% endblock %}
-        <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb_active }}</li>
-    </ol>
-</nav>
-{% endblock %}
-
-{% block content %}
+{% block page_content %}
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-lg-8">
