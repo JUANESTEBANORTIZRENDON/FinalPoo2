@@ -3,6 +3,7 @@
 {% with page_title='Métodos de Pago' breadcrumb_active='Métodos de Pago' card_title='Gestión de Métodos de Pago' create_url='catalogos:metodos_pago_crear' create_button_text='Nuevo Método de Pago' item_name='método' item_name_plural='métodos de pago' empty_message='Comienza agregando los métodos de pago que aceptarás en tu sistema.' create_first_text='Crear Primer Método de Pago' table_id='tabla-metodos' %}
 
 {% block breadcrumb_items %}
+<!-- nosonar: S5254 - Este <li> se renderiza dentro de <ol class="breadcrumb"> del template base -->
 <li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
 {% endblock %}
 
