@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function calcularSaldos() {
         const naturaleza = '{{ cuenta.naturaleza }}';
-        const saldoInicial = parseFloat('{{ cuenta.saldo_inicial }}') || 0;
+        const saldoInicial = Number.parseFloat('{{ cuenta.saldo_inicial }}') || 0;
         
         let saldoActual = saldoInicial;
         let totalDebitos = 0;
@@ -271,8 +271,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const debitoText = fila.cells[3].textContent.replace(/[\$,—\s]/g, '');
             const creditoText = fila.cells[4].textContent.replace(/[\$,—\s]/g, '');
             
-            const debito = parseFloat(debitoText) || 0;
-            const credito = parseFloat(creditoText) || 0;
+            const debito = Number.parseFloat(debitoText) || 0;
+            const credito = Number.parseFloat(creditoText) || 0;
             
             totalDebitos += debito;
             totalCreditos += credito;

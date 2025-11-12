@@ -310,14 +310,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const btnEliminar = clone.querySelector('.btn-eliminar-partida');
         
         inputDebito.addEventListener('input', function() {
-            if (parseFloat(this.value) > 0) {
+            if (Number.parseFloat(this.value) > 0) {
                 inputCredito.value = '0.00';
             }
             calcularTotales();
         });
         
         inputCredito.addEventListener('input', function() {
-            if (parseFloat(this.value) > 0) {
+            if (Number.parseFloat(this.value) > 0) {
                 inputDebito.value = '0.00';
             }
             calcularTotales();
@@ -357,8 +357,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const filas = tbodyPartidas.querySelectorAll('.partida-row');
         filas.forEach(fila => {
-            const debito = parseFloat(fila.querySelector('.input-debito').value) || 0;
-            const credito = parseFloat(fila.querySelector('.input-credito').value) || 0;
+            const debito = Number.parseFloat(fila.querySelector('.input-debito').value) || 0;
+            const credito = Number.parseFloat(fila.querySelector('.input-credito').value) || 0;
             
             totalDebitos += debito;
             totalCreditos += credito;
@@ -431,8 +431,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     partidas.push({
                         cuenta_id: selectCuenta.value,
                         concepto: inputConcepto.value || '',
-                        debito: parseFloat(inputDebito.value) || 0,
-                        credito: parseFloat(inputCredito.value) || 0
+                        debito: Number.parseFloat(inputDebito.value) || 0,
+                        credito: Number.parseFloat(inputCredito.value) || 0
                     });
                 }
             });
