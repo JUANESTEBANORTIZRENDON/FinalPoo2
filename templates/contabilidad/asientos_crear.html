@@ -99,10 +99,10 @@
                                     
                                     <div class="col-md-3">
                                         <div class="mb-3">
-                                            <label class="form-label">
+                                            <label for="estado_asiento" class="form-label">
                                                 <strong>Estado del Asiento:</strong>
                                             </label>
-                                            <input type="text" class="form-control" value="Borrador" disabled>
+                                            <input type="text" id="estado_asiento" class="form-control" value="Borrador" disabled>
                                             <small class="text-muted">El asiento se creará en estado borrador</small>
                                         </div>
                                     </div>
@@ -275,6 +275,15 @@
 </style>
 
 <script>
+// Función auxiliar para formatear moneda (scope global para reutilización)
+function formatearMoneda(valor) {
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 2
+    }).format(valor);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     let contadorPartidas = 0;
     
@@ -390,14 +399,6 @@ document.addEventListener('DOMContentLoaded', function() {
             btnGuardar.classList.remove('btn-primary');
             btnGuardar.classList.add('btn-secondary');
         }
-    }
-    
-    function formatearMoneda(valor) {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 2
-        }).format(valor);
     }
     
     // Interceptar submit para validar y preparar datos

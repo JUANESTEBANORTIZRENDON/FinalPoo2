@@ -141,7 +141,7 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <div class="btn-group btn-group-sm" role="group">
+                                                <div class="btn-group btn-group-sm" aria-label="Acciones de la cuenta">
                                                     <a href="{% url 'contabilidad:cuentas_detalle' cuenta.pk %}" 
                                                        class="btn btn-info btn-sm" 
                                                        title="Ver detalles">
@@ -279,7 +279,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const elemDiferencia = document.getElementById('diferencia');
             elemDiferencia.textContent = formatearMoneda(Math.abs(diferencia));
-            elemDiferencia.className = diferencia === 0 ? 'text-success' : (diferencia > 0 ? 'text-primary' : 'text-info');
+            
+            // Determinar clase según diferencia
+            let claseDiferencia;
+            if (diferencia === 0) {
+                claseDiferencia = 'text-success';
+            } else if (diferencia > 0) {
+                claseDiferencia = 'text-primary';
+            } else {
+                claseDiferencia = 'text-info';
+            }
+            elemDiferencia.className = claseDiferencia;
         }
         
         function formatearMoneda(valor) {
