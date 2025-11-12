@@ -28,6 +28,10 @@ REPORTES_INDEX_URL = 'reportes:index'
 CONFIGURACIONES_LIST_URL = 'reportes:configuraciones_lista'
 HISTORIAL_URL = 'reportes:historial'
 
+# Constantes para formatos Excel
+EXCEL_MONEY_FORMAT = '"$"#,##0.00'
+EXCEL_TOTALES_LABEL = 'TOTALES:'
+
 # Vistas temporales básicas
 class ReportesIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'reportes/index.html'
@@ -503,9 +507,9 @@ def _exportar_diario_excel(asientos, fecha_inicio, fecha_fin, empresa):
             ws.cell(row=row, column=7, value=asiento.get_estado_display()).border = border
             
             # Formato de moneda
-            ws.cell(row=row, column=5).number_format = '"$"#,##0.00'
+            ws.cell(row=row, column=5).number_format = EXCEL_MONEY_FORMAT
             ws.cell(row=row, column=5).alignment = Alignment(horizontal='right')
-            ws.cell(row=row, column=6).number_format = '"$"#,##0.00'
+            ws.cell(row=row, column=6).number_format = EXCEL_MONEY_FORMAT
             ws.cell(row=row, column=6).alignment = Alignment(horizontal='right')
             
             total_debitos += partida.valor_debito
@@ -514,14 +518,14 @@ def _exportar_diario_excel(asientos, fecha_inicio, fecha_fin, empresa):
             row += 1
     
     # Totales
-    ws.cell(row=row, column=1, value='TOTALES:').font = Font(bold=True)
+    ws.cell(row=row, column=1, value=EXCEL_TOTALES_LABEL).font = Font(bold=True)
     ws.cell(row=row, column=5, value=float(total_debitos)).font = Font(bold=True)
     ws.cell(row=row, column=6, value=float(total_creditos)).font = Font(bold=True)
     
-    ws.cell(row=row, column=5).number_format = '"$"#,##0.00'
+    ws.cell(row=row, column=5).number_format = EXCEL_MONEY_FORMAT
     ws.cell(row=row, column=5).alignment = Alignment(horizontal='right')
     ws.cell(row=row, column=5).border = border
-    ws.cell(row=row, column=6).number_format = '"$"#,##0.00'
+    ws.cell(row=row, column=6).number_format = EXCEL_MONEY_FORMAT
     ws.cell(row=row, column=6).alignment = Alignment(horizontal='right')
     ws.cell(row=row, column=6).border = border
     
@@ -589,7 +593,7 @@ def _exportar_diario_pdf(asientos, fecha_inicio, fecha_fin, empresa):
     
     # Fila de totales
     data.append([
-        'TOTALES:',
+        EXCEL_TOTALES_LABEL,
         '',
         '',
         '',
@@ -769,20 +773,20 @@ def _exportar_balance_excel(cuentas, fecha_corte, empresa, total_deb, total_cred
         
         # Formato de moneda
         for col in range(4, 8):
-            ws.cell(row=row, column=col).number_format = '"$"#,##0.00'
+            ws.cell(row=row, column=col).number_format = EXCEL_MONEY_FORMAT
             ws.cell(row=row, column=col).alignment = Alignment(horizontal='right')
         
         row += 1
     
     # Totales
-    ws.cell(row=row, column=1, value='TOTALES:').font = Font(bold=True)
+    ws.cell(row=row, column=1, value=EXCEL_TOTALES_LABEL).font = Font(bold=True)
     ws.cell(row=row, column=4, value=float(total_deb)).font = Font(bold=True)
     ws.cell(row=row, column=5, value=float(total_cred)).font = Font(bold=True)
     ws.cell(row=row, column=6, value=float(total_sd)).font = Font(bold=True)
     ws.cell(row=row, column=7, value=float(total_sa)).font = Font(bold=True)
     
     for col in range(4, 8):
-        ws.cell(row=row, column=col).number_format = '"$"#,##0.00'
+        ws.cell(row=row, column=col).number_format = EXCEL_MONEY_FORMAT
         ws.cell(row=row, column=col).alignment = Alignment(horizontal='right')
         ws.cell(row=row, column=col).border = border
     
@@ -844,7 +848,7 @@ def _exportar_balance_pdf(cuentas, fecha_corte, empresa, total_deb, total_cred, 
     
     # Fila de totales
     data.append([
-        'TOTALES:',
+        EXCEL_TOTALES_LABEL,
         '',
         '',
         f"${total_deb:,.2f}",

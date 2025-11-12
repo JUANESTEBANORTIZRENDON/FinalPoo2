@@ -373,7 +373,7 @@ def crear_empresa(request):  # nosonar
         if not razon_social or not nit:
             messages.error(request, 'La razón social y el NIT son campos obligatorios.')
             context = {
-                'titulo': 'Crear Nueva Empresa',
+                'titulo': TITULO_CREAR_EMPRESA,
                 'accion': 'crear'
             }
             return render(request, TEMPLATE_EMPRESA_FORM, context)
@@ -382,7 +382,7 @@ def crear_empresa(request):  # nosonar
         if Empresa.objects.filter(nit=nit).exists():
             messages.error(request, f'Ya existe una empresa con el NIT {nit}.')
             context = {
-                'titulo': 'Crear Nueva Empresa',
+                'titulo': TITULO_CREAR_EMPRESA,
                 'accion': 'crear'
             }
             return render(request, TEMPLATE_EMPRESA_FORM, context)
