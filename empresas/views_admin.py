@@ -413,7 +413,7 @@ def crear_empresa(request):  # nosonar
         return redirect(URL_GESTIONAR_EMPRESAS)
     
     context = {
-        'titulo': 'Crear Nueva Empresa',
+        'titulo': TITULO_CREAR_EMPRESA,
         'accion': 'crear'
     }
     return render(request, TEMPLATE_EMPRESA_FORM, context)
