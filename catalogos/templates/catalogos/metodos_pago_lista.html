@@ -1,223 +1,62 @@
-{% extends 'base_contable.html' %}
-{% load static %}
+{% extends 'components/lista_base.html' %}
 
-{% block title %}Métodos de Pago - S_CONTABLE{% endblock %}
+{% with page_title='Métodos de Pago' breadcrumb_active='Métodos de Pago' card_title='Gestión de Métodos de Pago' create_url='catalogos:metodos_pago_crear' create_button_text='Nuevo Método de Pago' item_name='método' item_name_plural='métodos de pago' empty_message='Comienza agregando los métodos de pago que aceptarás en tu sistema.' create_first_text='Crear Primer Método de Pago' table_id='tabla-metodos' %}
 
-{% block breadcrumb %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Métodos de Pago</li>
-    </ol>
-</nav>
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
 {% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mb-0">
-                        <i class="bi bi-credit-card"></i>
-                        Gestión de Métodos de Pago
-                    </h4>
-                    <a href="{% url 'catalogos:metodos_pago_crear' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i>
-                        Nuevo Método de Pago
-                    </a>
-                </div>
-                
-                <div class="card-body">
-                    <!-- Filtros de búsqueda -->
-                    <div class="row mb-3">
-                        <div class="col-md-5">
-                            <input type="text" class="form-control" id="buscar" placeholder="Buscar por nombre o código...">
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="filtro_tipo">
-                                <option value="">Todos los tipos</option>
-                                <option value="EFECTIVO">Efectivo</option>
-                                <option value="TRANSFERENCIA">Transferencia</option>
-                                <option value="CHEQUE">Cheque</option>
-                                <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
-                                <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
-                                <option value="CONSIGNACION">Consignación</option>
-                                <option value="OTRO">Otro</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <select class="form-select" id="filtro_estado">
-                                <option value="">Todos los estados</option>
-                                <option value="true">Activos</option>
-                                <option value="false">Inactivos</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-outline-secondary" onclick="limpiarFiltros()">
-                                <i class="bi bi-x-circle"></i>
-                                Limpiar
-                            </button>
-                        </div>
-                    </div>
-                    
-                    {% if object_list %}
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover" id="tabla-metodos">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Nombre</th>
-                                        <th>Tipo</th>
-                                        <th>Requiere Referencia</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for metodo in object_list %}
-                                        <tr data-tipo="{{ metodo.tipo_metodo }}" data-activo="{{ metodo.activo }}">
-                                            <td>
-                                                <strong>{{ metodo.codigo }}</strong>
-                                            </td>
-                                            <td>{{ metodo.nombre }}</td>
-                                            <td>
-                                                <span class="badge 
-                                                    {% if metodo.tipo_metodo == 'EFECTIVO' %}bg-success
-                                                    {% elif metodo.tipo_metodo == 'TRANSFERENCIA' %}bg-primary
-                                                    {% elif metodo.tipo_metodo == 'CHEQUE' %}bg-info
-                                                    {% elif metodo.tipo_metodo == 'TARJETA_CREDITO' %}bg-warning
-                                                    {% elif metodo.tipo_metodo == 'TARJETA_DEBITO' %}bg-secondary
-                                                    {% elif metodo.tipo_metodo == 'CONSIGNACION' %}bg-dark
-                                                    {% else %}bg-light text-dark{% endif %}">
-                                                    {{ metodo.get_tipo_metodo_display }}
-                                                </span>
-                                            </td>
-                                            <td class="text-center">
-                                                {% if metodo.requiere_referencia %}
-                                                    <i class="bi bi-check-circle text-success" title="Sí"></i>
-                                                {% else %}
-                                                    <i class="bi bi-x-circle text-danger" title="No"></i>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% if metodo.activo %}
-                                                    <span class="badge bg-success">Activo</span>
-                                                {% else %}
-                                                    <span class="badge bg-danger">Inactivo</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <div class="btn-group" aria-label="Acciones para {{ metodo.nombre }}">
-                                                    <a href="{% url 'catalogos:metodos_pago_detalle' metodo.pk %}" 
-                                                       class="btn btn-sm btn-outline-info" 
-                                                       title="Ver detalles de {{ metodo.nombre }}">
-                                                        <i class="bi bi-eye" aria-hidden="true"></i>
-                                                        <span class="visually-hidden">Ver detalles</span>
-                                                    </a>
-                                                    <a href="{% url 'catalogos:metodos_pago_editar' metodo.pk %}" 
-                                                       class="btn btn-sm btn-outline-warning" 
-                                                       title="Editar {{ metodo.nombre }}">
-                                                        <i class="bi bi-pencil" aria-hidden="true"></i>
-                                                        <span class="visually-hidden">Editar</span>
-                                                    </a>
-                                                    <a href="{% url 'catalogos:metodos_pago_eliminar' metodo.pk %}" 
-                                                       class="btn btn-sm btn-outline-danger" 
-                                                       title="Eliminar {{ metodo.nombre }}">
-                                                        <i class="bi bi-trash" aria-hidden="true"></i>
-                                                        <span class="visually-hidden">Eliminar</span>
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Información de totales -->
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <small class="text-muted">
-                                    Mostrando {{ object_list|length }} método{{ object_list|length|pluralize }} de pago
-                                </small>
-                            </div>
-                        </div>
-                    {% else %}
-                        <div class="alert alert-info text-center">
-                            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
-                            <h5>No hay métodos de pago registrados</h5>
-                            <p class="mb-3">Comienza agregando los métodos de pago que aceptarás en tu sistema.</p>
-                            <a href="{% url 'catalogos:metodos_pago_crear' %}" class="btn btn-primary">
-                                <i class="bi bi-plus-circle"></i>
-                                Crear Primer Método de Pago
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% block header_icon %}credit-card{% endblock %}
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const buscar = document.getElementById('buscar');
-    const filtroTipo = document.getElementById('filtro_tipo');
-    const filtroEstado = document.getElementById('filtro_estado');
-    const tabla = document.getElementById('tabla-metodos');
-    
-    if (tabla) {
-        function filtrarTabla() {
-            const textoBusqueda = buscar.value.toLowerCase();
-            const tipoSeleccionado = filtroTipo.value;
-            const estadoSeleccionado = filtroEstado.value;
-            
-            const filas = tabla.querySelectorAll('tbody tr');
-            
-            for (const fila of filas) {
-                const texto = fila.textContent.toLowerCase();
-                const tipo = fila.dataset.tipo;
-                const activo = fila.dataset.activo;
-                
-                let mostrar = true;
-                
-                // Filtro de texto
-                if (textoBusqueda && !texto.includes(textoBusqueda)) {
-                    mostrar = false;
-                }
-                
-                // Filtro de tipo
-                if (tipoSeleccionado && tipo !== tipoSeleccionado) {
-                    mostrar = false;
-                }
-                
-                // Filtro de estado
-                if (estadoSeleccionado && activo !== estadoSeleccionado) {
-                    mostrar = false;
-                }
-                
-                fila.style.display = mostrar ? '' : 'none';
-            }
-        }
-        
-        buscar.addEventListener('input', filtrarTabla);
-        filtroTipo.addEventListener('change', filtrarTabla);
-        filtroEstado.addEventListener('change', filtrarTabla);
-    }
-});
-
-function limpiarFiltros() {
-    document.getElementById('buscar').value = '';
-    document.getElementById('filtro_tipo').value = '';
-    document.getElementById('filtro_estado').value = '';
-    
-    // Mostrar todas las filas
-    const filas = document.querySelectorAll('#tabla-metodos tbody tr');
-    for (const fila of filas) {
-        fila.style.display = '';
-    }
-}
-</script>
+{% block filtros %}
+{% include 'catalogos/includes/filtros_catalogo.html' with filtro_tipo_options=tipo_metodo_options table_id='tabla-metodos' %}
 {% endblock %}
+
+{% block table_headers %}
+<th scope="col">Código</th>
+<th scope="col">Nombre</th>
+<th scope="col">Tipo</th>
+<th scope="col">Requiere Ref.</th>
+<th scope="col">Estado</th>
+<th scope="col">Acciones</th>
+{% endblock %}
+
+{% block table_body %}
+{% for metodo in object_list %}
+<tr data-tipo="{{ metodo.tipo_metodo }}" data-activo="{{ metodo.activo }}">
+    <td><strong>{{ metodo.codigo }}</strong></td>
+    <td>{{ metodo.nombre }}</td>
+    <td>
+        <span class="badge 
+            {% if metodo.tipo_metodo == 'EFECTIVO' %}bg-success
+            {% elif metodo.tipo_metodo == 'TRANSFERENCIA' %}bg-primary
+            {% elif metodo.tipo_metodo == 'CHEQUE' %}bg-info
+            {% elif metodo.tipo_metodo == 'TARJETA_CREDITO' %}bg-warning
+            {% elif metodo.tipo_metodo == 'TARJETA_DEBITO' %}bg-secondary
+            {% elif metodo.tipo_metodo == 'CONSIGNACION' %}bg-dark
+            {% else %}bg-light text-dark{% endif %}">
+            {{ metodo.get_tipo_metodo_display }}
+        </span>
+    </td>
+    <td class="text-center">
+        {% if metodo.requiere_referencia %}
+            <i class="bi bi-check-circle text-success" title="Sí"></i>
+        {% else %}
+            <i class="bi bi-x-circle text-danger" title="No"></i>
+        {% endif %}
+    </td>
+    <td>
+        {% if metodo.activo %}
+            <span class="badge bg-success">Activo</span>
+        {% else %}
+            <span class="badge bg-danger">Inactivo</span>
+        {% endif %}
+    </td>
+    <td>
+        {% include 'catalogos/includes/acciones_lista.html' with item=metodo detail_url=metodo.get_absolute_url edit_url=metodo.get_edit_url delete_url=metodo.get_delete_url item_name=metodo.nombre %}
+    </td>
+</tr>
+{% endfor %}
+{% endblock %}
+
+{% endwith %}
