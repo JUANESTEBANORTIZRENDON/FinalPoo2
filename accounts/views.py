@@ -377,3 +377,9 @@ class CustomLogoutView(LogoutView):
         response['Expires'] = '0'
         
         return response
+
+
+@require_safe
+def acerca_de(request):
+    """Vista para mostrar información del equipo de desarrollo"""
+    return render(request, 'accounts/acerca_de.html')

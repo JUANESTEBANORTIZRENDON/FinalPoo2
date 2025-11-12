@@ -359,7 +359,7 @@ def asignar_usuario_empresa(request, usuario_id):  # nosonar  # type: ignore[no-
         
         if not empresa_id or not rol:
             messages.error(request, 'Debe seleccionar una empresa y un rol.')
-            return redirect('empresas:admin_gestionar_usuarios')
+            return redirect(URL_GESTIONAR_USUARIOS)
         
         try:
             empresa = Empresa.objects.get(id=empresa_id, propietario=request.user)
@@ -382,7 +382,8 @@ def asignar_usuario_empresa(request, usuario_id):  # nosonar  # type: ignore[no-
                     usuario=usuario,
                     empresa=empresa,
                     rol=rol,
-                    activo=True
+                    activo=True,
+                    asignado_por=request.user  # Campo obligatorio
                 )
                 messages.success(
                     request,
@@ -401,7 +402,7 @@ def asignar_usuario_empresa(request, usuario_id):  # nosonar  # type: ignore[no-
         except Exception as e:
             messages.error(request, f'Error al asignar usuario: {str(e)}')
         
-        return redirect('empresas:admin_gestionar_usuarios')
+        return redirect(URL_GESTIONAR_USUARIOS)
     
     empresas = Empresa.objects.filter(propietario=request.user, activa=True)
     perfiles_existentes = PerfilEmpresa.objects.filter(usuario=usuario).select_related('empresa')

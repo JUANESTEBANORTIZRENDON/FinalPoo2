@@ -62,18 +62,20 @@
                             ¿Olvidaste tu contraseña?
                         </a>
                     </p>
-                    <p class="mb-0">
+                    <p class="mb-2">
                         ¿No tienes cuenta? 
                         <a href="{% url 'accounts:register' %}" class="text-decoration-none fw-bold">
                             Regístrate aquí
+                        </a>
+                    </p>
+                    <p class="mb-0">
+                        <a href="{% url 'accounts:acerca_de' %}" class="text-decoration-none text-muted">
+                            <i class="fas fa-info-circle me-1"></i>Acerca de Nosotros
                         </a>
                     </p>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Acerca de Nosotros -->
-    {% include 'components/acerca_de_nosotros.html' %}
 </div>
 {% endblock %}

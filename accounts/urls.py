@@ -13,6 +13,7 @@ urlpatterns = [
     path('logout/', views.CustomLogoutView.as_view(), name='logout'),
     path('register/', views.RegisterView.as_view(), name='register'),
     path('activar/', views.activar_cuenta, name='activar'),
+    path('acerca-de/', views.acerca_de, name='acerca_de'),
     
     # Dashboard
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
