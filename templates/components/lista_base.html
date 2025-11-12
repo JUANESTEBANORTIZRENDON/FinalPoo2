@@ -1,0 +1,84 @@
+{% extends 'base_contable.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - S_CONTABLE{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+        {% block breadcrumb_items %}
+        {# Breadcrumb items personalizados aquí #}
+        {% endblock %}
+        <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb_active }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-{% block header_icon %}list{% endblock %}"></i>
+                        {{ card_title }}
+                    </h4>
+                    <a href="{{ create_url }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        {{ create_button_text|default:"Nuevo" }}
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    {% block filtros %}
+                    {# Filtros de búsqueda personalizados #}
+                    {% endblock %}
+                    
+                    {% if object_list %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="{{ table_id|default:'tabla-items' }}">
+                                <thead class="table-dark">
+                                    <tr>
+                                        {% block table_headers %}
+                                        {# Encabezados de tabla personalizados #}
+                                        {% endblock %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% block table_body %}
+                                    {# Cuerpo de tabla personalizado #}
+                                    {% endblock %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    Mostrando {{ object_list|length }} {{ item_name }}{{ object_list|length|pluralize }}
+                                </small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+                            <h5>No hay {{ item_name_plural }} registrados</h5>
+                            <p class="mb-3">{{ empty_message }}</p>
+                            <a href="{{ create_url }}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i>
+                                {{ create_first_text|default:"Crear Primer Item" }}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+{# Scripts adicionales personalizados #}
+{% endblock %}
+{% endblock %}

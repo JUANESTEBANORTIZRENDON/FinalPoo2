@@ -1,0 +1,30 @@
+{% comment %}
+Botones de acciones reutilizables para listas
+Parámetros:
+  - item: objeto del item
+  - detail_url: URL de detalle
+  - edit_url: URL de edición
+  - delete_url: URL de eliminación
+  - item_name: nombre del item para aria-label
+{% endcomment %}
+
+<div class="btn-group" aria-label="Acciones para {{ item_name }}">
+    <a href="{{ detail_url }}" 
+       class="btn btn-sm btn-outline-info" 
+       title="Ver detalles de {{ item_name }}">
+        <i class="bi bi-eye" aria-hidden="true"></i>
+        <span class="visually-hidden">Ver detalles</span>
+    </a>
+    <a href="{{ edit_url }}" 
+       class="btn btn-sm btn-outline-warning" 
+       title="Editar {{ item_name }}">
+        <i class="bi bi-pencil" aria-hidden="true"></i>
+        <span class="visually-hidden">Editar</span>
+    </a>
+    <a href="{{ delete_url }}" 
+       class="btn btn-sm btn-outline-danger" 
+       title="Eliminar {{ item_name }}">
+        <i class="bi bi-trash" aria-hidden="true"></i>
+        <span class="visually-hidden">Eliminar</span>
+    </a>
+</div>

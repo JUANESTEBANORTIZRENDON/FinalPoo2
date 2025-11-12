@@ -1,0 +1,82 @@
+{% comment %}
+Filtros de búsqueda reutilizables para listas de catálogos
+Parámetros:
+  - filtro_tipo_options: lista de opciones para el filtro de tipo (opcional)
+  - table_id: ID de la tabla a filtrar
+{% endcomment %}
+
+<div class="row mb-3">
+    <div class="col-md-5">
+        <input type="text" class="form-control" id="buscar" placeholder="Buscar por nombre o código...">
+    </div>
+    {% if filtro_tipo_options %}
+    <div class="col-md-3">
+        <select class="form-select" id="filtro_tipo">
+            <option value="">Todos los tipos</option>
+            {% for value, label in filtro_tipo_options %}
+            <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+    <div class="col-md-2">
+        <select class="form-select" id="filtro_estado">
+            <option value="">Todos los estados</option>
+            <option value="true">Activos</option>
+            <option value="false">Inactivos</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-outline-secondary" onclick="limpiarFiltros()">
+            <i class="bi bi-x-circle"></i>
+            Limpiar
+        </button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buscar = document.getElementById('buscar');
+    const filtroTipo = document.getElementById('filtro_tipo');
+    const filtroEstado = document.getElementById('filtro_estado');
+    const tabla = document.getElementById('{{ table_id|default:"tabla-items" }}');
+    
+    if (tabla) {
+        function filtrarTabla() {
+            const textoBusqueda = buscar.value.toLowerCase();
+            const tipoSeleccionado = filtroTipo ? filtroTipo.value : '';
+            const estadoSeleccionado = filtroEstado.value;
+            const filas = tabla.querySelectorAll('tbody tr');
+            
+            for (const fila of filas) {
+                const texto = fila.textContent.toLowerCase();
+                const tipo = fila.dataset.tipo;
+                const activo = fila.dataset.activo;
+                let mostrar = true;
+                
+                if (textoBusqueda && !texto.includes(textoBusqueda)) mostrar = false;
+                if (tipoSeleccionado && tipo !== tipoSeleccionado) mostrar = false;
+                if (estadoSeleccionado && activo !== estadoSeleccionado) mostrar = false;
+                
+                fila.style.display = mostrar ? '' : 'none';
+            }
+        }
+        
+        buscar.addEventListener('input', filtrarTabla);
+        if (filtroTipo) filtroTipo.addEventListener('change', filtrarTabla);
+        filtroEstado.addEventListener('change', filtrarTabla);
+    }
+});
+
+function limpiarFiltros() {
+    document.getElementById('buscar').value = '';
+    const filtroTipo = document.getElementById('filtro_tipo');
+    if (filtroTipo) filtroTipo.value = '';
+    document.getElementById('filtro_estado').value = '';
+    
+    const filas = document.querySelectorAll('#{{ table_id|default:"tabla-items" }} tbody tr');
+    for (const fila of filas) {
+        fila.style.display = '';
+    }
+}
+</script>
