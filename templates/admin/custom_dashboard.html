@@ -247,11 +247,11 @@
                         </div>
                     </div>
                     <div>
-                        <small style="color: #999;">{{ user.date_joined|date:"d/m/Y" }}</small>
+                        <small style="color: #595959;">{{ user.date_joined|date:"d/m/Y" }}</small>
                     </div>
                 </li>
                 {% empty %}
-                <li style="text-align: center; color: #999; padding: 20px;">
+                <li style="text-align: center; color: #595959; padding: 20px;">
                     No hay usuarios registrados
                 </li>
                 {% endfor %}
@@ -266,7 +266,7 @@
                 <strong style="color: #007cba;">{{ city.count }}</strong>
             </div>
             {% empty %}
-            <p style="text-align: center; color: #999; padding: 20px;">
+            <p style="text-align: center; color: #595959; padding: 20px;">
                 No hay datos de ubicación
             </p>
             {% endfor %}
