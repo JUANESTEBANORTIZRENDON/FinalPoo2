@@ -1,0 +1,36 @@
+{% comment %}
+Componente reutilizable para filtros de búsqueda de facturas
+Parámetros:
+  - action_url: URL del formulario
+{% endcomment %}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="get" class="row g-3" action="{{ action_url }}">
+            <div class="col-md-3">
+                <label for="cliente" class="form-label">Cliente</label>
+                <input type="text" id="cliente" name="cliente" class="form-control" placeholder="Buscar por cliente..." value="{{ request.GET.cliente }}">
+            </div>
+            <div class="col-md-2">
+                <label for="numero_factura" class="form-label">Número Factura</label>
+                <input type="text" id="numero_factura" name="numero_factura" class="form-control" placeholder="FAC-000001" value="{{ request.GET.numero_factura }}">
+            </div>
+            <div class="col-md-2">
+                <label for="fecha_desde" class="form-label">Fecha Desde</label>
+                <input type="date" id="fecha_desde" name="fecha_desde" class="form-control" value="{{ request.GET.fecha_desde }}">
+            </div>
+            <div class="col-md-2">
+                <label for="fecha_hasta" class="form-label">Fecha Hasta</label>
+                <input type="date" id="fecha_hasta" name="fecha_hasta" class="form-control" value="{{ request.GET.fecha_hasta }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                <a href="{{ action_url }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-redo"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

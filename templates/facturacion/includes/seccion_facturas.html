@@ -1,0 +1,37 @@
+{% comment %}
+Componente reutilizable para una sección de facturas agrupadas por estado
+Parámetros:
+  - titulo: título de la sección
+  - icono: clase del icono Font Awesome
+  - border_class: clase CSS para el borde (border-info, border-success, etc.)
+  - header_class: clase CSS para el header (bg-info, bg-success, etc.)
+  - estado_filtro: estado a filtrar ('confirmada', 'pagada', etc.)
+  - estado_badge_class: clase CSS para el badge de estado
+  - estado_text: texto del estado
+  - total_class: clase CSS para el total
+  - btn_class: clase CSS para el botón
+  - mensaje_vacio: mensaje cuando no hay facturas
+  - icono_vacio: icono para mensaje vacío
+  - facturas_por_estado: facturas agrupadas por estado
+{% endcomment %}
+
+<div class="card shadow-sm {{ border_class }}">
+    <div class="card-header {{ header_class }} text-white">
+        <h5 class="mb-0">
+            <i class="{{ icono }}"></i>
+            {{ titulo }}
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        {% for estado_group in facturas_por_estado %}
+            {% if estado_group.grouper == estado_filtro %}
+                {% include 'facturacion/includes/tabla_facturas.html' with facturas=estado_group.list estado_badge_class=estado_badge_class estado_text=estado_text total_class=total_class btn_class=btn_class %}
+            {% endif %}
+        {% empty %}
+            <div class="text-center py-4">
+                <i class="{{ icono_vacio }} fa-2x text-muted mb-2"></i>
+                <p class="text-muted mb-0">{{ mensaje_vacio }}</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
