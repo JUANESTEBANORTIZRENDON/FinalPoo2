@@ -6,6 +6,5 @@ Uso:
 NOTA: Los <li> se renderizan dentro de <ol class="breadcrumb"> del template padre.
 SonarCloud reporta falso positivo porque analiza archivos aislados sin contexto de Django template inheritance.
 {% endcomment %}
-<!-- nosonar: S5254 - Template parcial, los <li> se insertan en <ol> del template padre -->
 <li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
 <li class="breadcrumb-item"><a href="{% url section_url %}">{{ section_name }}</a></li>
