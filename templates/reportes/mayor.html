@@ -137,9 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnImprimir = document.getElementById('btn-imprimir');
     const btnExportarExcel = document.getElementById('btn-exportar-excel');
     const btnExportarPdf = document.getElementById('btn-exportar-pdf');
-    const mensajeInicial = document.getElementById('mensaje-inicial');
     const resultadoMayor = document.getElementById('resultado-mayor');
-    const areaImpresion = document.getElementById('area-impresion');
 
     // Event listener para generar libro mayor
     if (btnGenerar) {
@@ -151,12 +149,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            const selectedOption = cuentaSelect.options[cuentaSelect.selectedIndex];
-            const codigo = selectedOption.dataset.codigo;
-            const nombre = selectedOption.dataset.nombre;
-            const tipo = selectedOption.dataset.tipo;
-            const naturaleza = selectedOption.dataset.naturaleza;
-            
             const fechaInicio = document.getElementById('fecha_inicio').value;
             const fechaFin = document.getElementById('fecha_fin').value;
             
@@ -178,10 +170,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listener para imprimir
     if (btnImprimir) {
         btnImprimir.addEventListener('click', function() {
-            if (resultadoMayor.style.display !== 'none') {
-                globalThis.print();
-            } else {
+            if (resultadoMayor.style.display === 'none') {
                 alert('Primero debes generar el libro mayor de una cuenta');
+            } else {
+                globalThis.print();
             }
         });
     }
