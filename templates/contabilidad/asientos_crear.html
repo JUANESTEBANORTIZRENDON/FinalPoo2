@@ -310,14 +310,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const btnEliminar = clone.querySelector('.btn-eliminar-partida');
         
         inputDebito.addEventListener('input', function() {
-            if (parseFloat(this.value) > 0) {
+            if (Number.parseFloat(this.value) > 0) {
                 inputCredito.value = '0.00';
             }
             calcularTotales();
         });
         
         inputCredito.addEventListener('input', function() {
-            if (parseFloat(this.value) > 0) {
+            if (Number.parseFloat(this.value) > 0) {
                 inputDebito.value = '0.00';
             }
             calcularTotales();
@@ -356,13 +356,13 @@ document.addEventListener('DOMContentLoaded', function() {
         let totalCreditos = 0;
         
         const filas = tbodyPartidas.querySelectorAll('.partida-row');
-        filas.forEach(fila => {
-            const debito = parseFloat(fila.querySelector('.input-debito').value) || 0;
-            const credito = parseFloat(fila.querySelector('.input-credito').value) || 0;
+        for (const fila of filas) {
+            const debito = Number.parseFloat(fila.querySelector('.input-debito').value) || 0;
+            const credito = Number.parseFloat(fila.querySelector('.input-credito').value) || 0;
             
             totalDebitos += debito;
             totalCreditos += credito;
-        });
+        }
         
         // Actualizar totales
         document.getElementById('total-debitos').textContent = formatearMoneda(totalDebitos);
@@ -415,27 +415,27 @@ document.addEventListener('DOMContentLoaded', function() {
             let valido = true;
             const partidas = [];
             
-            filas.forEach(fila => {
+            for (const fila of filas) {
                 const selectCuenta = fila.querySelector('.select-cuenta');
                 const inputConcepto = fila.querySelector('.input-concepto');
                 const inputDebito = fila.querySelector('.input-debito');
                 const inputCredito = fila.querySelector('.input-credito');
                 
-                if (!selectCuenta.value) {
-                    valido = false;
-                    selectCuenta.classList.add('is-invalid');
-                } else {
+                if (selectCuenta.value) {
                     selectCuenta.classList.remove('is-invalid');
                     
                     // Agregar partida a la lista
                     partidas.push({
                         cuenta_id: selectCuenta.value,
                         concepto: inputConcepto.value || '',
-                        debito: parseFloat(inputDebito.value) || 0,
-                        credito: parseFloat(inputCredito.value) || 0
+                        debito: Number.parseFloat(inputDebito.value) || 0,
+                        credito: Number.parseFloat(inputCredito.value) || 0
                     });
+                } else {
+                    valido = false;
+                    selectCuenta.classList.add('is-invalid');
                 }
-            });
+            }
             
             if (!valido) {
                 alert('Todas las partidas deben tener una cuenta contable seleccionada');
@@ -445,10 +445,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Verificar cuadre
             let totalDebitos = 0;
             let totalCreditos = 0;
-            partidas.forEach(p => {
+            for (const p of partidas) {
                 totalDebitos += p.debito;
                 totalCreditos += p.credito;
-            });
+            }
             
             if (Math.abs(totalDebitos - totalCreditos) > 0.01) {
                 alert('El asiento no está cuadrado. Los débitos deben ser iguales a los créditos.');
