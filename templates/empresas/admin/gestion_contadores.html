@@ -1,0 +1,372 @@
+{% extends 'empresas/admin/base_admin.html' %}
+
+{% block title %}Gestión de Contadores y Auxiliares - Administrador{% endblock %}
+
+{% block page_title %}👥 Gestión de Contadores y Auxiliares{% endblock %}
+{% block page_subtitle %}
+    Administración centralizada del equipo contable
+    <button onclick="location.reload()" class="btn btn-sm btn-outline-light ms-3" title="Actualizar datos">
+        <i class="fas fa-sync-alt"></i> Actualizar
+    </button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-contador {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        border-left: 4px solid #28a745;
+        transition: all 0.2s ease;
+    }
+    .card-contador:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+    .card-auxiliar {
+        border-left-color: #ffc107;
+    }
+    .card-observador {
+        border-left-color: #6c757d;
+    }
+    .card-sin-asignar {
+        border-left-color: #dc3545;
+        background-color: #fff5f5;
+    }
+    .resumen-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+    }
+    .alerta-card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid;
+    }
+    .alerta-warning { border-left-color: #ffc107; background-color: #fffbf0; }
+    .alerta-danger { border-left-color: #dc3545; background-color: #fff5f5; }
+    .alerta-info { border-left-color: #17a2b8; background-color: #f0f9ff; }
+    .usuario-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    .badge-rol {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .badge-contador { background-color: #28a745; color: white; }
+    .badge-auxiliar { background-color: #ffc107; color: #000; }
+    .badge-observador { background-color: #6c757d; color: white; }
+    .badge-admin { background-color: #dc3545; color: white; }
+    .actividad-item {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-left: 3px solid #667eea;
+    }
+    .tabla-empresas {
+        font-size: 0.9rem;
+    }
+    .tabla-empresas th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+        padding: 10px;
+    }
+    @media (max-width: 768px) {
+        .card-contador {
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Alertas -->
+{% if alertas %}
+<div class="row mb-4">
+    <div class="col-12">
+        {% for alerta in alertas %}
+        <div class="alerta-card alerta-{{ alerta.tipo }}">
+            <span style="font-size: 1.3rem; margin-right: 10px;">{{ alerta.icono }}</span>
+            <strong>{{ alerta.mensaje }}</strong>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Resumen General -->
+<div class="resumen-card">
+    <h4 class="mb-4"><i class="fas fa-chart-pie"></i> Resumen del Equipo Contable</h4>
+    <div class="row text-center">
+        <div class="col-md-3 col-6 mb-3">
+            <h2 class="mb-1">{{ resumen.total_contadores }}</h2>
+            <small>Contadores</small>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <h2 class="mb-1">{{ resumen.total_auxiliares }}</h2>
+            <small>Auxiliares</small>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <h2 class="mb-1">{{ resumen.total_observadores }}</h2>
+            <small>Observadores</small>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <h2 class="mb-1" style="color: {% if resumen.total_sin_asignar > 0 %}#ff6b6b{% else %}#51cf66{% endif %};">
+                {{ resumen.total_sin_asignar }}
+            </h2>
+            <small>Sin Asignar</small>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- CONTADORES -->
+    <div class="col-lg-6">
+        <div class="card-contador">
+            <h5 class="mb-3">
+                <i class="fas fa-user-tie" style="color: #28a745;"></i> 
+                Contadores ({{ contadores.count }})
+            </h5>
+            {% if contadores %}
+                {% for contador in contadores %}
+                <div class="d-flex align-items-center mb-3 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                    <div class="usuario-avatar me-3" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                        {{ contador.first_name.0|default:contador.username.0|upper }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong>{{ contador.get_full_name|default:contador.username }}</strong>
+                        <br>
+                        <small class="text-muted">
+                            <i class="fas fa-building"></i> {{ contador.num_empresas }} empresa{{ contador.num_empresas|pluralize }}
+                            {% if contador.ultima_accion %}
+                                | <i class="fas fa-clock"></i> Última acción: {{ contador.ultima_accion|date:"d/m/Y H:i" }}
+                            {% else %}
+                                | <i class="fas fa-clock"></i> Sin actividad
+                            {% endif %}
+                        </small>
+                    </div>
+                    <div>
+                        <a href="{% url 'empresas:admin_ver_usuario' contador.id %}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted text-center py-3">No hay contadores asignados</p>
+            {% endif %}
+        </div>
+
+        <!-- ACTIVIDAD RECIENTE CONTADORES -->
+        {% if actividad_contadores %}
+        <div class="card-contador mt-3">
+            <h6 class="mb-3"><i class="fas fa-chart-line"></i> Top Actividad Contadores (7 días)</h6>
+            {% for actividad in actividad_contadores %}
+            <div class="actividad-item">
+                <strong>{{ actividad.usuario__first_name }} {{ actividad.usuario__last_name }}</strong>
+                <span class="badge bg-success float-end">{{ actividad.total_acciones }} acciones</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- AUXILIARES -->
+    <div class="col-lg-6">
+        <div class="card-contador card-auxiliar">
+            <h5 class="mb-3">
+                <i class="fas fa-user-friends" style="color: #ffc107;"></i> 
+                Auxiliares Contables ({{ auxiliares.count }})
+            </h5>
+            {% if auxiliares %}
+                {% for auxiliar in auxiliares %}
+                <div class="d-flex align-items-center mb-3 p-3" style="background-color: #fffbf0; border-radius: 8px;">
+                    <div class="usuario-avatar me-3" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);">
+                        {{ auxiliar.first_name.0|default:auxiliar.username.0|upper }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong>{{ auxiliar.get_full_name|default:auxiliar.username }}</strong>
+                        <br>
+                        <small class="text-muted">
+                            <i class="fas fa-building"></i> {{ auxiliar.num_empresas }} empresa{{ auxiliar.num_empresas|pluralize }}
+                            {% if auxiliar.ultima_accion %}
+                                | <i class="fas fa-clock"></i> {{ auxiliar.ultima_accion|date:"d/m/Y H:i" }}
+                            {% else %}
+                                | <i class="fas fa-clock"></i> Sin actividad
+                            {% endif %}
+                        </small>
+                    </div>
+                    <div>
+                        <a href="{% url 'empresas:admin_ver_usuario' auxiliar.id %}" class="btn btn-sm btn-outline-warning">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted text-center py-3">No hay auxiliares asignados</p>
+            {% endif %}
+        </div>
+
+        <!-- ACTIVIDAD RECIENTE AUXILIARES -->
+        {% if actividad_auxiliares %}
+        <div class="card-contador card-auxiliar mt-3">
+            <h6 class="mb-3"><i class="fas fa-chart-line"></i> Top Actividad Auxiliares (7 días)</h6>
+            {% for actividad in actividad_auxiliares %}
+            <div class="actividad-item" style="border-left-color: #ffc107;">
+                <strong>{{ actividad.usuario__first_name }} {{ actividad.usuario__last_name }}</strong>
+                <span class="badge bg-warning text-dark float-end">{{ actividad.total_acciones }} acciones</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- OBSERVADORES -->
+{% if observadores.count > 0 %}
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card-contador card-observador">
+            <h5 class="mb-3">
+                <i class="fas fa-eye" style="color: #6c757d;"></i> 
+                Observadores ({{ observadores.count }})
+            </h5>
+            <div class="row">
+                {% for observador in observadores %}
+                <div class="col-md-6 mb-2">
+                    <div class="d-flex align-items-center p-2" style="background-color: #f8f9fa; border-radius: 6px;">
+                        <div class="usuario-avatar me-2" style="width: 35px; height: 35px; font-size: 0.9rem; background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">
+                            {{ observador.first_name.0|default:observador.username.0|upper }}
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong style="font-size: 0.9rem;">{{ observador.get_full_name|default:observador.username }}</strong>
+                            <br>
+                            <small class="text-muted">{{ observador.num_empresas }} empresa{{ observador.num_empresas|pluralize }}</small>
+                        </div>
+                        <a href="{% url 'empresas:admin_ver_usuario' observador.id %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- USUARIOS SIN ASIGNAR -->
+{% if usuarios_sin_asignar.count > 0 %}
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card-contador card-sin-asignar">
+            <h5 class="mb-3">
+                <i class="fas fa-user-slash" style="color: #dc3545;"></i> 
+                Usuarios Sin Asignar ({{ usuarios_sin_asignar.count }})
+            </h5>
+            <div class="row">
+                {% for usuario in usuarios_sin_asignar %}
+                <div class="col-md-4 mb-2">
+                    <div class="d-flex align-items-center p-2" style="background-color: white; border-radius: 6px; border: 1px solid #f5c6cb;">
+                        <div class="usuario-avatar me-2" style="width: 35px; height: 35px; font-size: 0.9rem; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                            {{ usuario.first_name.0|default:usuario.username.0|upper }}
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong style="font-size: 0.9rem;">{{ usuario.get_full_name|default:usuario.username }}</strong>
+                        </div>
+                        <a href="{% url 'empresas:admin_ver_usuario' usuario.id %}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-user-plus"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- EMPRESAS MÁS ACTIVAS -->
+{% if empresas_activas %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card-contador">
+            <h5 class="mb-3">
+                <i class="fas fa-building"></i> 
+                Top 10 Empresas con Mayor Actividad (7 días)
+            </h5>
+            <div class="table-responsive">
+                <table class="table tabla-empresas">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th class="text-center">Contadores</th>
+                            <th class="text-center">Auxiliares</th>
+                            <th class="text-center">Acciones (7 días)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for empresa in empresas_activas %}
+                        <tr>
+                            <td>
+                                <strong>{{ empresa.razon_social }}</strong>
+                                <br>
+                                <small class="text-muted">NIT: {{ empresa.nit }}</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-contador">{{ empresa.num_contadores }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-auxiliar">{{ empresa.num_auxiliares }}</span>
+                            </td>
+                            <td class="text-center">
+                                <strong style="color: #667eea;">{{ empresa.num_acciones_recientes }}</strong>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Botones de acción -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="{% url 'empresas:admin_gestionar_usuarios' %}" class="btn btn-primary me-2">
+            <i class="fas fa-users"></i> Gestionar Usuarios
+        </a>
+        <a href="{% url 'empresas:admin_crear_usuario' %}" class="btn btn-success me-2">
+            <i class="fas fa-user-plus"></i> Crear Nuevo Usuario
+        </a>
+        <a href="{% url 'empresas:admin_historial_cambios' %}" class="btn btn-info">
+            <i class="fas fa-history"></i> Ver Historial Completo
+        </a>
+    </div>
+</div>
+
+{% endblock %}

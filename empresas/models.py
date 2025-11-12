@@ -270,8 +270,8 @@ class EmpresaActiva(models.Model):
 
 class HistorialCambios(models.Model):
     """
-    Modelo para registrar todas las acciones de los usuarios en el sistema
-    (excepto administradores del holding)
+    Modelo para registrar todas las acciones de los usuarios en el sistema,
+    incluyendo administradores del holding
     """
 
     TIPO_ACCION_CHOICES = [
@@ -523,12 +523,9 @@ class HistorialCambios(models.Model):
         mensaje_error=None,
     ):
         """
-        Método de conveniencia para registrar una acción
+        Método de conveniencia para registrar una acción.
+        AHORA SÍ REGISTRA ACCIONES DE ADMINISTRADORES DEL HOLDING.
         """
-        # No registrar acciones de administradores del holding
-        if hasattr(usuario, "is_superuser") and usuario.is_superuser:
-            return None
-
         # Obtener información del request si está disponible
         ip_address = None
         user_agent = None

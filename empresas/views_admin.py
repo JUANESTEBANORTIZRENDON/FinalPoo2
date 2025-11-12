@@ -364,7 +364,58 @@ def crear_empresa(request):  # nosonar
         messages.error(request, MSG_NO_PERMISOS)
         return redirect(URL_LOGIN)
     
-    # ... (rest of the function remains the same)
+    if request.method == 'POST':
+        # Validar campos requeridos
+        razon_social = request.POST.get('razon_social', '').strip()
+        nit = request.POST.get('nit', '').strip()
+        
+        if not razon_social or not nit:
+            messages.error(request, 'La razón social y el NIT son campos obligatorios.')
+            context = {
+                'titulo': 'Crear Nueva Empresa',
+                'accion': 'crear'
+            }
+            return render(request, TEMPLATE_EMPRESA_FORM, context)
+        
+        # Verificar que el NIT no esté duplicado
+        if Empresa.objects.filter(nit=nit).exists():
+            messages.error(request, f'Ya existe una empresa con el NIT {nit}.')
+            context = {
+                'titulo': 'Crear Nueva Empresa',
+                'accion': 'crear'
+            }
+            return render(request, TEMPLATE_EMPRESA_FORM, context)
+        
+        # Crear nueva empresa con el administrador del holding como propietario
+        empresa = Empresa.objects.create(
+            razon_social=razon_social,
+            nit=nit,
+            nombre_comercial=request.POST.get('nombre_comercial', '').strip(),
+            email=request.POST.get('email', '').strip(),
+            telefono=request.POST.get('telefono', '').strip(),
+            direccion=request.POST.get('direccion', '').strip(),
+            ciudad=request.POST.get('ciudad', '').strip(),
+            departamento=request.POST.get('departamento', '').strip(),
+            propietario=request.user,  # Asignar el admin del holding como propietario
+            activa=True
+        )
+        
+        # Registrar en historial
+        from .utils_historial import registrar_creacion_empresa
+        registrar_creacion_empresa(
+            usuario=request.user,
+            empresa=empresa,
+            request=request
+        )
+        
+        messages.success(request, f'Empresa "{empresa.razon_social}" creada exitosamente.')
+        return redirect(URL_GESTIONAR_EMPRESAS)
+    
+    context = {
+        'titulo': 'Crear Nueva Empresa',
+        'accion': 'crear'
+    }
+    return render(request, TEMPLATE_EMPRESA_FORM, context)
 
 @login_required
 @require_http_methods(['GET', 'POST'])  # NOSONAR - CSRF protection enabled by Django's CsrfViewMiddleware
@@ -381,7 +432,81 @@ def editar_empresa(request, empresa_id):  # nosonar
     empresa = get_object_or_404(Empresa, id=empresa_id)
     
     if request.method == 'POST':
-        # Aquí iría la lógica de actualización
+        # Validar campos requeridos
+        razon_social = request.POST.get('razon_social', '').strip()
+        nit = request.POST.get('nit', '').strip()
+        
+        if not razon_social or not nit:
+            messages.error(request, 'La razón social y el NIT son campos obligatorios.')
+            context = {
+                'titulo': 'Editar Empresa',
+                'accion': 'editar',
+                'empresa': empresa
+            }
+            return render(request, TEMPLATE_EMPRESA_FORM, context)
+        
+        # Verificar que el NIT no esté duplicado (excepto para esta misma empresa)
+        if Empresa.objects.filter(nit=nit).exclude(id=empresa_id).exists():
+            messages.error(request, f'Ya existe otra empresa con el NIT {nit}.')
+            context = {
+                'titulo': 'Editar Empresa',
+                'accion': 'editar',
+                'empresa': empresa
+            }
+            return render(request, TEMPLATE_EMPRESA_FORM, context)
+        
+        # Guardar datos anteriores para el historial
+        datos_anteriores = {
+            'razon_social': empresa.razon_social,
+            'nit': empresa.nit,
+            'nombre_comercial': empresa.nombre_comercial,
+            'email': empresa.email,
+            'telefono': empresa.telefono,
+            'direccion': empresa.direccion,
+            'ciudad': empresa.ciudad,
+            'departamento': empresa.departamento,
+            'activa': empresa.activa
+        }
+        
+        # Actualizar datos de la empresa
+        empresa.razon_social = razon_social
+        empresa.nit = nit
+        empresa.nombre_comercial = request.POST.get('nombre_comercial', '').strip()
+        empresa.email = request.POST.get('email', '').strip()
+        empresa.telefono = request.POST.get('telefono', '').strip()
+        empresa.direccion = request.POST.get('direccion', '').strip()
+        empresa.ciudad = request.POST.get('ciudad', '').strip()
+        empresa.departamento = request.POST.get('departamento', '').strip()
+        
+        # Actualizar estado activo (solo en edición)
+        empresa.activa = 'activa' in request.POST
+        
+        # Guardar cambios
+        empresa.save()
+        
+        # Preparar datos nuevos para el historial
+        datos_nuevos = {
+            'razon_social': empresa.razon_social,
+            'nit': empresa.nit,
+            'nombre_comercial': empresa.nombre_comercial,
+            'email': empresa.email,
+            'telefono': empresa.telefono,
+            'direccion': empresa.direccion,
+            'ciudad': empresa.ciudad,
+            'departamento': empresa.departamento,
+            'activa': empresa.activa
+        }
+        
+        # Registrar en historial
+        from .utils_historial import registrar_edicion_empresa
+        registrar_edicion_empresa(
+            usuario=request.user,
+            empresa=empresa,
+            datos_anteriores=datos_anteriores,
+            datos_nuevos=datos_nuevos,
+            request=request
+        )
+        
         messages.success(request, f'Empresa "{empresa.razon_social}" actualizada exitosamente.')
         return redirect(URL_GESTIONAR_EMPRESAS)
     
@@ -446,17 +571,155 @@ def desactivar_asignacion(request, perfil_id):
 
 @login_required
 @require_http_methods(['GET'])
-def estadisticas_holding(request):
-    """Vista para mostrar estadísticas generales del holding"""
+def gestion_contadores_auxiliares(request):
+    """
+    Vista para gestionar contadores y auxiliares contables.
+    Muestra un resumen de todos los usuarios con roles de contador y operador,
+    sus empresas asignadas, y actividad reciente.
+    """
     if not es_administrador_holding(request.user):
         messages.error(request, MSG_NO_PERMISOS)
         return redirect(URL_LOGIN)
     
-    context = {
-        'total_empresas': Empresa.objects.filter(activa=True).count(),
-        'total_usuarios': User.objects.filter(is_active=True).count(),
+    from django.db.models import Count, Q, Max
+    from datetime import datetime, timedelta
+    
+    # === CONTADORES (ROL: ADMIN O CONTADOR) ===
+    contadores = User.objects.filter(
+        is_active=True,
+        is_superuser=False,
+        perfilempresa__rol__in=['admin', 'contador'],
+        perfilempresa__activo=True
+    ).annotate(
+        num_empresas=Count('perfilempresa', filter=Q(perfilempresa__activo=True)),
+        ultima_accion=Max('historialcambios__fecha_hora')
+    ).distinct().order_by('-ultima_accion')
+    
+    # === AUXILIARES CONTABLES (ROL: OPERADOR) ===
+    auxiliares = User.objects.filter(
+        is_active=True,
+        is_superuser=False,
+        perfilempresa__rol='operador',
+        perfilempresa__activo=True
+    ).annotate(
+        num_empresas=Count('perfilempresa', filter=Q(perfilempresa__activo=True)),
+        ultima_accion=Max('historialcambios__fecha_hora')
+    ).distinct().order_by('-ultima_accion')
+    
+    # === OBSERVADORES (ROL: OBSERVADOR) ===
+    observadores = User.objects.filter(
+        is_active=True,
+        is_superuser=False,
+        perfilempresa__rol='observador',
+        perfilempresa__activo=True
+    ).annotate(
+        num_empresas=Count('perfilempresa', filter=Q(perfilempresa__activo=True)),
+        ultima_accion=Max('historialcambios__fecha_hora')
+    ).distinct().order_by('-ultima_accion')
+    
+    # === USUARIOS SIN ASIGNAR ===
+    usuarios_sin_asignar = User.objects.filter(
+        is_active=True,
+        is_superuser=False,
+        perfilempresa__isnull=True
+    ).order_by('username')
+    
+    # === RESUMEN POR ROL ===
+    resumen = {
+        'total_contadores': contadores.count(),
+        'total_auxiliares': auxiliares.count(),
+        'total_observadores': observadores.count(),
+        'total_sin_asignar': usuarios_sin_asignar.count(),
     }
-    return render(request, 'empresas/admin/estadisticas.html', context)
+    
+    # === ACTIVIDAD RECIENTE (ÚLTIMOS 7 DÍAS) ===
+    hace_7_dias = timezone.now() - timedelta(days=7)
+    
+    actividad_contadores = HistorialCambios.objects.filter(
+        usuario__in=contadores,
+        fecha_hora__gte=hace_7_dias
+    ).values('usuario__username', 'usuario__first_name', 'usuario__last_name').annotate(
+        total_acciones=Count('id')
+    ).order_by('-total_acciones')[:10]
+    
+    actividad_auxiliares = HistorialCambios.objects.filter(
+        usuario__in=auxiliares,
+        fecha_hora__gte=hace_7_dias
+    ).values('usuario__username', 'usuario__first_name', 'usuario__last_name').annotate(
+        total_acciones=Count('id')
+    ).order_by('-total_acciones')[:10]
+    
+    # === EMPRESAS MÁS ACTIVAS ===
+    empresas_activas = Empresa.objects.filter(activa=True).annotate(
+        num_contadores=Count('perfiles', filter=Q(
+            perfiles__activo=True,
+            perfiles__rol__in=['admin', 'contador']
+        )),
+        num_auxiliares=Count('perfiles', filter=Q(
+            perfiles__activo=True,
+            perfiles__rol='operador'
+        )),
+        num_acciones_recientes=Count('historialcambios', filter=Q(
+            historialcambios__fecha_hora__gte=hace_7_dias
+        ))
+    ).filter(
+        Q(num_contadores__gt=0) | Q(num_auxiliares__gt=0)
+    ).order_by('-num_acciones_recientes')[:10]
+    
+    # === ALERTAS ===
+    alertas = []
+    
+    # Usuarios sin empresa asignada
+    if usuarios_sin_asignar.count() > 0:
+        alertas.append({
+            'tipo': 'warning',
+            'mensaje': f'Hay {usuarios_sin_asignar.count()} usuario(s) sin empresa asignada',
+            'icono': '⚠️'
+        })
+    
+    # Contadores inactivos (sin acciones en 30 días)
+    hace_30_dias = timezone.now() - timedelta(days=30)
+    contadores_inactivos = contadores.filter(
+        Q(ultima_accion__lt=hace_30_dias) | Q(ultima_accion__isnull=True)
+    ).count()
+    
+    if contadores_inactivos > 0:
+        alertas.append({
+            'tipo': 'info',
+            'mensaje': f'{contadores_inactivos} contador(es) sin actividad en 30 días',
+            'icono': '💤'
+        })
+    
+    # Empresas sin contador asignado
+    empresas_sin_contador = Empresa.objects.filter(
+        activa=True,
+        perfiles__rol__in=['admin', 'contador'],
+        perfiles__activo=True
+    ).annotate(
+        num_contadores=Count('perfiles')
+    ).filter(num_contadores=0).count()
+    
+    if empresas_sin_contador > 0:
+        alertas.append({
+            'tipo': 'danger',
+            'mensaje': f'{empresas_sin_contador} empresa(s) activa(s) sin contador asignado',
+            'icono': '🚨'
+        })
+    
+    context = {
+        'contadores': contadores,
+        'auxiliares': auxiliares,
+        'observadores': observadores,
+        'usuarios_sin_asignar': usuarios_sin_asignar,
+        'resumen': resumen,
+        'actividad_contadores': actividad_contadores,
+        'actividad_auxiliares': actividad_auxiliares,
+        'empresas_activas': empresas_activas,
+        'alertas': alertas,
+    }
+    
+    return render(request, 'empresas/admin/gestion_contadores.html', context)
+
 
 @login_required
 @require_http_methods(['GET'])
@@ -646,11 +909,9 @@ def historial_cambios(request):
     fecha_hasta = request.GET.get('fecha_hasta')
     busqueda = request.GET.get('busqueda', '').strip()
     
-    # Construir queryset base - Solo usuarios NO administradores del holding
+    # Construir queryset base - INCLUYE ADMINISTRADORES DEL HOLDING
     historial = HistorialCambios.objects.select_related(
         'usuario', 'empresa'
-    ).exclude(
-        usuario__is_superuser=True  # Excluir administradores del holding
     ).order_by('-fecha_hora')
     
     # Aplicar filtros
@@ -695,10 +956,9 @@ def historial_cambios(request):
     page_number = request.GET.get('page')
     historial_paginado = paginator.get_page(page_number)
     
-    # Obtener listas para los filtros - Solo usuarios NO administradores
+    # Obtener listas para los filtros - INCLUYE ADMINISTRADORES
     usuarios_con_historial = User.objects.filter(
-        historialcambios__isnull=False,
-        is_superuser=False  # Excluir administradores del holding
+        historialcambios__isnull=False
     ).distinct().order_by('username')
     
     empresas_con_historial = Empresa.objects.filter(
@@ -709,7 +969,7 @@ def historial_cambios(request):
         'tipo_accion', flat=True
     ).distinct().order_by('tipo_accion')
     
-    # Estadísticas rápidas - Solo usuarios NO administradores
+    # Estadísticas rápidas - INCLUYE ADMINISTRADORES
     total_acciones = historial.count()
     acciones_hoy = historial.filter(fecha_hora__date=timezone.now().date()).count()
     usuarios_activos_hoy = historial.filter(

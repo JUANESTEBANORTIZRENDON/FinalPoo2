@@ -3,7 +3,12 @@
 {% block title %}Historial de Cambios - Administrador{% endblock %}
 
 {% block page_title %}📋 Historial de Cambios{% endblock %}
-{% block page_subtitle %}Registro de actividades de contadores, operadores y observadores (excluye administradores del holding){% endblock %}
+{% block page_subtitle %}
+    Registro de todas las actividades del sistema (incluye administradores del holding)
+    <button onclick="location.reload()" class="btn btn-sm btn-outline-light ms-3" title="Actualizar historial">
+        <i class="fas fa-sync-alt"></i> Actualizar
+    </button>
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -104,16 +109,13 @@
 {% block content %}
 
 <!-- Nota informativa -->
-<div class="alert alert-info d-flex align-items-center mb-4" style="border-radius: 10px; border: none; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-left: 4px solid #667eea;">
-    <i class="fas fa-info-circle me-3" style="color: #667eea; font-size: 1.2rem;"></i>
+<div class="alert alert-success d-flex align-items-center mb-4" style="border-radius: 10px; border: none; background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(25, 135, 84, 0.1) 100%); border-left: 4px solid #28a745;">
+    <i class="fas fa-check-circle me-3" style="color: #28a745; font-size: 1.2rem;"></i>
     <div>
-        <strong style="color: #667eea;">ℹ️ Información del Historial</strong><br>
+        <strong style="color: #28a745;">✅ Historial Completo Activado</strong><br>
         <small style="color: #495057;">
-            Este historial muestra únicamente las actividades de <strong>contadores, operadores y observadores</strong>. 
-            Las acciones de administradores del holding están disponibles en el 
-            <a href="/admin/empresas/historialcambios/" target="_blank" style="color: #667eea; text-decoration: none;">
-                <strong>Admin de Django</strong> <i class="fas fa-external-link-alt"></i>
-            </a>
+            Este historial ahora incluye <strong>TODAS las actividades</strong>: contadores, operadores, observadores 
+            <strong>y administradores del holding</strong>. Auditoría completa del sistema.
         </small>
     </div>
 </div>
