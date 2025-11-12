@@ -1,0 +1,9 @@
+{% comment %}
+Breadcrumb reutilizable para páginas de catálogos
+Uso:
+    {% include 'catalogos/includes/breadcrumb_catalogos.html' with section_url='catalogos:impuestos_lista' section_name='Impuestos' %}
+{% endcomment %}
+
+{# These <li> items are rendered inside <ol class="breadcrumb"> from the parent template #}
+<li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
+<li class="breadcrumb-item"><a href="{% url section_url %}">{{ section_name }}</a></li>

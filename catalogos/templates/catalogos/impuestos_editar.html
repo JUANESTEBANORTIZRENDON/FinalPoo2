@@ -1,14 +1,11 @@
 {% extends 'components/form_editar_base.html' %}
 {% load form_helpers %}
-
-{# Variables de contexto #}
 {% load static %}
+
 {% with page_title="Editar Impuesto" card_title="Editar Impuesto"|add:": "|add:object.nombre breadcrumb_active="Editar Impuesto" cancel_url="/catalogos/impuestos/" submit_text="Actualizar Impuesto" %}
 
 {% block breadcrumb_items %}
-{# These <li> items are rendered inside <ol class="breadcrumb"> from the parent template #}
-<li class="breadcrumb-item"><a href="{% url 'catalogos:index' %}">Catálogos</a></li>
-<li class="breadcrumb-item"><a href="{% url 'catalogos:impuestos_lista' %}">Impuestos</a></li>
+{% include 'catalogos/includes/breadcrumb_catalogos.html' with section_url='catalogos:impuestos_lista' section_name='Impuestos' %}
 {% endblock %}
 
 {% block form_fields %}
@@ -16,7 +13,6 @@
     <div class="col-md-6">
         {% render_field form.codigo %}
     </div>
-    
     <div class="col-md-6">
         {% render_field form.tipo_impuesto %}
     </div>
@@ -26,25 +22,8 @@
 
 <div class="row">
     <div class="col-md-6">
-        <div class="mb-3">
-            <label for="{{ form.porcentaje.id_for_label }}" class="form-label">
-                {{ form.porcentaje.label }}{% if form.porcentaje.field.required %} <span class="text-danger">*</span>{% endif %}
-            </label>
-            <div class="input-group">
-                {{ form.porcentaje|add_class:"form-control" }}
-                <span class="input-group-text">%</span>
-            </div>
-            {% if form.porcentaje.help_text %}
-                <div class="form-text">{{ form.porcentaje.help_text }}</div>
-            {% endif %}
-            {% if form.porcentaje.errors %}
-                <div class="invalid-feedback d-block">
-                    {% for error in form.porcentaje.errors %}{{ error }}{% endfor %}
-                </div>
-            {% endif %}
-        </div>
+        {% include 'components/field_with_suffix.html' with field=form.porcentaje suffix='%' %}
     </div>
-    
     <div class="col-md-6">
         {% render_field form.activo %}
     </div>
