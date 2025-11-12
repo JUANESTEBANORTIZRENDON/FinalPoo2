@@ -98,7 +98,7 @@
                                             <td>
                                                 <strong>{{ cuenta.codigo }}</strong>
                                             </td>
-                                            <td style="{% if cuenta.nivel > 1 %}padding-left: {{ cuenta.nivel|add:"-1"|stringformat:"d" }}em;{% endif %}">
+                                            <td{% if cuenta.nivel > 1 %} style="padding-left: {{ cuenta.nivel|add:"-1"|stringformat:"d" }}em;"{% endif %}>
                                                 {{ cuenta.nombre }}
                                             </td>
                                             <td>

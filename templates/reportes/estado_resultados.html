@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (ingresosDiv) {
             const filasIngresos = ingresosDiv.querySelectorAll('.row.mb-2');
             filasIngresos.forEach(fila => {
-                const valor = parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
+                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replace(/[\$,]/g, '')) || 0;
                 totalIngresos += valor;
             });
         }
@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const filasCostos = costosDiv.querySelectorAll('.row.mb-2');
             filasCostos.forEach(fila => {
                 const texto = fila.querySelector('.col-4').textContent;
-                const valor = parseFloat(texto.replace(/[\$,()]/g, '')) || 0;
+                const valor = Number.parseFloat(texto.replace(/[\$,()]/g, '')) || 0;
                 totalCostos += valor;
             });
         }
@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const filasGastos = gastosDiv.querySelectorAll('.row.mb-2');
             filasGastos.forEach(fila => {
                 const texto = fila.querySelector('.col-4').textContent;
-                const valor = parseFloat(texto.replace(/[\$,()]/g, '')) || 0;
+                const valor = Number.parseFloat(texto.replace(/[\$,()]/g, '')) || 0;
                 totalGastos += valor;
             });
         }
