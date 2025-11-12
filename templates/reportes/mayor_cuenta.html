@@ -208,6 +208,15 @@
 </style>
 
 <script>
+// Función auxiliar para formatear moneda (scope global para reutilización)
+function formatearMoneda(valor) {
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 2
+    }).format(valor);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Calcular saldos y totales
     calcularSaldos();
@@ -269,8 +278,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let index = 0;
         for (const fila of filas) {
-            const debitoText = fila.cells[3].textContent.replaceAll(/[\$,—\s]/, '');
-            const creditoText = fila.cells[4].textContent.replaceAll(/[\$,—\s]/, '');
+            const debitoText = fila.cells[3].textContent.replaceAll(/[$,—\s]/, '');
+            const creditoText = fila.cells[4].textContent.replaceAll(/[$,—\s]/, '');
             
             const debito = Number.parseFloat(debitoText) || 0;
             const credito = Number.parseFloat(creditoText) || 0;
@@ -304,14 +313,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('resumen-debitos').textContent = formatearMoneda(totalDebitos);
         document.getElementById('resumen-creditos').textContent = formatearMoneda(totalCreditos);
         document.getElementById('resumen-saldo-final').textContent = formatearMoneda(saldoActual);
-    }
-    
-    function formatearMoneda(valor) {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 2
-        }).format(valor);
     }
 });
 </script>

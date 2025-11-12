@@ -60,7 +60,7 @@
                                        name="fecha_fin" value="{{ fecha_fin }}" required>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">&nbsp;</label>
+                                <div class="mb-3">&nbsp;</div>
                                 <div class="d-grid">
                                     <button type="submit" class="btn btn-primary btn-lg">
                                         <i class="bi bi-search"></i>
@@ -266,6 +266,15 @@
 </style>
 
 <script>
+// Función auxiliar para formatear moneda (scope global para reutilización)
+function formatearMoneda(valor) {
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 2
+    }).format(valor);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Calcular totales
     calcularResultados();
@@ -322,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (ingresosDiv) {
             const filasIngresos = ingresosDiv.querySelectorAll('.row.mb-2');
             for (const fila of filasIngresos) {
-                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[\$,]/, '')) || 0;
+                const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[$,]/, '')) || 0;
                 totalIngresos += valor;
             }
         }
@@ -333,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const filasCostos = costosDiv.querySelectorAll('.row.mb-2');
             for (const fila of filasCostos) {
                 const texto = fila.querySelector('.col-4').textContent;
-                const valor = Number.parseFloat(texto.replaceAll(/[\$,()]/, '')) || 0;
+                const valor = Number.parseFloat(texto.replaceAll(/[$,()]/, '')) || 0;
                 totalCostos += valor;
             }
         }
@@ -344,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const filasGastos = gastosDiv.querySelectorAll('.row.mb-2');
             for (const fila of filasGastos) {
                 const texto = fila.querySelector('.col-4').textContent;
-                const valor = Number.parseFloat(texto.replaceAll(/[\$,()]/, '')) || 0;
+                const valor = Number.parseFloat(texto.replaceAll(/[$,()]/, '')) || 0;
                 totalGastos += valor;
             }
         }
@@ -391,14 +400,6 @@ document.addEventListener('DOMContentLoaded', function() {
             resumenResultado.textContent = '(' + formatearMoneda(Math.abs(resultadoFinal)) + ')';
             resumenResultado.className = 'text-danger';
         }
-    }
-    
-    function formatearMoneda(valor) {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 2
-        }).format(valor);
     }
 });
 </script>

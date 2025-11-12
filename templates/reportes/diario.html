@@ -216,6 +216,15 @@
 </style>
 
 <script>
+// Función auxiliar para formatear moneda (scope global para reutilización)
+function formatearMoneda(valor) {
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 2
+    }).format(valor);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Calcular totales
     calcularTotales();
@@ -289,14 +298,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (elemCreditos) {
             elemCreditos.textContent = formatearMoneda(totalCreditos);
         }
-    }
-    
-    function formatearMoneda(valor) {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 2
-        }).format(valor);
     }
 });
 </script>
