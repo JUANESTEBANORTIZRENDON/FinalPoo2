@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Redirigir a la vista de detalle
-            window.location.href = url;
+            globalThis.location.href = url;
         });
     }
 
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnImprimir) {
         btnImprimir.addEventListener('click', function() {
             if (resultadoMayor.style.display !== 'none') {
-                window.print();
+                globalThis.print();
             } else {
                 alert('Primero debes generar el libro mayor de una cuenta');
             }
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fechaInicio) url += `&fecha_inicio=${fechaInicio}`;
             if (fechaFin) url += `&fecha_fin=${fechaFin}`;
             
-            window.location.href = url;
+            globalThis.location.href = url;
         });
     }
 
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fechaInicio) url += `&fecha_inicio=${fechaInicio}`;
             if (fechaFin) url += `&fecha_fin=${fechaFin}`;
             
-            window.location.href = url;
+            globalThis.location.href = url;
         });
     }
 

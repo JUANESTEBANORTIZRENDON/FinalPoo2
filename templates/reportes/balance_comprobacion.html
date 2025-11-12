@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnImprimir = document.getElementById('btn-imprimir');
     if (btnImprimir) {
         btnImprimir.addEventListener('click', function() {
-            window.print();
+            globalThis.print();
         });
     }
     
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = '{% url "reportes:balance_comprobacion_exportar" %}?fecha_corte=' + fechaCorte + '&formato=excel' + (tipoCuenta ? '&tipo_cuenta=' + tipoCuenta : '');
             console.log('URL:', url);
             
-            window.location.href = url;
+            globalThis.location.href = url;
         });
     } else {
         console.error('Botón Excel no encontrado');
@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = '{% url "reportes:balance_comprobacion_exportar" %}?fecha_corte=' + fechaCorte + '&formato=pdf' + (tipoCuenta ? '&tipo_cuenta=' + tipoCuenta : '');
             console.log('URL:', url);
             
-            window.location.href = url;
+            globalThis.location.href = url;
         });
     } else {
         console.error('Botón PDF no encontrado');
@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let totalSaldoAcreedor = 0;
         
         const filas = tabla.querySelectorAll('tbody tr');
-        filas.forEach(fila => {
+        for (const fila of filas) {
             const debito = Number.parseFloat(fila.cells[3].textContent.replaceAll(/[\$,]/, '')) || 0;
             const credito = Number.parseFloat(fila.cells[4].textContent.replaceAll(/[\$,]/, '')) || 0;
             const saldoDeudor = Number.parseFloat(fila.cells[5].textContent.replaceAll(/[\$,—\s]/, '')) || 0;
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
             totalCreditos += credito;
             totalSaldoDeudor += saldoDeudor;
             totalSaldoAcreedor += saldoAcreedor;
-        });
+        }
         
         // Actualizar totales
         document.getElementById('total-debitos').textContent = formatearMoneda(totalDebitos);

@@ -307,9 +307,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (tabla) {
                 const filas = tabla.querySelectorAll('tbody tr');
-                filas.forEach(fila => {
+                for (const fila of filas) {
                     fila.style.display = '';
-                });
+                }
                 calcularTotales();
             }
         });

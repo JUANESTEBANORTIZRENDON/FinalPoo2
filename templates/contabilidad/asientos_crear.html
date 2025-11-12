@@ -344,10 +344,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function renumerarPartidas() {
         const filas = tbodyPartidas.querySelectorAll('.partida-row');
-        filas.forEach((fila, index) => {
+        let index = 0;
+        for (const fila of filas) {
             fila.dataset.numero = index + 1;
             fila.querySelector('.numero-partida').textContent = index + 1;
-        });
+            index++;
+        }
         contadorPartidas = filas.length;
     }
     

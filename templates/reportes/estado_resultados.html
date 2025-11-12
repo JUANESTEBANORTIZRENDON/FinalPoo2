@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnImprimir = document.getElementById('btn-imprimir');
     if (btnImprimir) {
         btnImprimir.addEventListener('click', function() {
-            window.print();
+            globalThis.print();
         });
     }
     
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const url = `{% url 'reportes:estado_resultados_exportar' %}?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&formato=excel`;
-            window.location.href = url;
+            globalThis.location.href = url;
         });
     }
     
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const url = `{% url 'reportes:estado_resultados_exportar' %}?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&formato=pdf`;
-            window.location.href = url;
+            globalThis.location.href = url;
         });
     }
     
@@ -321,32 +321,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const ingresosDiv = document.querySelector('.text-success').parentElement;
         if (ingresosDiv) {
             const filasIngresos = ingresosDiv.querySelectorAll('.row.mb-2');
-            filasIngresos.forEach(fila => {
+            for (const fila of filasIngresos) {
                 const valor = Number.parseFloat(fila.querySelector('.col-4').textContent.replaceAll(/[\$,]/, '')) || 0;
                 totalIngresos += valor;
-            });
+            }
         }
         
         // Calcular costos
         const costosDiv = document.querySelector('.text-danger').parentElement;
         if (costosDiv) {
             const filasCostos = costosDiv.querySelectorAll('.row.mb-2');
-            filasCostos.forEach(fila => {
+            for (const fila of filasCostos) {
                 const texto = fila.querySelector('.col-4').textContent;
                 const valor = Number.parseFloat(texto.replaceAll(/[\$,()]/, '')) || 0;
                 totalCostos += valor;
-            });
+            }
         }
         
         // Calcular gastos
         const gastosDiv = document.querySelector('.text-warning').parentElement;
         if (gastosDiv) {
             const filasGastos = gastosDiv.querySelectorAll('.row.mb-2');
-            filasGastos.forEach(fila => {
+            for (const fila of filasGastos) {
                 const texto = fila.querySelector('.col-4').textContent;
                 const valor = Number.parseFloat(texto.replaceAll(/[\$,()]/, '')) || 0;
                 totalGastos += valor;
-            });
+            }
         }
         
         // Calcular utilidades

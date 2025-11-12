@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnImprimir = document.getElementById('btn-imprimir');
     if (btnImprimir) {
         btnImprimir.addEventListener('click', function() {
-            window.print();
+            globalThis.print();
         });
     }
     
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnExportarExcel = document.getElementById('btn-exportar-excel');
     if (btnExportarExcel) {
         btnExportarExcel.addEventListener('click', function() {
-            const params = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams(globalThis.location.search);
             let url = `{% url 'reportes:mayor_exportar' %}?cuenta_id={{ cuenta.pk }}&formato=excel`;
             
             const fechaInicio = params.get('fecha_inicio');
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fechaInicio) url += `&fecha_inicio=${fechaInicio}`;
             if (fechaFin) url += `&fecha_fin=${fechaFin}`;
             
-            window.location.href = url;
+            globalThis.location.href = url;
         });
     }
     
@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnExportarPdf = document.getElementById('btn-exportar-pdf');
     if (btnExportarPdf) {
         btnExportarPdf.addEventListener('click', function() {
-            const params = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams(globalThis.location.search);
             let url = `{% url 'reportes:mayor_exportar' %}?cuenta_id={{ cuenta.pk }}&formato=pdf`;
             
             const fechaInicio = params.get('fecha_inicio');
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fechaInicio) url += `&fecha_inicio=${fechaInicio}`;
             if (fechaFin) url += `&fecha_fin=${fechaFin}`;
             
-            window.location.href = url;
+            globalThis.location.href = url;
         });
     }
     
@@ -267,7 +267,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const filas = tabla.querySelectorAll('tr:not(.table-secondary)');
         
-        filas.forEach((fila, index) => {
+        let index = 0;
+        for (const fila of filas) {
             const debitoText = fila.cells[3].textContent.replaceAll(/[\$,—\s]/, '');
             const creditoText = fila.cells[4].textContent.replaceAll(/[\$,—\s]/, '');
             
@@ -291,7 +292,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (saldoCell) {
                 saldoCell.textContent = formatearMoneda(saldoActual);
             }
-        });
+            index++;
+        }
         
         // Actualizar totales en el footer
         document.getElementById('total-debitos').textContent = formatearMoneda(totalDebitos);
