@@ -351,7 +351,70 @@ def asignar_usuario_empresa(request, usuario_id):  # nosonar  # type: ignore[no-
         messages.error(request, 'No tienes permisos para realizar esta acción.')
         return redirect(URL_LOGIN)
     
-    # ... (rest of the function remains the same)
+    usuario = get_object_or_404(User, id=usuario_id)
+    
+    if request.method == 'POST':
+        empresa_id = request.POST.get('empresa_id')
+        rol = request.POST.get('rol')
+        
+        if not empresa_id or not rol:
+            messages.error(request, 'Debe seleccionar una empresa y un rol.')
+            return redirect('empresas:admin_gestionar_usuarios')
+        
+        try:
+            empresa = Empresa.objects.get(id=empresa_id, propietario=request.user)
+            
+            perfil_existente = PerfilEmpresa.objects.filter(
+                usuario=usuario,
+                empresa=empresa
+            ).first()
+            
+            if perfil_existente:
+                perfil_existente.rol = rol
+                perfil_existente.activo = True
+                perfil_existente.save()
+                messages.success(
+                    request,
+                    f'Rol de {usuario.username} actualizado a {perfil_existente.get_rol_display()} en {empresa.razon_social}'  # type: ignore[attr-defined]
+                )
+            else:
+                PerfilEmpresa.objects.create(
+                    usuario=usuario,
+                    empresa=empresa,
+                    rol=rol,
+                    activo=True
+                )
+                messages.success(
+                    request,
+                    f'Usuario {usuario.username} asignado como {dict(PerfilEmpresa.ROL_CHOICES).get(rol)} en {empresa.razon_social}'
+                )
+            
+            HistorialCambios.registrar_accion(
+                usuario=request.user,
+                empresa=empresa,
+                tipo_accion='usuario_asignado',
+                descripcion=f'Usuario {usuario.username} asignado/actualizado con rol {rol}'
+            )
+            
+        except Empresa.DoesNotExist:
+            messages.error(request, 'Empresa no encontrada o no tienes permisos.')
+        except Exception as e:
+            messages.error(request, f'Error al asignar usuario: {str(e)}')
+        
+        return redirect('empresas:admin_gestionar_usuarios')
+    
+    empresas = Empresa.objects.filter(propietario=request.user, activa=True)
+    perfiles_existentes = PerfilEmpresa.objects.filter(usuario=usuario).select_related('empresa')
+    
+    context = {
+        'usuario': usuario,
+        'empresas': empresas,
+        'perfiles_existentes': perfiles_existentes,
+        'roles_choices': PerfilEmpresa.ROL_CHOICES,
+    }
+    
+    return render(request, 'empresas/admin/asignar_usuario.html', context)
+
 
 @login_required
 @require_http_methods(['GET', 'POST'])  # NOSONAR - CSRF protection enabled by Django's CsrfViewMiddleware
